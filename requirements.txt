@@ -1,0 +1,7 @@
+discord.py[voice]
+python-dotenv
+yt-dlp
+pydub
+google-cloud-storage
+google-cloud-texttospeech
+openai
