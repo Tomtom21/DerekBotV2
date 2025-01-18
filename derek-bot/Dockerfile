@@ -1,11 +1,14 @@
 # Use a Python 3.11 image as the base
-From python:3.11-slim
+FROM python:3.11-slim
 
 WORKDIR /bot
 
-COPY ../requirements.txt .
+COPY ../requirements.txt /bot
 
-COPY . .
+RUN pip install -r requirements.txt
 
-RUN pip install --no-cache-dir -r requirements.txt
+COPY derek-bot /bot
 
+COPY libs /bot/libs
+
+CMD ["python", "derek_bot.py"]
