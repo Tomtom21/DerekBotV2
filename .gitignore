@@ -3,3 +3,4 @@
 
 utils/*.json
 utils/*.csv
+.DS_Store
