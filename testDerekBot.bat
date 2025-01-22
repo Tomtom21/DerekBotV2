@@ -10,4 +10,4 @@ docker build -t %IMAGE_NAME% -f derek-bot/Dockerfile .
 
 :: Running the container
 echo Running Docker container...
-docker run --env-file .env %IMAGE_NAME%
+docker run -e PYTHONUNBUFFERED=1 --env-file .env %IMAGE_NAME%
