@@ -4,7 +4,7 @@ import logging
 
 # Discord imports
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord import app_commands
 
 # DB imports
@@ -53,6 +53,28 @@ class IntentBot(commands.Bot):
     # Starts our TTS and data collection background tasks
     def start_background_tasks(self):
         pass
+
+    # Repeatedly checks to see if there is a new TTS item to say
+    @tasks.loop(seconds=1)
+    async def tts_check_loop(self):
+        pass
+
+    # Checks whether it is someone's birthday, sends a birthday message to the appropriate user
+    @tasks.loop(minutes=30)
+    async def birthday_check(self):
+        pass
+
+    # Changes the status of the bot
+    @tasks.loop(minutes=45)
+    async def cycle_statuses(self):
+        pass
+
+    # Pulls cached info from the database, and updated the local variables for up-to-date values
+    @tasks.loop(hours=1)
+    async def update_cached_info(self):
+        pass
+
+
 
 
 # Starting the bot
