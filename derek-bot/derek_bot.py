@@ -99,12 +99,54 @@ class IntentBot(commands.Bot):
         pass
 
     @app_commands.command(name="addmovie", description="Add a movie to the unwatched list")
+    @app_commands.describe(movie_name="Name of the movie to add to the list")
     async def addmovie(self, interaction: discord.Interaction, movie_name: str):
         pass
 
     @app_commands.command(name="removemovie", description="Remove a movie from the unwatched list")
+    @app_commands.describe(movie_index="Index number associated with each movie in the movie list")
     async def removemovie(self, interaction: discord.Interaction, movie_index: int):
         pass
+
+    @app_commands.command(name="markwatched", description="Marks a movie in the unwatched list as watched")
+    @app_commands.describe(movie_index="Index number associated with each movie in the movie list")
+    async def markwatched(self, interaction: discord.Interaction, movie_index: int):
+        pass
+
+    @app_commands.command(name="searchmovie", description="List all movies that contain the keyword (from unwatched list)")
+    @app_commands.describe(keyword="Keyword movie name")
+    async def searchmovie(self, interaction: discord.Interaction, keyword: str):
+        pass
+
+    @app_commands.command(name="randommovie", description="Choose a random movie to watch (from unwatched list)")
+    @app_commands.describe(keyword="[OPTIONAL] Keyword movie name")
+    async def randommovie(self, interaction: discord.Interaction, keyword: str = ""):
+        pass
+
+    @app_commands.command(name="toggletts", description="Enables/Disables TTS in TTS channels (admin only)")
+    async def toggletts(self, interaction: discord.Interaction):
+        pass
+
+    @app_commands.command(name="ttslang", description="Changes the language of tts (admin only)")
+    @app_commands.choices(language=[
+        app_commands.Choice(name='english (US)', value=0),
+        app_commands.Choice(name='english (UK)', value=1),
+        app_commands.Choice(name='english (AU)', value=2),
+        app_commands.Choice(name='french', value=3),
+        app_commands.Choice(name='german', value=4),
+        app_commands.Choice(name='italian', value=5),
+        app_commands.Choice(name='portuguese', value=6),
+        app_commands.Choice(name='russian', value=7),
+        app_commands.Choice(name='spanish', value=8),
+        app_commands.Choice(name='moonbase', value=9),
+    ])
+    async def ttslang(self, interaction: discord.Interaction, language: app_commands.Choice[int]):
+        pass
+
+    @app_commands.command(name="vckick", description="Forcefully kick the bot from the VC")
+    async def vckick(self, interaction: discord.Interaction):
+        pass
+
 
 
 # Starting the bot
