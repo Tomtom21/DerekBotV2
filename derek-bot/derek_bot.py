@@ -2,6 +2,7 @@
 import os
 import logging
 import sys
+from libs.numeric_helpers import get_suffix
 
 # Discord imports
 import discord
@@ -50,6 +51,8 @@ intents.members = True
 intents.voice_states = True
 intents.message_content = True
 
+
+# The main code for the bot
 class IntentBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix=None, intents=intents, case_insensitive=True)
@@ -87,7 +90,21 @@ class IntentBot(commands.Bot):
     async def update_cached_info(self):
         pass
 
+    @app_commands.command(name="unwatchedmovies", description="Show a list of unwatched movies")
+    async def unwatchedmovies(self, interaction: discord.Interaction):
+        pass
 
+    @app_commands.command(name="watchedmovies", description="Show a list of watched movies")
+    async def watchedmovies(self, interaction: discord.Interaction):
+        pass
+
+    @app_commands.command(name="addmovie", description="Add a movie to the unwatched list")
+    async def addmovie(self, interaction: discord.Interaction, movie_name: str):
+        pass
+
+    @app_commands.command(name="removemovie", description="Remove a movie from the unwatched list")
+    async def removemovie(self, interaction: discord.Interaction, movie_index: int):
+        pass
 
 
 # Starting the bot
