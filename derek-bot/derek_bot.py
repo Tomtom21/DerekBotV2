@@ -90,6 +90,7 @@ class IntentBot(commands.Bot):
 
 
 
-# Starting the bot (Maybe put this in a __name__ == "__main__")
-bot = IntentBot()
-bot.run(DISCORD_TOKEN, log_handler=None)
+# Starting the bot
+if __name__ == '__main__':
+    bot = IntentBot()
+    bot.run(DISCORD_TOKEN, log_handler=None)
