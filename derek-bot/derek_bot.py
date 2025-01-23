@@ -1,6 +1,7 @@
 # General imports
 import os
 import logging
+import sys
 
 # Discord imports
 import discord
@@ -10,6 +11,21 @@ from discord import app_commands
 # DB imports
 from supabase import create_client, Client
 from libs.supabase_utils import signin_attempt_loop
+
+# Setting up logging
+logger = logging.getLogger('discord')
+logger.setLevel(logging.INFO)
+
+# Adding a ha
+log_handler = logging.StreamHandler()
+logging_formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
+log_handler.setFormatter(logging_formatter)
+logger.addHandler(log_handler)
+
+# Preventing double logs
+logger.propagate = False
+
+logging.root = logger
 
 # Getting the supabase db info
 supabase_url: str = os.environ.get('SUPABASE_URL')
@@ -33,9 +49,6 @@ intents.reactions = True
 intents.members = True
 intents.voice_states = True
 intents.message_content = True
-
-# Setting up logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s]: %(message)s")
 
 class IntentBot(commands.Bot):
     def __init__(self):
@@ -77,6 +90,6 @@ class IntentBot(commands.Bot):
 
 
 
-# Starting the bot
+# Starting the bot (Maybe put this in a __name__ == "__main__")
 bot = IntentBot()
 bot.run(DISCORD_TOKEN, log_handler=None)

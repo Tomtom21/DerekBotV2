@@ -7,6 +7,7 @@ from supabase import Client
 # wait_time is how long it will wait between attempts
 def signin_attempt_loop(supabase_client: Client, supabase_username, supabase_password, max_attempts=5, wait_time=30):
     attempts = 0
+    logging.info("Attempting database login")
     while attempts < max_attempts:
         try:
             supabase_client.auth.sign_in_with_password({"email": supabase_username, "password": supabase_password})
