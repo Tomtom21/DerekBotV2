@@ -13,7 +13,7 @@ buildDerekBot:
 
 runDerekBot:
 	echo "Running derek-bot"
-	docker run -e PYTHONUNBUFFERED=1 --env-file .env ${IMAGE_NAME}
+	docker run -e PYTHONUNBUFFERED=1 --env-file ../DerekBotV2Creds/.env ${IMAGE_NAME}
 
 testDerekBot: buildDerekBot runDerekBot
 
