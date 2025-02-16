@@ -6,3 +6,4 @@ google-cloud-storage
 google-cloud-texttospeech
 openai
 supabase
+pytz

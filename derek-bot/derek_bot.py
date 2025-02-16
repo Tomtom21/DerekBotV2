@@ -170,6 +170,8 @@ class DerekBot(commands.Bot):
         app_commands.Choice(name='PST', value="US/Pacific"),
         app_commands.Choice(name='AKT', value="US/Alaska"),
         app_commands.Choice(name='HAT', value="US/Hawaii"),
+        app_commands.Choice(name='CET', value="Europe/Brussels"),
+        app_commands.Choice(name='London', value="Europe/London")
     ])
     async def addbirthday(self,
                           interaction: discord.Interaction,
