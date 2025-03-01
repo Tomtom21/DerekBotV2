@@ -10,6 +10,15 @@ from concurrent.futures import ProcessPoolExecutor
 class URLValidationError(Exception):
     pass
 
+class URLSanitizationError(Exception):
+    pass
+
+class SongRequest:
+    def __init__(self, song_url):
+        self.url = song_url
+        self.verified_valid: bool = False
+        self.verified_sanitized: bool = False
+        self.source = None
 
 class SongDownloader:
     """
@@ -22,14 +31,18 @@ class SongDownloader:
     def __init__(self, output_dir=".", max_workers=5):
         self.output_dir = output_dir
         self.executor = ProcessPoolExecutor(max_workers=max_workers)
-        self.valid_domains = {"youtube.com", "youtu.be", "open.spotify.com"}
+        self.VALID_DOMAINS = {"youtube.com": "youtube",
+                              "youtu.be": "youtube",
+                              "open.spotify.com": "spotify"}
+        self.BAD_TITLE_WORDS = {"live", "official", "karaoke"}
+        self.SANITIZATION_MAX_LENGTH = 120
 
     @staticmethod
     def get_text_similarity(a, b):
         """Determines the percentage similarity between two strings"""
         return SequenceMatcher(None, a, b).ratio()
 
-    def validate_url(self, url):
+    def validate_url(self, song_request: SongRequest):
         """Checks to ensure the user provided a real url"""
         def normalize_domain(domain):
             domain = domain.lower()
@@ -37,7 +50,7 @@ class SongDownloader:
                 return domain[4:]
             return domain
 
-        parsed = urllib.parse.urlparse(url)
+        parsed = urllib.parse.urlparse(song_request.url)
 
         # Checking if we have a https link. No http here
         if parsed.scheme not in {"https"}:
@@ -45,11 +58,27 @@ class SongDownloader:
 
         # Normalizing and checking the url domains
         normalized_domain = normalize_domain(parsed.netloc)
-        if normalized_domain not in self.valid_domains:
+        if normalized_domain not in self.VALID_DOMAINS.keys():
             raise URLValidationError("The URL domain is not valid")
+
+        # It seems we have a valid domain, mark it
+        song_request.verified_valid = True
+        song_request.source = self.VALID_DOMAINS[normalized_domain]
+
+    def sanitize_url(self, song_request: SongRequest):
+        if len(song_request.url) > self.SANITIZATION_MAX_LENGTH:
+            raise URLValidationError("The URl seems to be too long")
+
+        # We have a sanitized url, mark it
+        song_request.verified_valid = True
 
     async def download_song_by_url(self, song_url, callback=None):
         """"""
+        # Initialize the SongRequest for the url
+        # Validate url, update song request
+        # Sanitize url, update song request
+        # Send to router
+
         # Call multiprocessing router here
         pass
 
@@ -65,17 +94,20 @@ class SongDownloader:
         # Call multiprocessing router here
         pass
 
-    async def get_
-
     def _download_song_from_query(self, search_query, callback):
         """Searches and downloads a video that matches the search query"""
         pass
 
-    def _filter_youtube_results(self, video_dict):
+    def _filter_youtube_results(self, video_list):
         """Filters a list of urls/titles to remove non-desirable videos for audio streaming"""
-        pass
+        return [
+            video
+            for video in video_list
+            if all(word not in video["title"].lower() for word in self.BAD_TITLE_WORDS)
+        ]
 
-    def _get_yt_video_ids_from_query(self, search_query) -> list:
+    @staticmethod
+    def _get_yt_video_ids_from_query(search_query) -> list:
         """Searches YouTube, returns a list of YouTube video urls and titles"""
         search_input = urllib.parse.urlencode({'search_query': search_query})
         search_url = "https://www.youtube.com/results?" + search_input
@@ -86,10 +118,11 @@ class SongDownloader:
 
     def _route_song_download(self, song_url, callback):
         """Routes a song url to one of the song downloading methods"""
+        # if
         pass
 
     def _download_youtube_song(self, youtube_song_url, callback):
-        """Downloads a YouTube video provided url, calls callback"""
+        """Downloads a YouTube video provided url, calls callback. This is our separate process"""
         pass
 
     def _download_spotify_song(self, spotify_song_url, callback):
