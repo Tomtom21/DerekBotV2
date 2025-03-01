@@ -7,3 +7,4 @@ google-cloud-texttospeech
 openai
 supabase
 pytz
+bs4
