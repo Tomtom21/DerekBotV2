@@ -2,9 +2,14 @@ import urllib.parse
 import urllib.request
 from difflib import SequenceMatcher
 import re
+import os
+import random
+import logging
 from bs4 import BeautifulSoup
 import json
 from concurrent.futures import ProcessPoolExecutor
+from googleapiclient.discovery import build
+import yt_dlp
 
 
 class URLValidationError(Exception):
@@ -18,6 +23,8 @@ class URLSanitizationError(Exception):
 class SongRouterError(Exception):
     pass
 
+class DownloadError(Exception):
+    pass
 
 class SongRequest:
     def __init__(self, song_url):
@@ -71,17 +78,22 @@ class SongDownloader:
     For spotify songs, search with regular request and then videos.list get all url info for 1 quota per 50 videos
     For spotify playlists, search with regular request, then videos.list for each song. 25 quota per playlist add sequence (or as many songs as added)
     """
-    def __init__(self, output_dir=".", max_workers=5):
-        self.output_dir = output_dir
+    def __init__(self, youtube_api_key, output_path=".", max_workers=5):
+        self.output_path = output_path
         self.executor = ProcessPoolExecutor(max_workers=max_workers)
-
+        self.youtube_api = build("youtube", "v3", developerKey=youtube_api_key)
         self.BAD_TITLE_WORDS = {"live", "official", "karaoke"}
-
 
     @staticmethod
     def get_text_similarity(a, b):
         """Determines the percentage similarity between two strings"""
         return SequenceMatcher(None, a, b).ratio()
+
+    def get_random_file_id(self):
+        """Gets a file id based on the files already in the directory"""
+        current_file_ids = {int(filename.split(".")[0]) for filename in os.listdir(self.output_path)}
+        available_ids = set(range(1, 10000)) - current_file_ids
+        return random.choice(tuple(available_ids))
 
     async def download_song_by_url(self, song_url, callback=None):
         """"""
@@ -134,7 +146,25 @@ class SongDownloader:
 
     def _download_youtube_song(self, youtube_song_url, callback):
         """Downloads a YouTube video provided url, calls callback. This is our separate process"""
-        pass
+        try:
+            # Generating a new filename
+            new_file_id = self.get_random_file_id()
+
+            # Downloading the song
+            ydl_opts = {
+                'quiet': True,
+                'format': 'bestaudio/best',
+                'audio-format': 'm4a',
+                'audio-quality': 192,
+                'noplaylist': True,
+                'outtmpl': os.path.join(self.output_path, file_id + ".m4a"),
+            }
+
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([youtube_song_url])
+        except Exception as e:
+            logging.warning(e)
+            raise DownloadError("Failed to download Youtube video") from e
 
     def _download_spotify_song(self, spotify_song_url, callback):
         """Downloads a Spotify video provided url, calls callback"""
