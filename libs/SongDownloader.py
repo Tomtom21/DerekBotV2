@@ -157,7 +157,7 @@ class SongDownloader:
                 'audio-format': 'm4a',
                 'audio-quality': 192,
                 'noplaylist': True,
-                'outtmpl': os.path.join(self.output_path, file_id + ".m4a"),
+                'outtmpl': os.path.join(self.output_path, new_file_id + ".m4a"),
             }
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
