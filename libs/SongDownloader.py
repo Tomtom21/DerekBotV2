@@ -11,6 +11,8 @@ from concurrent.futures import ProcessPoolExecutor
 from googleapiclient.discovery import build
 import yt_dlp
 
+class YoutubeAPIError(Exception):
+    pass
 
 class URLValidationError(Exception):
     pass
@@ -78,11 +80,19 @@ class SongDownloader:
     For spotify songs, search with regular request and then videos.list get all url info for 1 quota per 50 videos
     For spotify playlists, search with regular request, then videos.list for each song. 25 quota per playlist add sequence (or as many songs as added)
     """
-    def __init__(self, youtube_api_key, output_path=".", max_workers=5):
+    def __init__(self, output_path=".", max_workers=5):
         self.output_path = output_path
         self.executor = ProcessPoolExecutor(max_workers=max_workers)
-        self.youtube_api = build("youtube", "v3", developerKey=youtube_api_key)
         self.BAD_TITLE_WORDS = {"live", "official", "karaoke"}
+
+        # Logging into the youtube api
+        if youtube_api_key := os.getenv("YOUTUBE_API_KEY") is not None:
+            self.youtube_api = build("youtube", "v3", developerKey=youtube_api_key)
+        else:
+            raise YoutubeAPIError("Failed to load/build youtube api")
+
+        # Need to setup the spotify api here
+
 
     @staticmethod
     def get_text_similarity(a, b):
@@ -139,6 +149,10 @@ class SongDownloader:
 
         return video_ids
 
+    def normalize_audio_track(self):
+        """Normalizes the audio track so that it isn't too loud or quiet"""
+        pass
+
     def _route_song_download(self, song_url, callback):
         """Routes a song url to one of the song downloading methods"""
         # if
@@ -159,9 +173,11 @@ class SongDownloader:
                 'noplaylist': True,
                 'outtmpl': os.path.join(self.output_path, new_file_id + ".m4a"),
             }
-
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([youtube_song_url])
+
+            # Using the callback, giving it the filename of the download
+            pass
         except Exception as e:
             logging.warning(e)
             raise DownloadError("Failed to download Youtube video") from e
@@ -176,6 +192,12 @@ class SongDownloader:
 
     def _download_spotify_playlist(self, spotify_playlist_url, callback):
         """Downloads a Spotify playlist provided url, calls callback"""
+        # Ensuring we're authed. We auth each call to
+
+
+        # This needs to accept a list of song requests??
+        # essentially we need the list of songs to be pulled first
+
         pass
 
     def _download_youtube_playlist(self, youtube_playlist_url, callback):
