@@ -72,9 +72,3 @@ class SpotifyAPI:
         playlist_id = spotify_playlist_url.split("/")[-1].split("?")[0]
 
         return self.make_request(f"https://api.spotify.com/v1/playlists/{playlist_id}")
-
-
-
-
-
-
