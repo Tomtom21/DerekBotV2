@@ -10,6 +10,7 @@ import json
 from concurrent.futures import ProcessPoolExecutor
 from googleapiclient.discovery import build
 import yt_dlp
+from libs.SpotifyAPI import SpotifyAPI
 
 
 class YoutubeAPIError(Exception):
@@ -86,15 +87,17 @@ class SongDownloader:
     def __init__(self, output_path=".", max_workers=5):
         self.output_path = output_path
         self.executor = ProcessPoolExecutor(max_workers=max_workers)
+        self.spotify_api = SpotifyAPI()
+
         self.BAD_TITLE_WORDS = {"live", "official", "karaoke"}
 
-        # Logging into the youtube api
+        # Logging into the YouTube api
         if youtube_api_key := os.getenv("YOUTUBE_API_KEY") is not None:
             self.youtube_api = build("youtube", "v3", developerKey=youtube_api_key)
         else:
             raise YoutubeAPIError("Failed to load/build youtube api")
 
-        # Need to setup the spotify api here
+        # Need to set up the spotify api here
 
 
     @staticmethod
