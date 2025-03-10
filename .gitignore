@@ -6,3 +6,4 @@ utils/*.csv
 .DS_Store
 test.ipynb
 *.pyc
+test.py
