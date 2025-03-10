@@ -11,8 +11,10 @@ from concurrent.futures import ProcessPoolExecutor
 from googleapiclient.discovery import build
 import yt_dlp
 
+
 class YoutubeAPIError(Exception):
     pass
+
 
 class URLValidationError(Exception):
     pass
@@ -24,6 +26,7 @@ class URLSanitizationError(Exception):
 
 class SongRouterError(Exception):
     pass
+
 
 class DownloadError(Exception):
     pass
@@ -129,6 +132,9 @@ class SongDownloader:
 
     def _download_song_from_query(self, search_query, callback):
         """Searches and downloads a video that matches the search query"""
+        # search it
+        # process youtube videos for bad results
+        # call download
         pass
 
     def _filter_youtube_results(self, video_list):
@@ -163,6 +169,7 @@ class SongDownloader:
         try:
             # Generating a new filename
             new_file_id = self.get_random_file_id()
+            new_file_path = os.path.join(self.output_path, new_file_id + ".m4a")
 
             # Downloading the song
             ydl_opts = {
@@ -171,19 +178,20 @@ class SongDownloader:
                 'audio-format': 'm4a',
                 'audio-quality': 192,
                 'noplaylist': True,
-                'outtmpl': os.path.join(self.output_path, new_file_id + ".m4a"),
+                'outtmpl': new_file_path,
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([youtube_song_url])
 
             # Using the callback, giving it the filename of the download
-            pass
+            callback(new_file_path)
         except Exception as e:
             logging.warning(e)
             raise DownloadError("Failed to download Youtube video") from e
 
     def _download_spotify_song(self, spotify_song_url, callback):
         """Downloads a Spotify video provided url, calls callback"""
+        # get song info
         pass
 
     def _route_playlist_download(self, playlist_url, callback):
