@@ -5,12 +5,16 @@ import re
 import os
 import random
 import logging
+from typing import List
+
 from bs4 import BeautifulSoup
 import json
 from concurrent.futures import ProcessPoolExecutor
 from googleapiclient.discovery import build
 import yt_dlp
 from libs.SpotifyAPI import SpotifyAPI
+from datetime import datetime, timedelta, timezone
+from isodate import parse_duration
 
 
 class YoutubeAPIError(Exception):
@@ -32,12 +36,22 @@ class SongRouterError(Exception):
 class DownloadError(Exception):
     pass
 
+
+class YouTubeSearchError(Exception):
+    pass
+
+
 class SongRequest:
     def __init__(self, song_url):
         self.url = song_url
         self.title = None
         self.source = None
-        
+
+        # These are for scoring of the request when necessary
+        self.relevance_score = None
+        self.source_publish_date = None
+        self.content_duration = None
+
         self.VALID_DOMAINS = {"youtube.com": "youtube",
                               "youtu.be": "youtube",
                               "open.spotify.com": "spotify"}
@@ -51,6 +65,7 @@ class SongRequest:
 
     def _validate_url(self):
         """Checks to ensure the user provided a real url"""
+
         def normalize_domain(domain):
             domain = domain.lower()
             if domain.startswith("www."):
@@ -84,21 +99,31 @@ class SongDownloader:
     For spotify songs, search with regular request and then videos.list get all url info for 1 quota per 50 videos
     For spotify playlists, search with regular request, then videos.list for each song. 25 quota per playlist add sequence (or as many songs as added)
     """
+
     def __init__(self, output_path=".", max_workers=5):
         self.output_path = output_path
         self.executor = ProcessPoolExecutor(max_workers=max_workers)
         self.spotify_api = SpotifyAPI()
 
-        self.BAD_TITLE_WORDS = {"live", "official", "karaoke"}
+        self.TITLE_SCORE_TWEAKS = {"live": -0.15,
+                                   "concert": -0.1,
+                                   "official": 0.1,
+                                   "karaoke": -0.1,
+                                   "react": -0.15,
+                                   "lyric": 0.35,
+                                   "Behind the scenes": -0.1,
+                                   "Clean": -0.1,
+                                   "vocals only": -0.5,
+                                   "cover": -0.2,
+                                   "#shorts": -0.2}
 
         # Logging into the YouTube api
-        if youtube_api_key := os.getenv("YOUTUBE_API_KEY") is not None:
+        if (youtube_api_key := os.getenv("YOUTUBE_API_KEY")) is not None:
             self.youtube_api = build("youtube", "v3", developerKey=youtube_api_key)
         else:
             raise YoutubeAPIError("Failed to load/build youtube api")
 
         # Need to set up the spotify api here
-
 
     @staticmethod
     def get_text_similarity(a, b):
@@ -135,18 +160,82 @@ class SongDownloader:
 
     def _download_song_from_query(self, search_query, callback):
         """Searches and downloads a video that matches the search query"""
-        # search it
-        # process youtube videos for bad results
-        # call download
-        pass
+        # Searching, checking if we found anything
+        youtube_video_ids = self._get_yt_video_ids_from_query(search_query)
+        if not youtube_video_ids:
+            raise YouTubeSearchError("Failed to find results for the YouTube query.")
+        youtube_video_ids = youtube_video_ids[:50]
 
-    def _filter_youtube_results(self, video_list):
-        """Filters a list of urls/titles to remove non-desirable videos for audio streaming"""
-        return [
-            video
-            for video in video_list
-            if all(word not in video["title"].lower() for word in self.BAD_TITLE_WORDS)
+        # doing YouTube search to get info on video ids
+        youtube_search_results = self.youtube_api.videos().list(
+            part="snippet,contentDetails",
+            id=",".join(youtube_video_ids)
+        ).execute()
+
+        # Generating a series of requests to filter
+        potential_song_requests = [
+            SongRequest(f"https://www.youtube.com/watch?v={video_id}")
+            for video_id in youtube_video_ids
         ]
+
+        # Setting song request info generating an similarity score, avg if possible
+        for (idx, item) in enumerate(youtube_search_results["items"]):
+            potential_song_requests[idx].title = item["snippet"]["title"]
+            potential_song_requests[idx].source_publish_date = item["snippet"]["publishedAt"]
+            potential_song_requests[idx].content_duration = parse_duration(
+                item['contentDetails']['duration']).total_seconds()
+
+            # Determining the relevance score
+            potential_song_requests[idx].relevance_score = self.get_text_similarity(
+                potential_song_requests[idx].title,
+                search_query
+            )
+
+            # If we have a normalized search query, check the query against title in reverse order, then average
+            if " - " in search_query:
+                split_query = search_query.split(" - ")
+                reversed_query = f"{split_query[1]} - {split_query[0]}"
+                reverse_score = self.get_text_similarity(
+                    potential_song_requests[idx].title,
+                    reversed_query
+                )
+                potential_song_requests[idx].relevance_score = (
+                    (potential_song_requests[idx].relevance_score + reverse_score) / 2
+                )
+
+        # Tweaking the relevance scores to better match each video
+        for song_request in potential_song_requests:
+            song_request.relevance_score = self._tweak_relevance_score(song_request)
+
+        # Sorting the list
+        potential_song_requests.sort(key=lambda obj: obj.relevance_score, reverse=True)
+
+        # Downloading the best option from YouTube
+        self._download_youtube_song(potential_song_requests[0], callback)
+
+    def _tweak_relevance_score(self, song_request: SongRequest):
+        """Generates a new relevance score for a song request based on title contents"""
+        score = song_request.relevance_score
+
+        # Checking the title for good or bad keywords
+        for phrase, score_change in self.TITLE_SCORE_TWEAKS.items():
+            if phrase.lower() in song_request.title.lower():
+                score += score_change
+
+        # Penalizing very new songs
+        upload_date = datetime.fromisoformat(
+            song_request.source_publish_date.replace("Z", "+00:00")
+        )
+        if upload_date > (datetime.now(timezone.utc) - timedelta(weeks=5)):
+            score += -0.2
+
+        # Penalizing short videos
+        if song_request.content_duration < 40:
+            score += -0.4
+        elif song_request.content_duration < 80:
+            score += -0.2
+
+        return score
 
     @staticmethod
     def _get_yt_video_ids_from_query(search_query) -> list:
@@ -167,7 +256,7 @@ class SongDownloader:
         # if
         pass
 
-    def _download_youtube_song(self, youtube_song_url, callback):
+    def _download_youtube_song(self, song_request, callback):
         """Downloads a YouTube video provided url, calls callback. This is our separate process"""
         try:
             # Generating a new filename
@@ -194,8 +283,15 @@ class SongDownloader:
 
     def _download_spotify_song(self, spotify_song_url, callback):
         """Downloads a Spotify video provided url, calls callback"""
-        # get song info
-        pass
+        # Getting info about the song
+        song_info = self.spotify_api.get_song_info(spotify_song_url)
+        song_name = song_info['name']
+        song_artists = ", ".join(artist['name'] for artist in song_info['artists'])
+
+        search_string = f"{song_name} - {song_artists}"
+
+        # Searching for the song
+        self._download_song_from_query(search_string, callback)
 
     def _route_playlist_download(self, playlist_url, callback):
         """Routes a playlist url to one of the playlist downloading methods"""
@@ -204,7 +300,6 @@ class SongDownloader:
     def _download_spotify_playlist(self, spotify_playlist_url, callback):
         """Downloads a Spotify playlist provided url, calls callback"""
         # Ensuring we're authed. We auth each call to
-
 
         # This needs to accept a list of song requests??
         # essentially we need the list of songs to be pulled first
