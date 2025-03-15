@@ -273,7 +273,7 @@ class SongDownloader:
                 'outtmpl': new_file_path,
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([youtube_song_url])
+                ydl.download([song_request.url])
 
             # Using the callback, giving it the filename of the download
             callback(new_file_path)
