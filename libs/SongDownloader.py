@@ -15,6 +15,8 @@ import yt_dlp
 from libs.SpotifyAPI import SpotifyAPI
 from datetime import datetime, timedelta, timezone
 from isodate import parse_duration
+from pathlib import Path
+from pydub import AudioSegment
 
 
 class YoutubeAPIError(Exception):
@@ -38,6 +40,10 @@ class DownloadError(Exception):
 
 
 class YouTubeSearchError(Exception):
+    pass
+
+
+class AudioProcessingError(Exception):
     pass
 
 
@@ -247,9 +253,24 @@ class SongDownloader:
 
         return video_ids
 
-    def normalize_audio_track(self):
+    @staticmethod
+    def match_target_amplitude(sound, target_dbfs):
+        change_in_dbfs = target_dbfs - sound.dBFS
+        return sound.apply_gain(change_in_dbfs)
+
+    def normalize_audio_track(self, audio_path):
         """Normalizes the audio track so that it isn't too loud or quiet"""
-        pass
+        try:
+            new_path = Path(audio_path).with_suffix(".wav")
+            sound = AudioSegment.from_file(audio_path)
+            normalized_sound = self.match_target_amplitude(sound, -15.0)
+            normalized_sound.export(new_path, format="wav")
+            os.remove(audio_path)
+            logging.info(f"Deleted {audio_path} after normalization, new filename is {new_path}")
+            return new_path
+        except Exception as e:
+            logging.warning(e)
+            raise AudioProcessingError("Failed to normalize audio") from e
 
     def _route_song_download(self, song_url, callback):
         """Routes a song url to one of the song downloading methods"""
@@ -274,6 +295,10 @@ class SongDownloader:
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([song_request.url])
+
+            # Normalizing the audio
+            if song_request.content_duration <= 900:
+                new_file_path = self.normalize_audio_track(new_file_path)
 
             # Using the callback, giving it the filename of the download
             callback(new_file_path)
