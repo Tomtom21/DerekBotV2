@@ -306,10 +306,10 @@ class SongDownloader:
             logging.warning(e)
             raise DownloadError("Failed to download Youtube video") from e
 
-    def _download_spotify_song(self, spotify_song_url, callback):
+    def _download_spotify_song(self, song_request, callback):
         """Downloads a Spotify video provided url, calls callback"""
         # Getting info about the song
-        song_info = self.spotify_api.get_song_info(spotify_song_url)
+        song_info = self.spotify_api.get_song_info(song_request.url)
         song_name = song_info['name']
         song_artists = ", ".join(artist['name'] for artist in song_info['artists'])
 
