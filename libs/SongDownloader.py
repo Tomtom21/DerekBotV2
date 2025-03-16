@@ -142,7 +142,7 @@ class SongDownloader:
         available_ids = set(range(1, 10000)) - current_file_ids
         return random.choice(tuple(available_ids))
 
-    async def download_song_by_url(self, song_url, callback=None):
+    async def download_song_by_url(self, song_url):
         """"""
         # Prepare new song request
         song_request = SongRequest(song_url)
@@ -152,7 +152,7 @@ class SongDownloader:
         # Call multiprocessing router here
         pass
 
-    async def download_song_by_search(self, search_query, callback=None):
+    async def download_song_by_search(self, search_query):
         """"""
         pass
 
@@ -164,10 +164,10 @@ class SongDownloader:
         # Call multiprocessing router here
         pass
 
-    def _download_song_from_query(self, search_query, callback):
+    async def _download_song_from_query(self, search_query):
         """Searches and downloads a video that matches the search query"""
         # Searching, checking if we found anything
-        youtube_video_ids = self._get_yt_video_ids_from_query(search_query)
+        youtube_video_ids = await self._get_yt_video_ids_from_query(search_query)
         if not youtube_video_ids:
             raise YouTubeSearchError("Failed to find results for the YouTube query.")
         youtube_video_ids = youtube_video_ids[:50]
@@ -217,7 +217,7 @@ class SongDownloader:
         potential_song_requests.sort(key=lambda obj: obj.relevance_score, reverse=True)
 
         # Downloading the best option from YouTube
-        self._download_youtube_song(potential_song_requests[0], callback)
+        return self._download_youtube_song(potential_song_requests[0])
 
     def _tweak_relevance_score(self, song_request: SongRequest):
         """Generates a new relevance score for a song request based on title contents"""
@@ -244,7 +244,7 @@ class SongDownloader:
         return score
 
     @staticmethod
-    def _get_yt_video_ids_from_query(search_query) -> list:
+    async def _get_yt_video_ids_from_query(search_query) -> list:
         """Searches YouTube, returns a list of YouTube video urls and titles"""
         search_input = urllib.parse.urlencode({'search_query': search_query})
         search_url = "https://www.youtube.com/results?" + search_input
@@ -272,13 +272,16 @@ class SongDownloader:
             logging.warning(e)
             raise AudioProcessingError("Failed to normalize audio") from e
 
-    def _route_song_download(self, song_url, callback):
+    async def _route_song_download(self, song_url):
         """Routes a song url to one of the song downloading methods"""
         # if
         pass
 
-    def _download_youtube_song(self, song_request, callback):
-        """Downloads a YouTube video provided url, calls callback. This is our separate process"""
+    def _download_youtube_song(self, song_request):
+        pass
+
+    def _download_youtube_song_process(self, song_request):
+        """Downloads a YouTube video provided url. This is our separate process"""
         try:
             # Generating a new filename
             new_file_id = self.get_random_file_id()
@@ -300,14 +303,13 @@ class SongDownloader:
             if song_request.content_duration <= 900:
                 new_file_path = self.normalize_audio_track(new_file_path)
 
-            # Using the callback, giving it the filename of the download
-            callback(new_file_path)
+            return new_file_path
         except Exception as e:
             logging.warning(e)
             raise DownloadError("Failed to download Youtube video") from e
 
-    def _download_spotify_song(self, song_request, callback):
-        """Downloads a Spotify video provided url, calls callback"""
+    def _download_spotify_song(self, song_request):
+        """Downloads a Spotify video provided url"""
         # Getting info about the song
         song_info = self.spotify_api.get_song_info(song_request.url)
         song_name = song_info['name']
@@ -316,7 +318,7 @@ class SongDownloader:
         search_string = f"{song_name} - {song_artists}"
 
         # Searching for the song
-        self._download_song_from_query(search_string, callback)
+        return self._download_song_from_query(search_string)
 
     def _route_playlist_download(self, playlist_url, callback):
         """Routes a playlist url to one of the playlist downloading methods"""
