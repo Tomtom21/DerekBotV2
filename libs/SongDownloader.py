@@ -17,6 +17,7 @@ from datetime import datetime, timedelta, timezone
 from isodate import parse_duration
 from pathlib import Path
 from pydub import AudioSegment
+import asyncio
 
 
 class YoutubeAPIError(Exception):
@@ -277,8 +278,13 @@ class SongDownloader:
         # if
         pass
 
-    def _download_youtube_song(self, song_request):
-        pass
+    async def _download_youtube_song(self, song_request):
+        """Runs the YouTube video download task in another process"""
+        loop = asyncio.get_event_loop()
+        future = loop.run_in_executor(self.executor, self._download_youtube_song_process, song_request)
+
+        song_file_path = await future
+        return song_file_path
 
     def _download_youtube_song_process(self, song_request):
         """Downloads a YouTube video provided url. This is our separate process"""
