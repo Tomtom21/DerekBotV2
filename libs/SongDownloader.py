@@ -145,17 +145,15 @@ class SongDownloader:
 
     async def download_song_by_url(self, song_url):
         """"""
-        # Prepare new song request
+        # New song request
         song_request = SongRequest(song_url)
 
         # Send to router
-
-        # Call multiprocessing router here
-        pass
+        return await self._route_song_download(song_request)
 
     async def download_song_by_search(self, search_query):
         """"""
-        pass
+        return await self._download_song_from_query(search_query)
 
     async def download_playlist_by_url(self, playlist_url, callback=None):
         """"""
@@ -218,7 +216,7 @@ class SongDownloader:
         potential_song_requests.sort(key=lambda obj: obj.relevance_score, reverse=True)
 
         # Downloading the best option from YouTube
-        return self._download_youtube_song(potential_song_requests[0])
+        return await self._download_youtube_song(potential_song_requests[0])
 
     def _tweak_relevance_score(self, song_request: SongRequest):
         """Generates a new relevance score for a song request based on title contents"""
@@ -273,7 +271,7 @@ class SongDownloader:
             logging.warning(e)
             raise AudioProcessingError("Failed to normalize audio") from e
 
-    async def _route_song_download(self, song_url):
+    async def _route_song_download(self, song_request: SongRequest):
         """Routes a song url to one of the song downloading methods"""
         # if
         pass
