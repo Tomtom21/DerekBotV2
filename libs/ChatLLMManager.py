@@ -31,6 +31,20 @@ class ConversationCache:
 
     def add_message(self, message: Message):
         """Adds a message to the cache using discord.Message, returns the chain id"""
+        # Checking if a message is already cached
+        if message.id in self.message_to_chain:
+            return None
+
+        # Getting the chain, chain-id
+        chain = self.get_message_chain(message)
+        if chain:
+            chain_id = chain[0].chain_id
+        else:
+            chain_id = self._new_chain_id()
+            chain = self.message_chains.setdefault(chain_id, [])
+
+
+
         if message.id not in self.message_chains.keys():
             # Finding the chain that the message would belong in
             chain = self.get_message_chain(message)
@@ -57,7 +71,7 @@ class ConversationCache:
     def get_message_chain(self, child_message: Message) -> [CachedMessage]:
         """Using the child message, get the message chain (if one exists)"""
         if child_message.reference in self.message_to_chain.keys():
-            chain_id = self.message_to_chain[child_message.reference]
+            chain_id = self.message_to_chain[child_message.reference.message_id]
 
             return self.message_chains[chain_id]
         else:
