@@ -35,7 +35,7 @@ class ConversationCache:
         if message.id in self.message_to_chain:
             return None
 
-        # Getting the chain, chain-id
+        # Getting the chain, making a new one if it doesn't exist
         chain = self.get_message_chain(message)
         if chain:
             chain_id = chain[0].chain_id
@@ -43,30 +43,20 @@ class ConversationCache:
             chain_id = self._new_chain_id()
             chain = self.message_chains.setdefault(chain_id, [])
 
+        # Getting the current list of message ids in the chain
+        current_chain_ids = [chain_msg.id for chain_msg in chain]
 
+        # If the parent message is not at the end of the cache, create a new chain id/chain
+        if message.reference.message_id in current_chain_ids[:-1]:
+            chain = chain[:current_chain_ids.index(message.reference.message_id)]
+            chain_id = self._new_chain_id()
+            self.message_chains[chain_id] = chain
 
-        if message.id not in self.message_chains.keys():
-            # Finding the chain that the message would belong in
-            chain = self.get_message_chain(message)
-            chain_id = chain[0].chain_id
-
-            # If a chain exists
-            if chain is not None:
-                # If the index of our parent id isn't the last item
-                if message.reference.message_id in chain[:-1]:
-                    # Saving the new chain info and
-                    chain = chain[:chain.index(message.reference.message_id)]
-                    chain_id = self._new_chain_id()
-                    self.message_chains[chain_id] = chain
-            else:
-                chain_id = self._new_chain_id()
-                self.message_chains[chain_id] = []
-                chain = self.message_chains[chain_id]
-
-            # Creating a new cached message
-            cached_message = CachedMessage(message.id, message.author, message.content, chain_id)
-
-            chain.append(cached_message)
+        # Adding the new item to the chain
+        self.message_chains[chain_id].append(
+            CachedMessage(message.id, message.author.name, message.content, chain_id)
+        )
+        self.message_to_chain[message.id] = chain_id
 
     def get_message_chain(self, child_message: Message) -> [CachedMessage]:
         """Using the child message, get the message chain (if one exists)"""
