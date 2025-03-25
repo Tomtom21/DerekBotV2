@@ -21,7 +21,7 @@ graph TD;
     _download_youtube_playlist["_download_youtube_playlist(playlist_url, callback)"]
     _download_spotify_playlist["_download_spotify_playlist(playlist_url, callback)"]
     
-    _get_yt_video_from_query["_get_yt_video_from_query(search_query)"]
+    _get_yt_video_ids_from_query["_get_yt_video_ids_from_query(search_query)"]
     _download_song_from_query["_download_song_from_query(query)"]
     _tweak_relevance_score["_tweak_relevance_score(song_request)"]
     normalize_audio_track["normalize_audio_track(audio_path)"]
@@ -33,7 +33,7 @@ graph TD;
     _route_playlist_download --> _download_spotify_playlist
     _route_playlist_download --> _download_youtube_playlist
     _download_spotify_playlist --> _download_song_from_query
-    _download_song_from_query --> _get_yt_video_from_query
+    _download_song_from_query --> _get_yt_video_ids_from_query
     _download_song_from_query --> _tweak_relevance_score
     _route_song_download --> _download_spotify_song
     _route_song_download --> _download_youtube_song
