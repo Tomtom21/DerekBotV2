@@ -6,12 +6,16 @@ import logging
 
 
 class CachedMessage:
-    def __init__(self, message_id, author, content, chain_id):
+    def __init__(self, message_id, author, content):
         self.message_id = message_id  # Need this incase we have a middle of cache lookup
         self.author = author
         self.message = content
-        self.chain_id = chain_id
 
+    def __str__(self):
+        return (f"('message_id': {self.message_id}, "
+                f"'author': {self.author}, "
+                f"'message: {self.message}'")
+    
 
 class ConversationCache:
     def __init__(self):
@@ -32,38 +36,45 @@ class ConversationCache:
     def add_message(self, message: Message):
         """Adds a message to the cache using discord.Message, returns the chain id"""
         # Checking if a message is already cached
+        print(message.content)
         if message.id in self.message_to_chain:
+            print("Returning because we already have this message")
             return None
 
         # Getting the chain, making a new one if it doesn't exist
-        chain = self.get_message_chain(message)
-        if chain:
-            chain_id = chain[0].chain_id
+        chain_id = self.get_message_chain(message)
+        if chain_id:
+            chain = self.message_chains[chain_id]
+
+            # Getting the current list of message ids in the chain
+            chain_message_ids = [chain_msg.message_id for chain_msg in chain]
+
+            # If the parent message is not at the end of the cache, create a new chain id/chain
+            if message.reference.message_id in chain_message_ids[:-1]:
+                chain = chain[:chain_message_ids.index(message.reference.message_id) + 1]
+                chain_id = self._new_chain_id()
+                self.message_chains[chain_id] = chain
         else:
+            # Making the new chain
             chain_id = self._new_chain_id()
             chain = self.message_chains.setdefault(chain_id, [])
 
-        # Getting the current list of message ids in the chain
-        current_chain_ids = [chain_msg.id for chain_msg in chain]
-
-        # If the parent message is not at the end of the cache, create a new chain id/chain
-        if message.reference.message_id in current_chain_ids[:-1]:
-            chain = chain[:current_chain_ids.index(message.reference.message_id)]
-            chain_id = self._new_chain_id()
-            self.message_chains[chain_id] = chain
-
         # Adding the new item to the chain
         self.message_chains[chain_id].append(
-            CachedMessage(message.id, message.author.name, message.content, chain_id)
+            CachedMessage(message.id, message.author.name, message.content)
         )
         self.message_to_chain[message.id] = chain_id
 
-    def get_message_chain(self, child_message: Message) -> [CachedMessage]:
-        """Using the child message, get the message chain (if one exists)"""
-        if child_message.reference in self.message_to_chain.keys():
-            chain_id = self.message_to_chain[child_message.reference.message_id]
-
-            return self.message_chains[chain_id]
+    def get_message_chain(self, child_message: Message):
+        """Using the child message, returns the id of the chain, none if one isn't found"""
+        if child_message.reference:
+            # Get the reference from the cache, if not there, then we need to download it from discord
+            if child_message.reference.message_id in self.message_to_chain.keys():
+                chain_id = self.message_to_chain[child_message.reference.message_id]
+                return chain_id
+            else:
+                print("Downloading")
+                pass
         else:
             return None
 
