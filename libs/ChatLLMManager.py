@@ -14,7 +14,7 @@ class CachedMessage:
     def __str__(self):
         return (f"('message_id': {self.message_id}, "
                 f"'author': {self.author}, "
-                f"'message: {self.message}'")
+                f"'message: {self.message}')")
     
 
 class ConversationCache:
@@ -27,22 +27,20 @@ class ConversationCache:
         self.message_chains = {}
         self.message_to_chain = {}
 
-    def _new_chain_id(self):
+    async def _new_chain_id(self):
         """Gets a random chain id that is not already used"""
         current_ids = self.message_chains.keys()
         available_ids = set(range(1, 999999)) - current_ids
         return random.choice(tuple(available_ids))
 
-    def add_message(self, message: Message):
+    async def add_message(self, message: Message):
         """Adds a message to the cache using discord.Message, returns the chain id"""
         # Checking if a message is already cached
-        print(message.content)
         if message.id in self.message_to_chain:
-            print("Returning because we already have this message")
             return None
 
         # Getting the chain, making a new one if it doesn't exist
-        chain_id = self.get_message_chain(message)
+        chain_id = await self._find_message_chain_id(message)
         if chain_id:
             chain = self.message_chains[chain_id]
 
@@ -52,11 +50,11 @@ class ConversationCache:
             # If the parent message is not at the end of the cache, create a new chain id/chain
             if message.reference.message_id in chain_message_ids[:-1]:
                 chain = chain[:chain_message_ids.index(message.reference.message_id) + 1]
-                chain_id = self._new_chain_id()
+                chain_id = await self._new_chain_id()
                 self.message_chains[chain_id] = chain
         else:
             # Making the new chain
-            chain_id = self._new_chain_id()
+            chain_id = await self._new_chain_id()
             chain = self.message_chains.setdefault(chain_id, [])
 
         # Adding the new item to the chain
@@ -65,18 +63,62 @@ class ConversationCache:
         )
         self.message_to_chain[message.id] = chain_id
 
-    def get_message_chain(self, child_message: Message):
-        """Using the child message, returns the id of the chain, none if one isn't found"""
+    async def _find_message_chain_id(self, child_message: Message):
+        """
+        Using the child message, returns the id of the chain, none if one isn't found.
+        For internal use only, more friendly functions should be available for getting chain without list interactions
+        """
         if child_message.reference:
             # Get the reference from the cache, if not there, then we need to download it from discord
             if child_message.reference.message_id in self.message_to_chain.keys():
                 chain_id = self.message_to_chain[child_message.reference.message_id]
                 return chain_id
             else:
-                print("Downloading")
-                pass
+                chain = await self.get_message_history(child_message)
+
+                # Assuming we got some messages from the history, add everything back to the cache
+                if chain:
+                    chain_id = await self._new_chain_id()
+                    for chain_msg in chain:
+                        self.message_to_chain[chain_msg.message_id] = chain_id
+
+                    self.message_chains[chain_id] = chain
+                    return chain_id
+                else:
+                    # Defaulting to none if for whatever reason an empty list is returned
+                    return None
         else:
             return None
+
+    def get_message_chain(self, message: Message):
+        # Getting the chain id if one is available
+        if message.id in self.message_to_chain.keys():
+            chain_id = self.message_to_chain[message.id]
+        else:
+            return []
+
+        # Returning the appropriate message chain
+        return self.message_chains[chain_id]
+
+
+    async def get_message_history(self, message: Message):
+        # Trying to get as much of the chain as we can
+        try:
+            if message and message.reference:
+                logging.info(f"Downloading message history for message: {message.id}")
+                parent_message = await message.channel.fetch_message(message.reference.message_id)
+                chain = await self.get_message_history(parent_message)
+
+                # Continuing after we get all the messages
+                chain.append(
+                    CachedMessage(parent_message.id, parent_message.author.name, parent_message.content)
+                )
+                return chain
+            else:
+                return []  # Base case
+        except Exception as e:
+            logging.error(e)
+            return []  # Returning the base case if we have an issue
 
 
 class ChatLLMManager:
