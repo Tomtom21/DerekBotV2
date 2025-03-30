@@ -23,15 +23,27 @@ class ConversationCache:
         message_chains: stores each chain, with all conversation info
         message_to_chain: stores each individual message and the chain it is found in
         Authors listed as None are the bot and are system messages
+        Bot user id is the id of the bot so we can identify which messages are from the bot
         """
         self.message_chains = {}
         self.message_to_chain = {}
+        self.bot_user_id = None
+
+    def update_bot_user_id(self, user_id):
+        self.bot_user_id = user_id
 
     async def _new_chain_id(self):
         """Gets a random chain id that is not already used"""
         current_ids = self.message_chains.keys()
         available_ids = set(range(1, 999999)) - current_ids
         return random.choice(tuple(available_ids))
+
+    def remove_author_name_if_bot(self, message: Message):
+        """If the message author is the bot, return None, otherwise return the name"""
+        if message.author.id == self.bot_user_id:
+            return None
+        else:
+            return message.author.name
 
     async def add_message(self, message: Message):
         """Adds a message to the cache using discord.Message, returns the chain id"""
@@ -57,9 +69,10 @@ class ConversationCache:
             chain_id = await self._new_chain_id()
             chain = self.message_chains.setdefault(chain_id, [])
 
-        # Adding the new item to the chain
+        # Checking to see if we have a bot message, treating it as such if we do, otherwise just add the name
+        author_name = self.remove_author_name_if_bot(message)
         self.message_chains[chain_id].append(
-            CachedMessage(message.id, message.author.name, message.content)
+            CachedMessage(message.id, author_name, message.content)
         )
         self.message_to_chain[message.id] = chain_id
 
@@ -109,9 +122,10 @@ class ConversationCache:
                 parent_message = await message.channel.fetch_message(message.reference.message_id)
                 chain = await self.get_message_history(parent_message)
 
-                # Continuing after we get all the messages
+                # Continuing after we get all the messages. Checking for bot as author, then appending
+                author_name = self.remove_author_name_if_bot(parent_message)
                 chain.append(
-                    CachedMessage(parent_message.id, parent_message.author.name, parent_message.content)
+                    CachedMessage(parent_message.id, author_name, parent_message.content)
                 )
                 return chain
             else:
