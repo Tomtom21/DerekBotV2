@@ -90,7 +90,7 @@ class ConversationCache:
         else:
             return None
 
-    def get_message_chain(self, message: Message):
+    def get_message_chain(self, message: Message) -> list:
         # Getting the chain id if one is available
         if message.id in self.message_to_chain.keys():
             chain_id = self.message_to_chain[message.id]
