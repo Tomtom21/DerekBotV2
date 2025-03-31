@@ -1,6 +1,7 @@
 import random
 
 from discord import Message
+from libs.discord_utils import get_message_history
 
 import logging
 
@@ -42,12 +43,18 @@ class ConversationCache:
         available_ids = set(range(1, 999999)) - current_ids
         return random.choice(tuple(available_ids))
 
+    def convert_messages_to_cache_chain(self, message_list: [Message]):
+        """Converts a list of discord messages to a list of cache messages"""
+        return [
+            CachedMessage(message_id=msg.id,
+                          author=self.remove_author_name_if_bot(msg),
+                          content=msg.content)
+            for msg in message_list
+        ]
+
     def remove_author_name_if_bot(self, message: Message):
         """If the message author is the bot, return None, otherwise return the name"""
-        if message.author.id == self.bot_user_id:
-            return None
-        else:
-            return message.author.name
+        return None if message.author.id == self.bot_user_id else message.author.name
 
     async def add_message(self, message: Message):
         """Adds a message to the cache using discord.Message, returns the chain id"""
@@ -91,7 +98,8 @@ class ConversationCache:
                 chain_id = self.message_to_chain[child_message.reference.message_id]
                 return chain_id
             else:
-                chain = await self.get_message_history(child_message)
+                message_chain: [Message] = await get_message_history(child_message)
+                chain = self.convert_messages_to_cache_chain(message_chain)
 
                 # Assuming we got some messages from the history, add everything back to the cache
                 if chain:
@@ -108,35 +116,14 @@ class ConversationCache:
             return None
 
     def get_message_chain(self, message: Message) -> list:
-        # Getting the chain id if one is available
+        """Returns a message chain for the given message if one exists"""
+        # Getting the chain id/chain if one is available
         if message.id in self.message_to_chain.keys():
             chain_id = self.message_to_chain[message.id]
+            return self.message_chains[chain_id]
         else:
+            logging.warning(f"Failed to find message with id {message.id} in cache")
             return []
-
-        # Returning the appropriate message chain
-        return self.message_chains[chain_id]
-
-
-    async def get_message_history(self, message: Message):
-        # Trying to get as much of the chain as we can
-        try:
-            if message and message.reference:
-                logging.info(f"Downloading message history for message: {message.id}")
-                parent_message = await message.channel.fetch_message(message.reference.message_id)
-                chain = await self.get_message_history(parent_message)
-
-                # Continuing after we get all the messages. Checking for bot as author, then appending
-                author_name = self.remove_author_name_if_bot(parent_message)
-                chain.append(
-                    CachedMessage(parent_message.id, author_name, parent_message.content)
-                )
-                return chain
-            else:
-                return []  # Base case
-        except Exception as e:
-            logging.error(e)
-            return []  # Returning the base case if we have an issue
 
 
 class ChatLLMManager:
