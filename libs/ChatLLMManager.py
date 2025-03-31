@@ -30,6 +30,10 @@ class ConversationCache:
         self.bot_user_id = None
 
     def update_bot_user_id(self, user_id):
+        """
+        Sets the bot user id for determining who the bot is in the conversation
+        Mostly necessary because the user id isn't available immediate upon discord bot init
+        """
         self.bot_user_id = user_id
 
     async def _new_chain_id(self):
