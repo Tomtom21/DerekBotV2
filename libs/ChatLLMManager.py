@@ -15,7 +15,7 @@ class CachedMessage:
     def __str__(self):
         return (f"('message_id': {self.message_id}, "
                 f"'author': {self.author}, "
-                f"'message: {self.message}')")
+                f"'message': {self.message})")
     
 
 class ConversationCache:
