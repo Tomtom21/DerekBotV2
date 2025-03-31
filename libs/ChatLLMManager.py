@@ -125,31 +125,23 @@ class ConversationCache:
             logging.warning(f"Failed to find message with id {message.id} in cache")
             return []
 
+    def clear_cache(self):
+        self.message_to_chain.clear()
+        self.message_chains.clear()
+
 
 class ChatLLMManager:
-    def __init__(self, system_prompt, get_message_history=None, model_name="gpt-4o-mini"):
+    def __init__(self, system_prompt, model_name="gpt-4o-mini"):
         # Model settings
         self.system_prompt = system_prompt
         self.model_name = model_name
         self.max_tokens = 1000
         self.temperature = 0.04
 
-        # Getting message data later (If none, we don't use process, only process_text())
-        self.get_message_history = get_message_history
-
-        # For queueing message history
-
-    def process(self, message: Message):
-        if self.get_message_history is not None:
-            pass
-        else:
-            logging.error("No get_message_history function defined")
+    def process_with_history(self, message: Message):
+        """Processes a message with cache history, the process_text could be merged into this"""
+        pass
 
     def process_text(self, text):
-        pass
-
-    def clear_message_history_cache(self):
-        pass
-
-    def get_cache_history(self):
+        """Processes only text through the AI model"""
         pass
