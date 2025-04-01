@@ -1,8 +1,9 @@
 import random
+from typing import List
 
 from discord import Message
+import openai
 from libs.discord_utils import get_message_history
-
 import logging
 
 
@@ -16,7 +17,7 @@ class CachedMessage:
         return (f"('message_id': {self.message_id}, "
                 f"'author': {self.author}, "
                 f"'message': {self.message})")
-    
+
 
 class ConversationCache:
     def __init__(self):
@@ -131,15 +132,20 @@ class ConversationCache:
 
 
 class ChatLLMManager:
-    def __init__(self, system_prompt, model_name="gpt-4o-mini"):
+    def __init__(self, api_key: str, system_prompt: str, model_name: str = "gpt-4o-mini",
+                 max_tokens: int = 1000, temperature: float = 0.04):
+        # Updating the api_key, Defining the client
+        self.client = openai.OpenAI(api_key=api_key)
+
         # Model settings
         self.system_prompt = system_prompt
         self.model_name = model_name
-        self.max_tokens = 1000
-        self.temperature = 0.04
+        self.max_tokens = max_tokens
+        self.temperature = temperature
 
-    def process_with_history(self, message: Message):
+    def process_with_history(self, message_chain: List[CachedMessage]):
         """Processes a message with cache history, the process_text could be merged into this"""
+
         pass
 
     def process_text(self, text):
