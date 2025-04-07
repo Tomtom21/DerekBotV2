@@ -14,6 +14,6 @@ graph TD;
     RunGPT --> RequestsFuncCall{Requests Function Call}
     RequestsFuncCall -- Yes --> HandleFuncCall[Handle Func Call]
     RequestsFuncCall -- No --> RespondToUser(Respond To User\nUse most recent attachment)
-    HandleFuncCall --> AnyFunc[Any Function\nFunc -> gpt_message, is_image, real_result]
+    HandleFuncCall --> AnyFunc[Any Function\nFunc -> gpt_message, image]
     AnyFunc --> RunGPT
 ```

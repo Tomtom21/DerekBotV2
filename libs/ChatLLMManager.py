@@ -1,3 +1,4 @@
+import json
 import random
 from typing import List
 
@@ -5,18 +6,21 @@ from discord import Message
 import openai
 from libs.discord_utils import get_message_history
 import logging
+from PIL import Image
 
 
 class CachedMessage:
-    def __init__(self, message_id, author, content):
+    def __init__(self, message_id, author, content, image_url):
         self.message_id = message_id  # Need this incase we have a middle of cache lookup
         self.author = author
         self.message = content
+        self.image_url = image_url
 
     def __str__(self):
         return (f"('message_id': {self.message_id}, "
                 f"'author': {self.author}, "
-                f"'message': {self.message})")
+                f"'message': {self.message}, "
+                f"'image_url': {self.image_url})")
 
 
 class ConversationCache:
@@ -49,13 +53,19 @@ class ConversationCache:
         return [
             CachedMessage(message_id=msg.id,
                           author=self.remove_author_name_if_bot(msg),
-                          content=msg.content)
+                          content=msg.content,
+                          image_url=self.get_image_from_message(msg))
             for msg in message_list
         ]
 
     def remove_author_name_if_bot(self, message: Message):
         """If the message author is the bot, return None, otherwise return the name"""
         return None if message.author.id == self.bot_user_id else message.author.name
+
+    @staticmethod
+    def get_image_from_message(message: Message):
+        """Returns the first image from a message if one exists, otherwise returns None"""
+        return message.attachments[0].url if message.attachments else None
 
     async def add_message(self, message: Message):
         """Adds a message to the cache using discord.Message, returns the chain id"""
@@ -84,7 +94,10 @@ class ConversationCache:
         # Checking to see if we have a bot message, treating it as such if we do, otherwise just add the name
         author_name = self.remove_author_name_if_bot(message)
         self.message_chains[chain_id].append(
-            CachedMessage(message.id, author_name, message.content)
+            CachedMessage(message_id=message.id,
+                          author=author_name,
+                          content=message.content,
+                          image_url=self.get_image_from_message(message))
         )
         self.message_to_chain[message.id] = chain_id
 
@@ -133,7 +146,18 @@ class ConversationCache:
 
 class ChatLLMManager:
     def __init__(self, api_key: str, system_prompt: str, model_name: str = "gpt-4o-mini",
-                 max_tokens: int = 1000, temperature: float = 0.04):
+                 max_tokens: int = 1000, temperature: float = 0.04,
+                 tool_function_references: dict = None, tool_definitions: List[dict] = None,
+                 get_memories=None):
+        """
+
+        :param api_key:
+        :param system_prompt:
+        :param model_name:
+        :param functions:
+        :param max_tokens:
+        :param temperature:
+        """
         # Updating the api_key, Defining the client
         self.client = openai.OpenAI(api_key=api_key)
 
@@ -142,12 +166,93 @@ class ChatLLMManager:
         self.model_name = model_name
         self.max_tokens = max_tokens
         self.temperature = temperature
+        self.tool_function_references = tool_function_references
+        self.tool_definitions = tool_definitions
+        # self.function_handler = function_handler
+        self.get_memories = get_memories
 
-    def process_with_history(self, message_chain: List[CachedMessage]):
+    def generate_gpt_messages_list(self, message_chain: List[CachedMessage]):
+        """
+        Converts cached messages to those ready for GPT consumption. Includes name information to the model.
+        Also includes the system prompt as needed.
+        :param message_chain: The cached messages to convert
+        :return: A list of messages for use by chatgpt
+        """
+        # Adding the system prompt
+        message_list = [{"role": "system", "content": self.system_prompt}]
+
+        # Adding long-term memories for the bot
+        if self.get_memories:
+            memories = self.get_memories()
+
+        for msg in message_chain:
+            content = [{
+                "type": "text",
+                "text": msg.message if msg.author is None else f"{msg.author}: {msg.message}"
+            }]
+
+            if msg.image_url:
+                content.append({
+                    "type": "image_url",
+                    "image_url": {"url": msg.image_url, "detail": "low"},
+                })
+
+            message_list.append({
+                "role": "assistant" if msg.author is None else "user",
+                "content": content
+            })
+
+        return message_list
+
+    async def run_model(self, message_list: []) -> openai.ChatCompletion.Message:
+        """Runs the GPT model, returns the best message choice for later processing"""
+        # Making the requests
+        response = self.client.chat.completions.create(
+            model=self.model_name,
+            messages=message_list,
+            tools=self.tool_definitions
+        )
+        return response.choices[0].message
+
+    async def run_model_with_funcs(self, message_list: []) -> (str, [Image.Image]):
+        """Runs the GPT model with function handling"""
+        message = await self.run_model(message_list)
+
+        # Tracking any images we need to attach
+        image_attachments = []
+
+        # Doing any necessary tool calls
+        if message.tool_calls:
+            for tool in message.tool_calls:
+                args = json.loads(tool.function.arguments)
+                func = self.tool_function_references.get(tool.function.name)
+
+                # If the function exists in the references
+                if func:
+                    gpt_message, image = func(**args)
+
+                    # Adding the message to our message list
+                    message_list.append({
+                        "role": "tool",
+                        "tool_call_id": tool.id,
+                        "content": gpt_message
+                    })
+                else:
+                    logging.error(f"function '{tool.function.name}' not found in tool references")
+
+        # Making the final message call
+        final_message = await self.run_model(message_list)
+        return final_message, image_attachments
+
+    async def process_with_history(self, message_chain: List[CachedMessage]):
         """Processes a message with cache history, the process_text could be merged into this"""
+        message_list = self.generate_gpt_messages_list(message_chain)
+        response, images = await self.run_model_with_funcs(message_list)
 
-        pass
+        return response, images
 
-    def process_text(self, text):
+
+
+    async def process_text(self, text):
         """Processes only text through the AI model"""
         pass
