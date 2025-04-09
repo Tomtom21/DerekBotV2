@@ -62,10 +62,12 @@ class ConversationCache:
         """If the message author is the bot, return None, otherwise return the name"""
         return None if message.author.id == self.bot_user_id else message.author.name
 
-    @staticmethod
-    def get_image_from_message(message: Message):
+    def get_image_from_message(self, message: Message):
         """Returns the first image from a message if one exists, otherwise returns None"""
-        return message.attachments[0].url if message.attachments else None
+        if message.author.id == self.bot_user_id:
+            return None
+        else:
+            return message.attachments[0].url if message.attachments else None
 
     async def add_message(self, message: Message):
         """Adds a message to the cache using discord.Message, returns the chain id"""
@@ -218,18 +220,26 @@ class ChatLLMManager:
         """Runs the GPT model with function handling"""
         message = await self.run_model(message_list)
 
-        # Tracking any images we need to attach
-        image_attachments = []
+
 
         # Doing any necessary tool calls
         if message.tool_calls:
+            # Keep track of the previous tool_call request
+            message_list.append(message.model_dump())
+
+            # Tracking any images we need to attach
+            image_attachments: [Image.Image] = []
+
             for tool in message.tool_calls:
                 args = json.loads(tool.function.arguments)
                 func = self.tool_function_references.get(tool.function.name)
 
                 # If the function exists in the references
                 if func:
-                    gpt_message, image = func(**args)
+                    gpt_message, image = await func(**args)
+
+                    if image:
+                        image_attachments.append(image)
 
                     # Adding the message to our message list
                     message_list.append({
@@ -240,9 +250,11 @@ class ChatLLMManager:
                 else:
                     logging.error(f"function '{tool.function.name}' not found in tool references")
 
-        # Making the final message call
-        final_message = await self.run_model(message_list)
-        return final_message, image_attachments
+            # Making another call after all tools have run
+            post_tool_message = await self.run_model(message_list)
+            return post_tool_message, image_attachments
+        else:
+            return message, []
 
     async def process_with_history(self, message_chain: List[CachedMessage]):
         """Processes a message with cache history, the process_text could be merged into this"""
