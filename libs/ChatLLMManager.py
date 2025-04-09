@@ -148,17 +148,19 @@ class ConversationCache:
 
 class ChatLLMManager:
     def __init__(self, api_key: str, system_prompt: str, model_name: str = "gpt-4o-mini",
-                 max_tokens: int = 1000, temperature: float = 0.04,
+                 max_completion_tokens: int = 1000, temperature: float = 0.04,
                  tool_function_references: dict = None, tool_definitions: List[dict] = None,
                  get_memories=None):
         """
 
-        :param api_key:
-        :param system_prompt:
-        :param model_name:
-        :param functions:
-        :param max_tokens:
-        :param temperature:
+        :param api_key: The api key for authorization
+        :param system_prompt: The system prompt for the model to use
+        :param model_name: The name of the ML model
+        :param max_completion_tokens: The maximum number of tokens a generated output can be
+        :param temperature: The creativity of the model. Higher numbers closer to 1 are more creative
+        :param tool_function_references: Dictionary of tools and how they relate to called functions
+        :param tool_definitions: list of tools that can be called by the ML model
+        :param get_memories: Function to get a string of memories for the model
         """
         # Updating the api_key, Defining the client
         self.client = openai.OpenAI(api_key=api_key)
@@ -166,7 +168,7 @@ class ChatLLMManager:
         # Model settings
         self.system_prompt = system_prompt
         self.model_name = model_name
-        self.max_tokens = max_tokens
+        self.max_completion_tokens = max_completion_tokens
         self.temperature = temperature
         self.tool_function_references = tool_function_references
         self.tool_definitions = tool_definitions
@@ -197,6 +199,7 @@ class ChatLLMManager:
         """
         Converts cached messages to those ready for GPT consumption. Includes name information to the model.
         Also includes the system prompt as needed.
+
         :param message_chain: The cached messages to convert
         :return: A list of messages for use by chatgpt
         """
