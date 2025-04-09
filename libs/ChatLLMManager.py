@@ -173,6 +173,26 @@ class ChatLLMManager:
         # self.function_handler = function_handler
         self.get_memories = get_memories
 
+    def get_system_prompt_and_memories(self) -> List[dict]:
+        """
+        Loads the system prompt and memories into a memory list to be given to a chat completion model
+
+        :return: Memory list to be fed into chat completion model
+        """
+        memory_list = [
+            {"role": "system", "content": self.system_prompt}
+        ]
+
+        # Loading the memories
+        if self.get_memories:
+            memories = self.get_memories()
+            memory_list.append({
+                "role": "system",
+                "content": memories
+            })
+
+        return memory_list
+
     def generate_gpt_messages_list(self, message_chain: List[CachedMessage]):
         """
         Converts cached messages to those ready for GPT consumption. Includes name information to the model.
@@ -180,12 +200,7 @@ class ChatLLMManager:
         :param message_chain: The cached messages to convert
         :return: A list of messages for use by chatgpt
         """
-        # Adding the system prompt
-        message_list = [{"role": "system", "content": self.system_prompt}]
-
-        # Adding long-term memories for the bot
-        if self.get_memories:
-            memories = self.get_memories()
+        message_list = self.get_system_prompt_and_memories()
 
         for msg in message_chain:
             content = [{
@@ -219,8 +234,6 @@ class ChatLLMManager:
     async def run_model_with_funcs(self, message_list: []) -> (str, [Image.Image]):
         """Runs the GPT model with function handling"""
         message = await self.run_model(message_list)
-
-
 
         # Doing any necessary tool calls
         if message.tool_calls:
@@ -262,8 +275,6 @@ class ChatLLMManager:
         response, images = await self.run_model_with_funcs(message_list)
 
         return response, images
-
-
 
     async def process_text(self, text):
         """Processes only text through the AI model"""
