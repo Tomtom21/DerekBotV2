@@ -278,4 +278,12 @@ class ChatLLMManager:
 
     async def process_text(self, text):
         """Processes only text through the AI model"""
-        pass
+        message_list = self.get_system_prompt_and_memories()
+        message_list.append(
+            {
+                "role": "user",
+                "content": text
+             }
+        )
+        response, images = await self.run_model_with_funcs(message_list)
+        return response, images
