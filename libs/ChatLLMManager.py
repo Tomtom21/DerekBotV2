@@ -152,6 +152,7 @@ class ChatLLMManager:
                  tool_function_references: dict = None, tool_definitions: List[dict] = None,
                  get_memories=None):
         """
+        Handles API interactions with GPT, runs tools as needed.
 
         :param api_key: The api key for authorization
         :param system_prompt: The system prompt for the model to use
@@ -225,7 +226,12 @@ class ChatLLMManager:
         return message_list
 
     async def run_model(self, message_list: []) -> openai.ChatCompletion.Message:
-        """Runs the GPT model, returns the best message choice for later processing"""
+        """
+        Runs the GPT model, returns the best message choice for later processing
+
+        :param message_list: List of messages ready for gpt consumption
+        :return: Chat completion message with model response
+        """
         # Making the requests
         response = self.client.chat.completions.create(
             model=self.model_name,
@@ -234,8 +240,13 @@ class ChatLLMManager:
         )
         return response.choices[0].message
 
-    async def run_model_with_funcs(self, message_list: []) -> (str, [Image.Image]):
-        """Runs the GPT model with function handling"""
+    async def run_model_with_funcs(self, message_list: []) -> (openai.ChatCompletion.Message, [Image.Image]):
+        """
+        Runs the GPT model with function/tool handling
+
+        :param message_list: List of messages ready for gpt consumption
+        :return: A tuple of the final chat completion message, a list of images for the bot to attach
+        """
         message = await self.run_model(message_list)
 
         # Doing any necessary tool calls
@@ -273,14 +284,24 @@ class ChatLLMManager:
             return message, []
 
     async def process_with_history(self, message_chain: List[CachedMessage]):
-        """Processes a message with cache history, the process_text could be merged into this"""
+        """
+        Processes a message with cache history, the process_text could be merged into this
+
+        :param message_chain: The full message chain for a string of messages from the message cache
+        :return: Chat completion message with the model's response, a list of images for the bot to attach
+        """
         message_list = self.generate_gpt_messages_list(message_chain)
         response, images = await self.run_model_with_funcs(message_list)
 
         return response, images
 
     async def process_text(self, text):
-        """Processes only text through the AI model"""
+        """
+        Processes only text through the AI model
+
+        :param text: A single string of text to process
+        :return: Chat completion message with the model's response, a list of images for the bot to attach
+        """
         message_list = self.get_system_prompt_and_memories()
         message_list.append(
             {
