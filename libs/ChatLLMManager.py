@@ -11,12 +11,25 @@ from PIL import Image
 
 class CachedMessage:
     def __init__(self, message_id, author, content, image_url):
+        """
+        Object for storing information about a cached message
+
+        :param message_id: The id of the discord message
+        :param author: The discord message author's name
+        :param content: The content of the discord message
+        :param image_url: The url of the image attached to the message
+        """
         self.message_id = message_id  # Need this incase we have a middle of cache lookup
         self.author = author
         self.message = content
         self.image_url = image_url
 
     def __str__(self):
+        """
+        Called when the object is printed to the console
+
+        :return: The new format of the printed message
+        """
         return (f"('message_id': {self.message_id}, "
                 f"'author': {self.author}, "
                 f"'message': {self.message}, "
@@ -26,10 +39,13 @@ class CachedMessage:
 class ConversationCache:
     def __init__(self):
         """
+        Handles the caching of discord messages
+
         message_chains: stores each chain, with all conversation info
         message_to_chain: stores each individual message and the chain it is found in
         Authors listed as None are the bot and are system messages
         Bot user id is the id of the bot so we can identify which messages are from the bot
+
         """
         self.message_chains = {}
         self.message_to_chain = {}
@@ -39,17 +55,28 @@ class ConversationCache:
         """
         Sets the bot user id for determining who the bot is in the conversation
         Mostly necessary because the user id isn't available immediate upon discord bot init
+
+        :param user_id: The user id of the bot
         """
         self.bot_user_id = user_id
 
     async def _new_chain_id(self):
-        """Gets a random chain id that is not already used"""
+        """
+        Gets a random chain id that is not already in use
+
+        :return: Returns a random unused chain id
+        """
         current_ids = self.message_chains.keys()
         available_ids = set(range(1, 999999)) - current_ids
         return random.choice(tuple(available_ids))
 
     def convert_messages_to_cache_chain(self, message_list: [Message]):
-        """Converts a list of discord messages to a list of cache messages"""
+        """
+        Converts a list of discord.Messages to a list of cache messages
+
+        :param message_list: a list of discord.Messages
+        :return: Returns the list of cached message objects
+        """
         return [
             CachedMessage(message_id=msg.id,
                           author=self.remove_author_name_if_bot(msg),
@@ -59,11 +86,21 @@ class ConversationCache:
         ]
 
     def remove_author_name_if_bot(self, message: Message):
-        """If the message author is the bot, return None, otherwise return the name"""
+        """
+        Determines if the author of a message is a bot or not
+
+        :param message: The message to check the author for
+        :return: Returns None if the author is the bot, otherwise returns the name
+        """
         return None if message.author.id == self.bot_user_id else message.author.name
 
     def get_image_from_message(self, message: Message):
-        """Returns the first image from a message if one exists, otherwise returns None"""
+        """
+        Gets the first image from a message if one exists
+
+        :param message: The message to check for images
+        :return: Returns the url of the first image, or None if no image is found
+        """
         if message.author.id == self.bot_user_id:
             return None
         else:
