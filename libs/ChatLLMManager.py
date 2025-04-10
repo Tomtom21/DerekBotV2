@@ -164,16 +164,14 @@ class ConversationCache:
 
 class ChatLLMManager:
     def __init__(self, api_key: str, system_prompt: str, model_name: str = "gpt-4o-mini",
-                 max_completion_tokens: int = 1000, temperature: float = 0.04,
-                 tool_function_references: dict = None, tool_definitions: List[dict] = None,
-                 get_memories=None):
+                 temperature: float = 0.04, tool_function_references: dict = None,
+                 tool_definitions: List[dict] = None, get_memories=None):
         """
         Handles API interactions with GPT, runs tools as needed.
 
         :param api_key: The api key for authorization
         :param system_prompt: The system prompt for the model to use
         :param model_name: The name of the ML model
-        :param max_completion_tokens: The maximum number of tokens a generated output can be
         :param temperature: The creativity of the model. Higher numbers closer to 1 are more creative
         :param tool_function_references: Dictionary of tools and how they relate to called functions
         :param tool_definitions: list of tools that can be called by the ML model
@@ -185,11 +183,9 @@ class ChatLLMManager:
         # Model settings
         self.system_prompt = system_prompt
         self.model_name = model_name
-        self.max_completion_tokens = max_completion_tokens
         self.temperature = temperature
         self.tool_function_references = tool_function_references
         self.tool_definitions = tool_definitions
-        # self.function_handler = function_handler
         self.get_memories = get_memories
 
     def get_system_prompt_and_memories(self) -> List[dict]:
