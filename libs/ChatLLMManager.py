@@ -12,7 +12,7 @@ from PIL import Image
 class CachedMessage:
     def __init__(self, message_id, author, content, image_url):
         """
-        Object for storing information about a cached message
+        Object for storing information about a CachedMessage
 
         :param message_id: The id of the discord message
         :param author: The discord message author's name
@@ -72,10 +72,10 @@ class ConversationCache:
 
     def convert_messages_to_cache_chain(self, message_list: [Message]):
         """
-        Converts a list of discord.Messages to a list of cache messages
+        Converts a list of discord.Messages to a list of CachedMessage
 
         :param message_list: a list of discord.Messages
-        :return: Returns the list of cached message objects
+        :return: Returns the list of CachedMessage objects
         """
         return [
             CachedMessage(message_id=msg.id,
