@@ -70,7 +70,12 @@ class ConversationCache:
             return message.attachments[0].url if message.attachments else None
 
     async def add_message(self, message: Message):
-        """Adds a message to the cache using discord.Message, returns the chain id"""
+        """
+        The user method of adding a message to the cache using discord.Message
+
+        :param message: a discord.Message object to add to the cache
+        :return: The chain id of the chain the message was added to
+        """
         # Checking if a message is already cached
         if message.id in self.message_to_chain:
             return None
@@ -105,8 +110,11 @@ class ConversationCache:
 
     async def _find_message_chain_id(self, child_message: Message):
         """
-        Using the child message, returns the id of the chain, none if one isn't found.
+        Gets the chain id the message is found in
         For internal use only, more friendly functions should be available for getting chain without list interactions
+
+        :param child_message: The child message to find the chain id for
+        :return: id of the chain associated with the message, none if one isn't found
         """
         if child_message.reference:
             # Get the reference from the cache, if not there, then we need to download it from discord
@@ -132,7 +140,12 @@ class ConversationCache:
             return None
 
     def get_message_chain(self, message: Message) -> list:
-        """Returns a message chain for the given message if one exists"""
+        """
+        The user method of getting a message chain for the given message if one exists
+
+        :param message: The message to find a chain for
+        :return: Returns the message chain for that message, otherwise returns an empty list
+        """
         # Getting the chain id/chain if one is available
         if message.id in self.message_to_chain.keys():
             chain_id = self.message_to_chain[message.id]
@@ -142,6 +155,9 @@ class ConversationCache:
             return []
 
     def clear_cache(self):
+        """
+        Removes all items from the cache
+        """
         self.message_to_chain.clear()
         self.message_chains.clear()
 
