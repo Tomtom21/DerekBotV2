@@ -18,4 +18,4 @@ runDerekBot:
 testDerekBot: buildDerekBot runDerekBot
 
 secretScan:
-    gitleaks detect --source=. --verbose
+	gitleaks detect --source=. --verbose
