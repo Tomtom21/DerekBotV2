@@ -14,6 +14,6 @@ def signin_attempt_loop(supabase_client: Client, supabase_username, supabase_pas
             logging.info("Database Login Successful")
             break
         except Exception as e:
-            logging.error(f"Database signin attempt failed. Retrying in {wait_time} seconds")
+            logging.error(f"Database signin attempt failed: {e}. Retrying in {wait_time} seconds")
             attempts += 1
             time.sleep(wait_time)
