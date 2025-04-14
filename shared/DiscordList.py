@@ -7,11 +7,13 @@ class DiscordList:
                  get_items,
                  title="List",
                  have_pages=True,
-                 items_per_page=10):
+                 items_per_page=10,
+                 max_size_buffer=224):
         self.get_items = get_items  # the function to get items
         self.title = title
         self.have_pages = have_pages
         self.items_per_page = items_per_page
+        self.max_size_buffer = max_size_buffer  # For item_fits_discord_limit, the buffer to apply before checking size
 
         # State
         self.current_page = 0
@@ -87,7 +89,7 @@ class DiscordList:
 
     # Checking to make sure we have enough characters to put something
     def item_fits_discord_limit(self, string):
-        if (len(string) + 224) < 2000:
+        if (len(string) + self.max_size_buffer) < 2000:
             return True
         else:
             return False
