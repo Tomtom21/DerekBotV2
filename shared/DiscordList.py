@@ -92,11 +92,6 @@ class DiscordList:
         else:
             return False
 
-    # Using a list of dicts
-    def add_header_text(self, header_items: list):
-        for header in header_items:
-            pass
-
     # Adding metadata with an actively updating header
     def add_metadata(self, metadata_text, metadata_callback):
         self.metadata.append({"text": metadata_text,
