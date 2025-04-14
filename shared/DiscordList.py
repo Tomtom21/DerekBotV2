@@ -16,19 +16,13 @@ class DiscordList:
         self.items_per_page = items_per_page
         self.max_size_buffer = max_size_buffer  # For item_fits_discord_limit, the buffer to apply before checking size
 
-        # State
+        # Pagination state
         self.current_page = 0
 
-        # Keeping track of buttons we're adding
+        # UI info
         self.custom_buttons = []
-
-        # Keeping track of updating table metadata (at top)
         self.metadata: list = []
-
-        # Keeping track of hints
         self.hints = []
-
-        # Other housekeeping things (30 characters)
         self.separator = "**------------------------------**\n"
 
     def get_page(self):
