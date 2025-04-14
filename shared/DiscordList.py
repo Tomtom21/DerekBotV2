@@ -132,7 +132,6 @@ class DiscordList:
         :param label: The text for the button
         :param callback: The function to call when the button is pressed
         :param style: The style of the button
-        :return:
         """
         button = Button(label=label, style=style)
         button.callback = callback
@@ -140,6 +139,11 @@ class DiscordList:
 
     # Gets the max page based on the number of items in the list
     def get_max_page(self):
+        """
+        Returns the maximum number of pages based on the number of items in the list, using max item count per page
+
+        :return: Max number of pages possible for the list
+        """
         item = self.get_items()
         max_page = math.ceil(len(item) / self.items_per_page)
         return max_page - 1
