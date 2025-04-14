@@ -2,6 +2,7 @@ from discord.ui import Button, View
 from discord import ButtonStyle
 import math
 
+
 class DiscordList:
     def __init__(self,
                  get_items,
@@ -91,7 +92,6 @@ class DiscordList:
 
         return final_page
 
-    # Checking to make sure we have enough characters to put something
     def item_fits_discord_limit(self, string):
         """
         Checks if a string is within the discord character limit. Includes a buffer for extra info
@@ -104,7 +104,6 @@ class DiscordList:
         else:
             return False
 
-    # Adding metadata with an actively updating header
     def add_metadata(self, metadata_name, metadata_callback):
         """
         Adds metadata with an actively updating header to the list of metadata items to show
@@ -115,7 +114,6 @@ class DiscordList:
         self.metadata.append({"text": metadata_name,
                               "callback": metadata_callback})
 
-    # Adding a hint to the bottom of the list
     def add_hint(self, text):
         """
         Adds a hint to the bottom of the list
@@ -124,7 +122,6 @@ class DiscordList:
         """
         self.hints.append(text)
 
-    # Add a custom button with a callback to the list
     def add_custom_button(self, label, callback, style=ButtonStyle.secondary):
         """
         Adds a custom button with a callback to the list of items to show in the list
@@ -137,7 +134,6 @@ class DiscordList:
         button.callback = callback
         self.custom_buttons.append(button)
 
-    # Gets the max page based on the number of items in the list
     def get_max_page(self):
         """
         Returns the maximum number of pages based on the number of items in the list, using max item count per page
