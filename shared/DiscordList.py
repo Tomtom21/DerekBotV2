@@ -145,6 +145,11 @@ class DiscordList:
         return max_page - 1
 
     def create_view(self):
+        """
+        Generates the view that contains any buttons the message needs
+
+        :return: A discord.ui view with buttons and their callbacks ready
+        """
         view = View(timeout=None)
 
         # Adding the first and back buttons if needed
