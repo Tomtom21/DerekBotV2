@@ -30,8 +30,12 @@ class DiscordList:
         # Other housekeeping things (30 characters)
         self.separator = "**------------------------------**\n"
 
-    # Uses the current_page value to generate the next page
     def get_page(self):
+        """
+        Generates the next page using the value of current_page
+
+        :return: Returns the text string for the page
+        """
         # Getting updated content for the next page
         items = self.get_items()
         item_count = len(items)
@@ -89,22 +93,47 @@ class DiscordList:
 
     # Checking to make sure we have enough characters to put something
     def item_fits_discord_limit(self, string):
+        """
+        Checks if a string is within the discord character limit. Includes a buffer for extra info
+
+        :param string: The string to check
+        :return: True if the string is within the discord message size limits, false otherwise
+        """
         if (len(string) + self.max_size_buffer) < 2000:
             return True
         else:
             return False
 
     # Adding metadata with an actively updating header
-    def add_metadata(self, metadata_text, metadata_callback):
-        self.metadata.append({"text": metadata_text,
+    def add_metadata(self, metadata_name, metadata_callback):
+        """
+        Adds metadata with an actively updating header to the list of metadata items to show
+
+        :param metadata_name: The name of the metadata item
+        :param metadata_callback: The callback to update the metadata shown in the generated page
+        """
+        self.metadata.append({"text": metadata_name,
                               "callback": metadata_callback})
 
     # Adding a hint to the bottom of the list
     def add_hint(self, text):
+        """
+        Adds a hint to the bottom of the list
+
+        :param text: The hint text to add
+        """
         self.hints.append(text)
 
     # Add a custom button with a callback to the list
     def add_custom_button(self, label, callback, style=ButtonStyle.secondary):
+        """
+        Adds a custom button with a callback to the list of items to show in the list
+
+        :param label: The text for the button
+        :param callback: The function to call when the button is pressed
+        :param style: The style of the button
+        :return:
+        """
         button = Button(label=label, style=style)
         button.callback = callback
         self.custom_buttons.append(button)
