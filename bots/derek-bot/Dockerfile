@@ -7,8 +7,8 @@ COPY ../requirements.txt /bot
 
 RUN pip install -r requirements.txt
 
-COPY derek-bot /bot
+COPY bots/derek-bot /bot
 
-COPY libs /bot/libs
+COPY shared /bot/shared
 
 CMD ["python", "derek_bot.py"]

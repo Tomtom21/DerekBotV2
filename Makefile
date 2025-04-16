@@ -9,7 +9,7 @@ cleanImages:
 
 buildDerekBot:
 	echo "Building derek-bot"
-	docker build -t ${IMAGE_NAME} -f derek-bot/Dockerfile .
+	docker build -t ${IMAGE_NAME} -f bots/derek-bot/Dockerfile .
 
 runDerekBot:
 	echo "Running derek-bot"

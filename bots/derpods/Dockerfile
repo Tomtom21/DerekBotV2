@@ -9,9 +9,9 @@ COPY ../requirements.txt /bot
 
 RUN pip install -r requirements.txt
 
-COPY derpods /bot
+COPY bots/derpods /bot
 
-COPY libs /bot/libs
+COPY shared /bot/shared
 
 RUN mkdir /bot/music_files
 
