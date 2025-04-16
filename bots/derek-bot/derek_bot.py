@@ -2,7 +2,7 @@
 import os
 import logging
 import sys
-from libs.numeric_helpers import get_suffix
+from shared.numeric_helpers import get_suffix
 
 # Discord imports
 import discord
@@ -11,7 +11,7 @@ from discord import app_commands
 
 # DB imports
 from supabase import create_client, Client
-from libs.supabase_utils import signin_attempt_loop
+from shared.supabase_utils import signin_attempt_loop
 
 # Setting up logging
 logger = logging.getLogger('discord')

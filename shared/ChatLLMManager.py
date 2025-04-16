@@ -4,7 +4,7 @@ from typing import List
 
 from discord import Message
 import openai
-from libs.discord_utils import get_message_history
+from shared.discord_utils import get_message_history
 import logging
 from PIL import Image
 
