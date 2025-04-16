@@ -13,6 +13,7 @@ from concurrent.futures import ProcessPoolExecutor
 from googleapiclient.discovery import build
 import yt_dlp
 from shared.SpotifyAPI import SpotifyAPI
+from shared.file_utils import get_random_file_id
 from datetime import datetime, timedelta, timezone
 from isodate import parse_duration
 from pathlib import Path
@@ -136,12 +137,6 @@ class SongDownloader:
     def get_text_similarity(a, b):
         """Determines the percentage similarity between two strings"""
         return SequenceMatcher(None, a, b).ratio()
-
-    def get_random_file_id(self):
-        """Gets a file id based on the files already in the directory"""
-        current_file_ids = {int(filename.split(".")[0]) for filename in os.listdir(self.output_path)}
-        available_ids = set(range(1, 10000)) - current_file_ids
-        return random.choice(tuple(available_ids))
 
     async def download_song_by_url(self, song_url):
         """"""
@@ -288,7 +283,7 @@ class SongDownloader:
         """Downloads a YouTube video provided url. This is our separate process"""
         try:
             # Generating a new filename
-            new_file_id = self.get_random_file_id()
+            new_file_id = get_random_file_id(self.output_path)
             new_file_path = os.path.join(self.output_path, new_file_id + ".m4a")
 
             # Downloading the song
