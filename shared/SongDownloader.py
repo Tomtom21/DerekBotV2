@@ -12,7 +12,7 @@ import json
 from concurrent.futures import ProcessPoolExecutor
 from googleapiclient.discovery import build
 import yt_dlp
-from libs.SpotifyAPI import SpotifyAPI
+from shared.SpotifyAPI import SpotifyAPI
 from datetime import datetime, timedelta, timezone
 from isodate import parse_duration
 from pathlib import Path
