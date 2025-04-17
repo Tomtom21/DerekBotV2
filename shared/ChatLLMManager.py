@@ -7,7 +7,8 @@ import openai
 from shared.discord_utils import get_message_history
 import logging
 from PIL import Image
-
+from datetime import datetime
+import pytz
 
 class CachedMessage:
     def __init__(self, message_id, author, content, image_url):
@@ -249,12 +250,27 @@ class ChatLLMManager:
                 "content": f"Memories:\n{memories}"
             })
 
+        # Loading the metadata dates
+        date = datetime.now(pytz.timezone('US/Eastern'))
+        date_str = date.strftime("%m-%d-%Y")
+        time_str = date.strftime("%I:%M %p")
+
+        # Building the basic lines for metadata
+        metadata_lines = [
+            f"Metadata:",
+            f"Date - {date_str} (M-D-YYYY)",
+            f"Time - {time_str} EST"
+        ]
+
+        # Adding extra metadata based if our function is defined
         if self.get_metadata:
-            metadata = self.get_metadata()
-            system_prompts.append({
-                "role": "system",
-                "content": f"Metadata:\n{metadata}"
-            })
+            metadata_lines.append(self.get_metadata())
+
+        # Adding the metadata to our system_prompts
+        system_prompts.append({
+            "role": "system",
+            "content": "\n".join(metadata_lines)
+        })
 
         return system_prompts
 
