@@ -30,10 +30,7 @@ class TTSManager:
         )
 
         # Setting the first option as our default voice config
-        self.voice_config = texttospeech.VoiceSelectionParams(
-            language_code=voice_info['english-US']['language_code'],
-            name=voice_info['english-US']['voice_name']
-        )
+        self.set_voice(None)
 
     def set_voice(self, language):
         """
