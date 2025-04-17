@@ -204,7 +204,8 @@ class ConversationCache:
 class ChatLLMManager:
     def __init__(self, api_key: str, system_prompt: str, model_name: str = "gpt-4o-mini",
                  temperature: float = 0.04, tool_function_references: dict = None,
-                 tool_definitions: List[dict] = None, get_memories=None, image_persistence_length=10):
+                 tool_definitions: List[dict] = None, get_memories=None, get_metadata=None,
+                 image_persistence_length=10):
         """
         Handles API interactions with GPT, runs tools as needed.
 
@@ -227,27 +228,35 @@ class ChatLLMManager:
         self.tool_function_references = tool_function_references
         self.tool_definitions = tool_definitions
         self.get_memories = get_memories
+        self.get_metadata = get_metadata
         self.image_persistence_length = image_persistence_length
 
-    def get_system_prompt_and_memories(self) -> List[dict]:
+    def get_system_prompts(self) -> List[dict]:
         """
         Loads the system prompt and memories into a memory list to be given to a chat completion model
 
         :return: Memory list to be fed into chat completion model
         """
-        memory_list = [
+        system_prompts = [
             {"role": "system", "content": self.system_prompt}
         ]
 
         # Loading the memories
         if self.get_memories:
             memories = self.get_memories()
-            memory_list.append({
+            system_prompts.append({
                 "role": "system",
-                "content": memories
+                "content": f"Memories:\n{memories}"
             })
 
-        return memory_list
+        if self.get_metadata:
+            metadata = self.get_metadata()
+            system_prompts.append({
+                "role": "system",
+                "content": f"Metadata:\n{metadata}"
+            })
+
+        return system_prompts
 
     def generate_gpt_messages_list(self, message_chain: List[CachedMessage]):
         """
@@ -257,7 +266,7 @@ class ChatLLMManager:
         :param message_chain: The cached messages to convert
         :return: A list of messages for use by chatgpt
         """
-        message_list = self.get_system_prompt_and_memories()
+        message_list = self.get_system_prompts()
         message_chain_length = len(message_chain)
 
         for idx, msg in enumerate(message_chain):
@@ -356,7 +365,7 @@ class ChatLLMManager:
         :param text: A single string of text to process
         :return: Chat completion message with the model's response, a list of images for the bot to attach
         """
-        message_list = self.get_system_prompt_and_memories()
+        message_list = self.get_system_prompts()
         message_list.append(
             {
                 "role": "user",
