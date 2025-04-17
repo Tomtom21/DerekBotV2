@@ -137,6 +137,8 @@ class ConversationCache:
 
         # Checking to see if we have a bot message, treating it as such if we do, otherwise just add the name
         author_name = self.remove_author_name_if_bot(message)
+
+        # Adding the message to the cache
         self.message_chains[chain_id].append(
             CachedMessage(message_id=message.id,
                           author=author_name,
