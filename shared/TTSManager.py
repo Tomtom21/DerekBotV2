@@ -51,7 +51,7 @@ class TTSManager:
             name=voice['voice_name']
         )
 
-    def process(self, text) -> str:
+    def process(self, text):
         """
         Synthesize speech based on the input text. Saves the file in the output path location with a random file id
 
