@@ -137,6 +137,8 @@ class ConversationCache:
 
         # Checking to see if we have a bot message, treating it as such if we do, otherwise just add the name
         author_name = self.remove_author_name_if_bot(message)
+
+        # Adding the message to the cache
         self.message_chains[chain_id].append(
             CachedMessage(message_id=message.id,
                           author=author_name,
@@ -202,7 +204,7 @@ class ConversationCache:
 class ChatLLMManager:
     def __init__(self, api_key: str, system_prompt: str, model_name: str = "gpt-4o-mini",
                  temperature: float = 0.04, tool_function_references: dict = None,
-                 tool_definitions: List[dict] = None, get_memories=None):
+                 tool_definitions: List[dict] = None, get_memories=None, image_persistence_length=10):
         """
         Handles API interactions with GPT, runs tools as needed.
 
@@ -213,6 +215,7 @@ class ChatLLMManager:
         :param tool_function_references: Dictionary of tools and how they relate to called functions
         :param tool_definitions: list of tools that can be called by the ML model
         :param get_memories: Function to get a string of memories for the model
+        :param image_persistence_length: The number of messages before images are no longer sent to the model
         """
         # Updating the api_key, Defining the client
         self.client = openai.OpenAI(api_key=api_key)
@@ -224,6 +227,7 @@ class ChatLLMManager:
         self.tool_function_references = tool_function_references
         self.tool_definitions = tool_definitions
         self.get_memories = get_memories
+        self.image_persistence_length = image_persistence_length
 
     def get_system_prompt_and_memories(self) -> List[dict]:
         """
@@ -254,14 +258,15 @@ class ChatLLMManager:
         :return: A list of messages for use by chatgpt
         """
         message_list = self.get_system_prompt_and_memories()
+        message_chain_length = len(message_chain)
 
-        for msg in message_chain:
+        for idx, msg in enumerate(message_chain):
             content = [{
                 "type": "text",
                 "text": msg.message if msg.author is None else f"{msg.author}: {msg.message}"
             }]
 
-            if msg.image_url:
+            if msg.image_url and (idx > (message_chain_length - self.image_persistence_length - 1)):
                 content.append({
                     "type": "image_url",
                     "image_url": {"url": msg.image_url, "detail": "low"},
