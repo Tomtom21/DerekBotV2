@@ -16,7 +16,9 @@ class SpotifyAPI:
         self.AUTH_URL = 'https://accounts.spotify.com/api/token'
 
     def refresh_access_token(self):
-        """Refreshes the access token"""
+        """
+        Refreshes the access token
+        """
         if "SPOTIFY_CLIENT_ID" in os.environ and "SPOTIFY_CLIENT_SECRET" in os.environ:
             data = {
                 'grant_type': 'client_credentials',
@@ -34,13 +36,22 @@ class SpotifyAPI:
             raise Exception("Spotify credentials not set")
 
     def get_access_token(self):
-        """Gets the access token if still valid, if not it is refreshed"""
+        """
+        Gets the access token if still valid, if not it is refreshed
+
+        :return: The valid access token
+        """
         if not self.access_token or time.time() >= self.token_expiration:
             self.refresh_access_token()
         return self.access_token
 
     def make_request(self, endpoint_url):
-        """Makes the request to the Spotify API"""
+        """
+        Makes a request to the Spotify API
+
+        :param endpoint_url: The endpoint url for the API
+        :return: The JSON response from the API
+        """
         for _ in range(self.retry_count):
             access_token = self.get_access_token()
             headers = {
@@ -60,14 +71,24 @@ class SpotifyAPI:
         raise SpotifyAPIError("Spotify API failed after retrying.")
 
     def get_song_info(self, spotify_song_url: str):
-        """Gets spotify song details"""
+        """
+        Gets Spotify song details
+
+        :param spotify_song_url: A Spotify song url
+        :return: The Spotify song details, in JSON format
+        """
         # Getting the spotify song id
         song_id = spotify_song_url.split("/")[-1].split("?")[0]
 
         return self.make_request(f"https://api.spotify.com/v1/tracks/{song_id}")
 
     def get_playlist_info(self, spotify_playlist_url: str):
-        """Gets spotify playlist details"""
+        """
+        Gets Spotify playlist details
+
+        :param spotify_playlist_url: A Spotify playlist url
+        :return: The Spotify song details, in JSON format
+        """
         # Getting the spotify playlist id
         playlist_id = spotify_playlist_url.split("/")[-1].split("?")[0]
 
