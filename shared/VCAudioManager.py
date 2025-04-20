@@ -137,7 +137,7 @@ class VCAudioManager:
 
     def disconnect_from_vc(self):
         """
-        User-callable function to ask to bot to disconnect from the current voice channel
+        User-callable function to ask the bot to disconnect from the current voice channel
 
         :return: True if the bot is in a voice channel and the bot has been disconnected, False otherwise
         """
