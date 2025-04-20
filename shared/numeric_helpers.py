@@ -1,4 +1,3 @@
-# Calculates the suffix for a provided numeric value
 def get_suffix(n):
     """
     Gets the numeric suffix for any integer
