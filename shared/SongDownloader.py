@@ -72,8 +72,11 @@ class SongRequest:
         self._sanitize_url()
 
     def _validate_url(self):
-        """Checks to ensure the user provided a real url"""
+        """
+        Checks to ensure that the user-provided URL is real and valid
 
+        :raise URLValidationError: If the URL is not valid
+        """
         def normalize_domain(domain):
             domain = domain.lower()
             if domain.startswith("www."):
@@ -95,6 +98,11 @@ class SongRequest:
         self.source = self.VALID_DOMAINS[normalized_domain]
 
     def _sanitize_url(self):
+        """
+        Sanitizes the URL
+
+        :raise URLValidationError: If the URL is too long
+        """
         if len(self.url) > self.SANITIZATION_MAX_LENGTH:
             raise URLValidationError("The URl seems to be too long")
 
@@ -135,11 +143,22 @@ class SongDownloader:
 
     @staticmethod
     def get_text_similarity(a, b):
-        """Determines the percentage similarity between two strings"""
+        """
+        Determines the percentage similarity between two strings
+
+        :param a: The first string
+        :param b: The second string
+        :return: The percentage similarity of the two strings
+        """
         return SequenceMatcher(None, a, b).ratio()
 
     async def download_song_by_url(self, song_url):
-        """"""
+        """
+        User-callable function to download a song using a URL
+
+        :param song_url: The song url
+        :return: The file path to the downloaded song
+        """
         # New song request
         song_request = SongRequest(song_url)
 
@@ -147,19 +166,34 @@ class SongDownloader:
         return await self._route_song_download(song_request)
 
     async def download_song_by_search(self, search_query):
-        """"""
+        """
+        User-callable function to download a song using a URL
+
+        :param search_query: The search query
+        :return: The file path to the downloaded song
+        """
         return await self._download_song_from_query(search_query)
 
     async def download_playlist_by_url(self, playlist_url, callback=None):
-        """"""
+        """
+        User-callable function to download a playlist using a URL
 
+        :param playlist_url: The playlist url
+        :param callback: The callback function to call when each song is downloaded successfully
+        :return:
+        """
         # This might have to be where we pass the list to this function after we
         # do an initial playlist download of info
         # Call multiprocessing router here
         pass
 
     async def _download_song_from_query(self, search_query):
-        """Searches and downloads a video that matches the search query"""
+        """
+        Searches and downloads a video that matches the search query
+
+        :param search_query: The search query
+        :return: The file path to the downloaded song
+        """
         # Searching, checking if we found anything
         youtube_video_ids = await self._get_yt_video_ids_from_query(search_query)
         if not youtube_video_ids:
@@ -214,7 +248,12 @@ class SongDownloader:
         return await self._download_youtube_song(potential_song_requests[0])
 
     def _tweak_relevance_score(self, song_request: SongRequest):
-        """Generates a new relevance score for a song request based on title contents"""
+        """
+        Generates a new relevance score for song request base on title contents
+
+        :param song_request: The song request whos relevance score we want to tweak
+        :return: The new relevance score
+        """
         score = song_request.relevance_score
 
         # Checking the title for good or bad keywords
@@ -239,7 +278,12 @@ class SongDownloader:
 
     @staticmethod
     async def _get_yt_video_ids_from_query(search_query) -> list:
-        """Searches YouTube, returns a list of YouTube video urls and titles"""
+        """
+        Searches YouTube for videos and provides their urls
+
+        :param search_query: The search query for YouTube
+        :return: A list of YouTube video ids
+        """
         search_input = urllib.parse.urlencode({'search_query': search_query})
         search_url = "https://www.youtube.com/results?" + search_input
         response = urllib.request.urlopen(search_url)
@@ -249,11 +293,23 @@ class SongDownloader:
 
     @staticmethod
     def match_target_amplitude(sound, target_dbfs):
+        """
+        Change's a sound's dbfs to match the target_dbfs value
+
+        :param sound: The sound to apply to this to
+        :param target_dbfs: The target dbfs value
+        :return: The new sound with the gain applied
+        """
         change_in_dbfs = target_dbfs - sound.dBFS
         return sound.apply_gain(change_in_dbfs)
 
     def normalize_audio_track(self, audio_path):
-        """Normalizes the audio track so that it isn't too loud or quiet"""
+        """
+        Normalizes the audio track so that it isn't too loud or quiet
+
+        :param audio_path: The audio path to normalize
+        :return: The new path of the normalized audio file
+        """
         try:
             new_path = Path(audio_path).with_suffix(".wav")
             sound = AudioSegment.from_file(audio_path)
@@ -267,12 +323,22 @@ class SongDownloader:
             raise AudioProcessingError("Failed to normalize audio") from e
 
     async def _route_song_download(self, song_request: SongRequest):
-        """Routes a song url to one of the song downloading methods"""
+        """
+        Route a song url to one of the song downloading methods
+
+        :param song_request: The song request to route
+        :return: The file path to the downloaded song
+        """
         # if
         pass
 
     async def _download_youtube_song(self, song_request):
-        """Runs the YouTube video download task in another process"""
+        """
+        Runs the YouTube video download task in another process
+
+        :param song_request: The song request to process
+        :return: The file path to the downloaded song
+        """
         loop = asyncio.get_event_loop()
         future = loop.run_in_executor(self.executor, self._download_youtube_song_process, song_request)
 
@@ -280,7 +346,12 @@ class SongDownloader:
         return song_file_path
 
     def _download_youtube_song_process(self, song_request):
-        """Downloads a YouTube video provided url. This is our separate process"""
+        """
+        Downloads a Youtube video provided url. This is our separate process
+
+        :param song_request: The song request to process
+        :return: The file path to the downloaded song
+        """
         try:
             # Generating a new filename
             new_file_id = get_random_file_id(self.output_path)
