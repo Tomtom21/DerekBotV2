@@ -347,7 +347,7 @@ class SongDownloader:
 
     def _download_youtube_song_process(self, song_request):
         """
-        Downloads a Youtube video provided url. This is our separate process
+        Downloads a YouTube video provided url. This is our separate process
 
         :param song_request: The song request to process
         :return: The file path to the downloaded song
@@ -379,7 +379,12 @@ class SongDownloader:
             raise DownloadError("Failed to download Youtube video") from e
 
     def _download_spotify_song(self, song_request):
-        """Downloads a Spotify video provided url"""
+        """
+        Downloads a Spotify song
+
+        :param song_request: The song request to process
+        :return: The file path to the downloaded song
+        """
         # Getting info about the song
         song_info = self.spotify_api.get_song_info(song_request.url)
         song_name = song_info['name']
@@ -391,11 +396,23 @@ class SongDownloader:
         return self._download_song_from_query(search_string)
 
     def _route_playlist_download(self, playlist_url, callback):
-        """Routes a playlist url to one of the playlist downloading methods"""
+        """
+        Routes a playlist url to one of the playlist downloading methods, calls callback for each download
+
+        :param playlist_url: The playlist url
+        :param callback: The callback function to call when each song is downloaded successfully
+        :return:
+        """
         pass
 
     def _download_spotify_playlist(self, spotify_playlist_url, callback):
-        """Downloads a Spotify playlist provided url, calls callback"""
+        """
+        Downloads a Spotify playlist, calls callback
+
+        :param spotify_playlist_url: The Spotify playlist url
+        :param callback: The callback function to call when each song is downloaded successfully
+        :return:
+        """
         # Ensuring we're authed. We auth each call to
 
         # This needs to accept a list of song requests??
@@ -404,7 +421,13 @@ class SongDownloader:
         pass
 
     def _download_youtube_playlist(self, youtube_playlist_url, callback):
-        """Downloads a YouTube playlist provided url, calls callback"""
+        """
+        Downloads a YouTube playlist, calls callback
+
+        :param youtube_playlist_url: The YouTube playlist url
+        :param callback: The callback function to call when the song is downloaded
+        :return:
+        """
         pass
 
 
