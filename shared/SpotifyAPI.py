@@ -9,10 +9,10 @@ class SpotifyAPIError(Exception):
 
 
 class SpotifyAPI:
-    def __init__(self):
+    def __init__(self, retry_count=2):
         self.access_token = None
         self.token_expiration = 0
-
+        self.retry_count = retry_count
         self.AUTH_URL = 'https://accounts.spotify.com/api/token'
 
     def refresh_access_token(self):
@@ -52,7 +52,7 @@ class SpotifyAPI:
         :param endpoint_url: The endpoint url for the API
         :return: The JSON response from the API
         """
-        for _ in range(2):
+        for _ in range(self.retry_count):
             access_token = self.get_access_token()
             headers = {
                 "Authorization": f"Bearer {access_token}"
