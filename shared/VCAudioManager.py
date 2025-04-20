@@ -22,6 +22,11 @@ class AudioQueueItem:
         self.added_by = added_by
 
     def __repr__(self):
+        """
+        Changes the output representation when the object is printed to console
+
+        :return: The new output representation string
+        """
         return (
             f"AudioQueueItem(audio_file_path={self.audio_file_path}, "
             f"high_priority={self.high_priority}, "
@@ -52,11 +57,20 @@ class VCAudioManager:
         self._thread.start()
 
     def _setup_asyncio_thread(self):
+        """
+        Sets up a new event loop
+        """
         asyncio.set_event_loop(self._loop)
         self._loop.run_forever()
 
     def add_to_queue(self, audio_file_path, voice_channel, high_priority=True):
-        """"""
+        """
+        Adds an audio to the queue, positions it in the list based on priority
+
+        :param audio_file_path: The path to the audio
+        :param voice_channel: The voice channel to play the audio in
+        :param high_priority: Whether the audio is high priority
+        """
         new_item = AudioQueueItem(audio_file_path, voice_channel, high_priority)
 
         # Finding the first low-priority item, other defaulting to appending
@@ -78,7 +92,9 @@ class VCAudioManager:
             self.idle_task.cancel()
 
     async def _playback_loop(self):
-        """"""
+        """
+        The loop used to join the voice channel and play audio from
+        """
         while self.queue:
             async with self.lock:
                 self.current_audio_item = self.queue[0]
@@ -108,6 +124,9 @@ class VCAudioManager:
         self.idle_task = asyncio.create_task(self._idle_timer())
 
     async def _idle_timer(self):
+        """
+        Waiting for the leave_timeout_length, then leaving the current voice channel
+        """
         try:
             await asyncio.sleep(self.leave_timeout_length)
 
@@ -117,6 +136,11 @@ class VCAudioManager:
             pass
 
     def disconnect_from_vc(self):
+        """
+        User-callable function to ask to bot to disconnect from the current voice channel
+
+        :return: True if the bot is in a voice channel, False otherwise
+        """
         if self._current_voice_channel:
             # Calling the async disconnect
             asyncio.run_coroutine_threadsafe(self._disconnect(), self._loop)
@@ -125,6 +149,9 @@ class VCAudioManager:
             return False
 
     async def _disconnect(self):
+        """
+        Async disconnect function that disconnects the bot from the current voice channel
+        """
         if self._current_voice_channel:
             await self._current_voice_channel.disconnect()
             self._current_voice_channel = None
