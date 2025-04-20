@@ -139,7 +139,7 @@ class VCAudioManager:
         """
         User-callable function to ask to bot to disconnect from the current voice channel
 
-        :return: True if the bot is in a voice channel, False otherwise
+        :return: True if the bot is in a voice channel and the bot has been disconnected, False otherwise
         """
         if self._current_voice_channel:
             # Calling the async disconnect
