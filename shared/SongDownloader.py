@@ -109,51 +109,11 @@ class SongRequest:
         self.source_publish_date = None
         self.content_duration = None
 
-        self.VALID_DOMAINS = {"youtube.com": "youtube",
-                              "youtu.be": "youtube",
-                              "open.spotify.com": "spotify"}
-        self.SANITIZATION_MAX_LENGTH = 120
-
         # Verifying the link, updating the source
-        self._validate_url()
+        self.source = LinkValidator.validate_url(song_url)
 
         # Sanitizing the link
-        self._sanitize_url()
-
-    def _validate_url(self):
-        """
-        Checks to ensure that the user-provided URL is real and valid
-
-        :raise URLValidationError: If the URL is not valid
-        """
-        def normalize_domain(domain):
-            domain = domain.lower()
-            if domain.startswith("www."):
-                return domain[4:]
-            return domain
-
-        parsed = urllib.parse.urlparse(self.url)
-
-        # Checking if we have a https link. No http here
-        if parsed.scheme not in {"https"}:
-            raise URLValidationError("The provided URL does not use HTTPS")
-
-        # Normalizing and checking the url domains
-        normalized_domain = normalize_domain(parsed.netloc)
-        if normalized_domain not in self.VALID_DOMAINS.keys():
-            raise URLValidationError("The URL domain is not valid")
-
-        # It seems we have a valid domain, mark it
-        self.source = self.VALID_DOMAINS[normalized_domain]
-
-    def _sanitize_url(self):
-        """
-        Sanitizes the URL
-
-        :raise URLValidationError: If the URL is too long
-        """
-        if len(self.url) > self.SANITIZATION_MAX_LENGTH:
-            raise URLValidationError("The URl seems to be too long")
+        LinkValidator.sanitize_url(song_url)
 
 
 class SongDownloader:
