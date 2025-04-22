@@ -49,6 +49,55 @@ class AudioProcessingError(Exception):
     pass
 
 
+class LinkValidator:
+    VALID_DOMAINS = {
+        "youtube.com": "youtube",
+        "youtu.be": "youtube",
+        "open.spotify.com": "spotify"
+    }
+    SANITIZATION_MAX_LENGTH = 120
+
+    @staticmethod
+    def normalize_domain(domain):
+        domain = domain.lower()
+        if domain.startswith("www."):
+            return domain[4:]
+        return domain
+
+    @classmethod
+    def validate_url(cls, url: str):
+        """
+        Checks to ensure that the user-provided URL is real and valid
+
+        :raise URLValidationError: If the URL is not valid
+
+        :return: The source for the URL
+        """
+        parsed = urllib.parse.urlparse(url)
+
+        # Checking if we have a https link. No http here
+        if parsed.scheme not in {"https"}:
+            raise URLValidationError("The provided URL does not use HTTPS")
+
+        # Normalizing and checking the url domains
+        normalized_domain = cls.normalize_domain(parsed.netloc)
+        if normalized_domain not in cls.VALID_DOMAINS.keys():
+            raise URLValidationError("The URL domain is not valid")
+
+        # It seems we have a valid domain, mark it
+        return cls.VALID_DOMAINS[normalized_domain]
+
+    @classmethod
+    def sanitize_url(cls, url: str):
+        """
+        Sanitizes the URL
+
+        :raise URLValidationError: If the URL is too long
+        """
+        if len(url) > cls.SANITIZATION_MAX_LENGTH:
+            raise URLValidationError("The URl seems to be too long")
+
+
 class SongRequest:
     def __init__(self, song_url):
         self.url = song_url
