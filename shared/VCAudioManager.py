@@ -1,9 +1,11 @@
 import asyncio
 import logging
+import random
 import threading
 from enum import Enum
 from typing import List, Optional
 import discord
+from TTSManager import TTSManager
 
 
 class AudioState(Enum):
@@ -37,16 +39,30 @@ class AudioQueueItem:
 
 
 class VCAudioManager:
-    """
-    The audio manager that maintains the queue, plays audio in the vc
-     - This uses threading and asyncio to handle audio playback. Multiprocessing would be overkill
-    """
-    def __init__(self, leave_timeout_length=300):
+    def __init__(self,
+                 tts_manager: TTSManager,
+                 bot_leave_messages: List = None,
+                 disconnect_func=None,
+                 leave_timeout_length=300):
+        """
+        Audio manager that maintains the queue, plays audio in the vc
+        Threading and async are used to handle audio playback. Multiprocessing would be overkill
+
+        :param tts_manager: The TTSManager to be used for leave messages
+        :param bot_leave_messages: A list of leave messages for the bot to randomly choose from
+        :param disconnect_func: An extra function to call when the bot disconnects
+        :param leave_timeout_length: The amount of time the bot should wait before disconnecting
+        """
         self.leave_timeout_length = leave_timeout_length
         self.queue: List[AudioQueueItem] = []
         self.current_audio_item: Optional[AudioQueueItem] = None
         self.current_state = AudioState.STOPPED
         self._current_voice_channel: Optional[discord.VoiceClient] = None
+
+        # Leaving VC
+        self.disconnect_func = disconnect_func
+        self.tts_manager = tts_manager
+        self.bot_leave_messages = bot_leave_messages or ["Bot is leaving the voice channel"]
 
         # Handling async/threading
         self.processing_task = None
@@ -153,6 +169,18 @@ class VCAudioManager:
         Async disconnect function that disconnects the bot from the current voice channel
         """
         if self._current_voice_channel:
+            # Running a provided disconnect function
+            if self.disconnect_func:
+                self.disconnect_func()
+
+            # Announcing that the bot is disconnecting.
+            leave_audio_path = self.tts_manager.process(random.choice(self.bot_leave_messages))
+            self._current_voice_channel.play(
+                discord.FFmpegPCMAudio(leave_audio_path),
+                options="-loglevel quiet"
+            )
+
+            # Disconnecting from the server
             await self._current_voice_channel.disconnect()
             self._current_voice_channel = None
             logging.info(f"Disconnecting from voice channel{self._current_voice_channel}")
