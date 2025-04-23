@@ -216,7 +216,7 @@ class SongDownloader:
         # Call multiprocessing router here
         pass
 
-    async def get_playlist_request(self, playlist_url) -> PlaylistRequest:
+    async def get_playlist_request(self, playlist_url, max_length=25, offset=0) -> PlaylistRequest:
         """
         Gets a playlist request with information about the playlist. This is provided to download_playlist function
         This is a separate function to download_playlist so the user can view the songs in the playlist first
@@ -224,7 +224,31 @@ class SongDownloader:
         :param playlist_url: The URL to get information for
         :return: A PlaylistRequest with information on the playlist and what songs are in the playlist
         """
-        pass
+        # Generating our playlist request to work out of
+        playlist_request = PlaylistRequest(playlist_url)
+
+        # Getting info on the playlist
+        if playlist_request.source == "spotify":
+            playlist_info = self.spotify_api.get_playlist_info(playlist_request.url)
+            playlist_tracks = self.spotify_api.get_playlist_tracks(playlist_request.url)
+
+            # Setting the playlist info, checking to make sure everything is valid
+            playlist_request.title = playlist_info["name"]
+
+            # Getting the rest of the tracks
+            for track in playlist_tracks:
+                track = track["track"]
+                playlist_item = PlaylistItem(title=track["name"])
+
+                # Getting the name of the first artist, if available
+                if track.get("artists"):
+                    playlist_item.artist = track["artists"][0]["name"]
+
+                playlist_request.items.append(playlist_item)
+        elif playlist_request.source == "youtube":
+            pass
+
+        return playlist_request
 
     async def _download_song_from_query(self, search_query):
         """
