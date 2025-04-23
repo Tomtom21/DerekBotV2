@@ -70,7 +70,6 @@ class LinkValidator:
         Checks to ensure that the user-provided URL is real and valid
 
         :raise URLValidationError: If the URL is not valid
-
         :return: The source for the URL
         """
         parsed = urllib.parse.urlparse(url)
@@ -98,8 +97,31 @@ class LinkValidator:
             raise URLValidationError("The URl seems to be too long")
 
 
+class PlaylistItem:
+    def __init__(self, url=None, title=None, artist=None):
+        self.url = url
+        self.title = title
+        self.artist = artist
+
+
+class PlaylistRequest:
+    def __init__(self, playlist_url):
+        # Url info
+        self.url = playlist_url
+        self.title = None
+        self.source = None
+
+        # Playlist info
+        self.items: [PlaylistItem] = []
+
+        # Verifying/Sanitizing the link, updating the source
+        self.source = LinkValidator.validate_url(playlist_url)
+        LinkValidator.sanitize_url(playlist_url)
+
+
 class SongRequest:
     def __init__(self, song_url):
+        # Url info
         self.url = song_url
         self.title = None
         self.source = None
@@ -109,10 +131,8 @@ class SongRequest:
         self.source_publish_date = None
         self.content_duration = None
 
-        # Verifying the link, updating the source
+        # Verifying/Sanitizing the link, updating the source
         self.source = LinkValidator.validate_url(song_url)
-
-        # Sanitizing the link
         LinkValidator.sanitize_url(song_url)
 
 
@@ -194,6 +214,16 @@ class SongDownloader:
         # This might have to be where we pass the list to this function after we
         # do an initial playlist download of info
         # Call multiprocessing router here
+        pass
+
+    async def get_playlist_request(self, playlist_url) -> PlaylistRequest:
+        """
+        Gets a playlist request with information about the playlist. This is provided to download_playlist function
+        This is a separate function to download_playlist so the user can view the songs in the playlist first
+
+        :param playlist_url: The URL to get information for
+        :return: A PlaylistRequest with information on the playlist and what songs are in the playlist
+        """
         pass
 
     async def _download_song_from_query(self, search_query):
@@ -288,7 +318,7 @@ class SongDownloader:
     @staticmethod
     async def _get_yt_video_ids_from_query(search_query) -> list:
         """
-        Searches YouTube for videos and provides their urls
+        Searches YouTube for videos and provides all discovered videos
 
         :param search_query: The search query for YouTube
         :return: A list of YouTube video ids
