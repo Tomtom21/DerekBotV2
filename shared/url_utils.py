@@ -6,5 +6,6 @@ def parse_url_info(url):
     return {
         "query": parse_qs(parsed.query),
         "path": parsed.path,
-        "netloc": parsed.netloc
+        "netloc": parsed.netloc,
+        "scheme": parsed.scheme
     }

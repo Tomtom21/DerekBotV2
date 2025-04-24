@@ -77,14 +77,14 @@ class LinkValidator:
         :raise URLValidationError: If the URL is not valid
         :return: The source for the URL
         """
-        parsed = urllib.parse.urlparse(url)
+        parsed = parse_url_info(url)
 
         # Checking if we have a https link. No http here
-        if parsed.scheme not in {"https"}:
+        if parsed["scheme"] not in {"https"}:
             raise URLValidationError("The provided URL does not use HTTPS")
 
         # Normalizing and checking the url domains
-        normalized_domain = cls.normalize_domain(parsed.netloc)
+        normalized_domain = cls.normalize_domain(parsed["netloc"])
         if normalized_domain not in cls.VALID_DOMAINS.keys():
             raise URLValidationError("The URL domain is not valid")
 
