@@ -49,6 +49,10 @@ class AudioProcessingError(Exception):
     pass
 
 
+class URLClassificationError(Exception):
+    pass
+
+
 class LinkValidator:
     VALID_DOMAINS = {
         "youtube.com": "youtube",
@@ -95,6 +99,40 @@ class LinkValidator:
         """
         if len(url) > cls.SANITIZATION_MAX_LENGTH:
             raise URLValidationError("The URl seems to be too long")
+
+    @staticmethod
+    def classify_link_type(source: str, url: str):
+        """
+        Determines whether a link is a track, playlist, or album. Provides a list of all detected types in the URL
+
+        :param source: The source of the link, e.g. 'spotify' or 'youtube'
+        :param url: The URL to classify
+        :return: A list of all detected types in the URL
+        """
+        # Parsing the URL
+        parsed = urllib.parse.urlparse(url)
+        query_params = urllib.parse.parse_qs(parsed.query)
+        detected_types = set()
+
+        # Adding detected types based on what we find in the url
+        if source == "youtube":
+            if "list" in query_params:
+                detected_types.add("playlist")
+
+            if "v" in query_params:
+                detected_types.add("track")
+        elif source == "spotify":
+            url_path = parsed.path.strip("/").split("/")
+            if len(url_path) >= 2:
+                resource_type = url_path[0]
+                if resource_type in {"track", "playlist", "album"}:
+                    detected_types.add(resource_type)
+
+        # Catching if we got a basic link with no information
+        if not detected_types:
+            raise URLValidationError("Failed to detect any valid link types in the URL")
+
+        return list(detected_types)
 
 
 class PlaylistItem:
@@ -246,6 +284,7 @@ class SongDownloader:
 
                 playlist_request.items.append(playlist_item)
         elif playlist_request.source == "youtube":
+            # Getting playlist info
             pass
 
         return playlist_request
