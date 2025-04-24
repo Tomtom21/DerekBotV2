@@ -54,6 +54,9 @@ class URLClassificationError(Exception):
     pass
 
 
+class MediaTypeMismatchError(Exception):
+    pass
+
 class LinkValidator:
     VALID_DOMAINS = {
         "youtube.com": "youtube",
@@ -130,9 +133,9 @@ class LinkValidator:
 
         # Catching if we got a basic link with no information
         if not detected_types:
-            raise URLValidationError("Failed to detect any valid link types in the URL")
+            raise URLClassificationError("Failed to detect any valid link types in the URL")
 
-        return list(detected_types)
+        return detected_types
 
 
 class PlaylistItem:
@@ -148,6 +151,7 @@ class PlaylistRequest:
         self.url = playlist_url
         self.title = None
         self.source = None
+        self.media_type = None
 
         # Playlist info
         self.items: [PlaylistItem] = []
@@ -156,6 +160,14 @@ class PlaylistRequest:
         self.source = LinkValidator.validate_url(playlist_url)
         LinkValidator.sanitize_url(playlist_url)
 
+        # Getting the media type
+        media_type_list = LinkValidator.classify_link_type(self.source, playlist_url)
+        intersecting_types = {"playlist", "album"} & media_type_list
+        if intersecting_types:
+            self.media_type = next(iter(intersecting_types))
+        else:
+            raise MediaTypeMismatchError("The provided media type does not match what is required for a playlist")
+
 
 class SongRequest:
     def __init__(self, song_url):
@@ -163,6 +175,7 @@ class SongRequest:
         self.url = song_url
         self.title = None
         self.source = None
+        self.media_type = None
 
         # These are for scoring of the request when necessary
         self.relevance_score = None
@@ -172,6 +185,13 @@ class SongRequest:
         # Verifying/Sanitizing the link, updating the source
         self.source = LinkValidator.validate_url(song_url)
         LinkValidator.sanitize_url(song_url)
+
+        # Getting the media type
+        media_type_list = LinkValidator.classify_link_type(self.source, song_url)
+        if "song" in media_type_list:
+            self.media_type = next(iter(media_type_list))
+        else:
+            raise MediaTypeMismatchError("The provided media type does not match what is required for the a track")
 
 
 class SongDownloader:
