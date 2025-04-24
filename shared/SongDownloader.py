@@ -19,6 +19,7 @@ from isodate import parse_duration
 from pathlib import Path
 from pydub import AudioSegment
 import asyncio
+from url_utils import parse_url_info
 
 
 class YoutubeAPIError(Exception):
@@ -110,19 +111,18 @@ class LinkValidator:
         :return: A list of all detected types in the URL
         """
         # Parsing the URL
-        parsed = urllib.parse.urlparse(url)
-        query_params = urllib.parse.parse_qs(parsed.query)
+        parsed_url = parse_url_info(url)
         detected_types = set()
 
         # Adding detected types based on what we find in the url
         if source == "youtube":
-            if "list" in query_params:
+            if "list" in parsed_url["query"]:
                 detected_types.add("playlist")
 
-            if "v" in query_params:
+            if "v" in parsed_url["query"]:
                 detected_types.add("track")
         elif source == "spotify":
-            url_path = parsed.path.strip("/").split("/")
+            url_path = parsed_url["path"].strip("/").split("/")
             if len(url_path) >= 2:
                 resource_type = url_path[0]
                 if resource_type in {"track", "playlist", "album"}:
