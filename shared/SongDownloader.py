@@ -287,13 +287,12 @@ class SongDownloader:
 
         # Getting info on the playlist
         if playlist_request.source == "spotify":
+            # Getting and setting the playlist info
             playlist_info = self.spotify_api.get_playlist_info(playlist_request.url)
-            playlist_tracks = self.spotify_api.get_playlist_tracks(playlist_request.url)
-
-            # Setting the playlist info, checking to make sure everything is valid
             playlist_request.title = playlist_info["name"]
 
             # Getting the rest of the tracks
+            playlist_tracks = self.spotify_api.get_playlist_tracks(playlist_request.url)
             for track in playlist_tracks:
                 track = track["track"]
                 playlist_item = PlaylistItem(title=track["name"])
