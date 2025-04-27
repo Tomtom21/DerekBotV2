@@ -57,6 +57,9 @@ class URLClassificationError(Exception):
 class MediaTypeMismatchError(Exception):
     pass
 
+class MediaSourceMismatchError(Exception):
+    pass
+
 class LinkValidator:
     VALID_DOMAINS = {
         "youtube.com": "youtube",
@@ -274,6 +277,107 @@ class SongDownloader:
         # Call multiprocessing router here
         pass
 
+    def _fetch_spotify_album_data(self, album_id, max_length, offset):
+        # Getting album info
+        album_info = self.spotify_api.api_call(
+            endpoint_template="albums/{album_id}",
+            placeholder_values={"album_id": album_id}
+        )
+
+        # Separate api call for using offset/limit
+        album_tracks = self.spotify_api.api_call(
+            endpoint_template="albums/{album_id}/tracks",
+            placeholder_values={"album_id": album_id},
+            limit=max_length,
+            offset=offset
+        )
+        return album_info, album_tracks
+
+    def _fetch_spotify_playlist_data(self, playlist_id, max_length, offset):
+        # Getting playlist info
+        playlist_info = self.spotify_api.api_call(
+            endpoint_template="playlists/{playlist_id}",
+            placeholder_values={"playlist_id": playlist_id}
+        )
+
+        # Separate api call for using offset/limit
+        playlist_tracks = self.spotify_api.api_call(
+            endpoint_template="playlists/{playlist_id}/tracks",
+            placeholder_values={"playlist_id": playlist_id},
+            limit=max_length,
+            offset=offset
+        )
+        return playlist_info, playlist_tracks
+
+    def _fetch_and_process_youtube_playlist_data(self, playlist_id, max_length, offset):
+        # Getting playlist title
+        yt_playlist_info_call = self.youtube_api.playlist().list(
+            part="snippet",
+            id=playlist_id
+        )
+        yt_playlist_info_response = yt_playlist_info_call.execute()
+        playlist_title = yt_playlist_info_response["items"][0]["snippet"]["title"]
+
+        # Getting the videos in the playlist
+        next_page_token = None
+        videos_retrieved = 0
+        return_tracks = []
+
+        while True:
+            # Either getting the max results for the YouTube API, or the max we need
+            yt_playlist_videos_call = self.youtube_api.playlist().list(
+                part="snippet",
+                playlistId=playlist_id,
+                maxResults=min(50, max_length + offset - videos_retrieved),
+                pageToken=next_page_token
+            )
+            yt_playlist_videos_response = yt_playlist_videos_call.execute()
+
+            # Processing the tracks and appending them if we are handling the desired set of videos from the playlist
+            for item in yt_playlist_videos_response["items"]:
+                if videos_retrieved >= offset:
+                    video_title = item["snippet"]["title"]
+                    video_id = item["snippet"]["resourceId"]["videoId"]
+                    video_url = f"https://www.youtube.com/watch?v={video_id}"
+                    playlist_item = PlaylistItem(
+                        url=video_url,
+                        title=video_title
+                    )
+                    return_tracks.append(playlist_item)
+
+                    if len(return_tracks) >= max_length:
+                        return playlist_title, return_tracks
+
+            # Keeping track of the next token, or stopping if we don't get one
+            next_page_token = yt_playlist_videos_response.get("nextPageToken")
+            if not next_page_token:
+                break
+            return playlist_title, return_tracks
+
+    @staticmethod
+    def _process_spotify_list_data(list_info, list_tracks):
+        # Parsing the title of the list
+        playlist_title = list_info["name"]
+
+        # Generating a list of PlaylistItems for all desired tracks
+        return_tracks = []
+        for track in list_tracks["items"]:
+            # Attempting to get the internal 'track' for any playlist items. Use original if handling an album item
+            track = track.get("track", track)
+
+            # Generating a new playlist item
+            playlist_item_name = track["name"]
+            playlist_item_artist = track["artists"][0]["name"] if track.get("artists") else track["show"]["name"]
+            playlist_item = PlaylistItem(
+                title=playlist_item_name,
+                artist=playlist_item_artist
+            )
+
+            # Adding our new item to the request
+            return_tracks.append(playlist_item)
+
+        return playlist_title, return_tracks
+
     async def get_playlist_request(self, playlist_url, max_length=25, offset=0) -> PlaylistRequest:
         """
         Gets a playlist request with information about the playlist. This is provided to download_playlist function
@@ -287,25 +391,36 @@ class SongDownloader:
 
         # Getting info on the playlist
         if playlist_request.source == "spotify":
-            # Getting and setting the playlist info
-            playlist_info = self.spotify_api.get_playlist_info(playlist_request.url)
-            playlist_request.title = playlist_info["name"]
+            # Getting the Spotify playlist id for either an album or playlist
+            item_id = self.spotify_api.get_spotify_item_id(playlist_request.url)
 
-            # Getting the rest of the tracks
-            playlist_tracks = self.spotify_api.get_playlist_tracks(playlist_request.url)
-            for track in playlist_tracks:
-                track = track["track"]
-                playlist_item = PlaylistItem(title=track["name"])
+            # Getting information on either a playlist or an album
+            if playlist_request.media_type == "album":
+                list_info, list_tracks = self._fetch_spotify_album_data(item_id, max_length, offset)
+            elif playlist_request.media_type == "playlist":
+                list_info, list_tracks = self._fetch_spotify_playlist_data(item_id, max_length, offset)
+            else:
+                raise MediaTypeMismatchError("Unsupported media type found when getting PlaylistRequest")
 
-                # Getting the name of the first artist, if available
-                if track.get("artists"):
-                    playlist_item.artist = track["artists"][0]["name"]
+            # Process the lists into usable data, set the values in the playlist_request
+            playlist_title, return_tracks = self._process_spotify_list_data(list_info, list_tracks)
 
-                playlist_request.items.append(playlist_item)
         elif playlist_request.source == "youtube":
-            # Getting playlist info
-            pass
+            # Getting the url info again for the list
+            playlist_id = parse_url_info(playlist_request.url)["query"]["list"][0]
 
+            # Fetching and processing the YouTube playlist data
+            playlist_title, return_tracks = self._fetch_and_process_youtube_playlist_data(
+                playlist_id,
+                max_length=max_length,
+                offset=offset
+            )
+        else:
+            raise MediaSourceMismatchError("Unsupported source found when creating PlaylistRequest")
+
+        # Setting the values for the playlist request
+        playlist_request.title = playlist_title
+        playlist_request.items = return_tracks
         return playlist_request
 
     async def _download_song_from_query(self, search_query):

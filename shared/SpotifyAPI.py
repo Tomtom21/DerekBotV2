@@ -73,7 +73,7 @@ class SpotifyAPI:
         raise SpotifyAPIError("Spotify API failed after retrying.")
 
     @staticmethod
-    def _get_spotify_item_id(spotify_url: str):
+    def get_spotify_item_id(spotify_url: str):
         """
         Gets the id of a Spotify item from the provided Spotify URL
 
