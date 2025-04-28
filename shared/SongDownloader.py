@@ -20,6 +20,7 @@ from pathlib import Path
 from pydub import AudioSegment
 import asyncio
 from url_utils import parse_url_info
+from youtube_utils import extract_yt_playlist_id
 
 
 class YoutubeAPIError(Exception):
@@ -446,7 +447,7 @@ class SongDownloader:
 
         elif playlist_request.source == "youtube":
             # Getting the url info again for the list
-            playlist_id = parse_url_info(playlist_request.url)["query"]["list"][0]
+            playlist_id = extract_yt_playlist_id(playlist_request.url)
 
             # Fetching and processing the YouTube playlist data
             playlist_title, return_tracks = self._fetch_and_process_youtube_playlist_data(
