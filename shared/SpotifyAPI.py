@@ -83,36 +83,6 @@ class SpotifyAPI:
         item_id = spotify_url.split("/")[-1].split("?")[0]
         return item_id
 
-    def get_song_info(self, spotify_song_url: str):
-        """
-        Gets Spotify song details
-
-        :param spotify_song_url: A Spotify song url
-        :return: The Spotify song details, in JSON format
-        """
-        song_id = self._get_spotify_item_id(spotify_song_url)
-        return self.make_request(f"https://api.spotify.com/v1/tracks/{song_id}")
-
-    def get_playlist_info(self, spotify_playlist_url: str):
-        """
-        Gets Spotify playlist details (No tracks)
-
-        :param spotify_playlist_url: A Spotify playlist url
-        :return: The Spotify playlist details, in JSON format
-        """
-        playlist_id = self._get_spotify_item_id(spotify_playlist_url)
-        return self.make_request(f"https://api.spotify.com/v1/playlists/{playlist_id}")
-
-    def get_playlist_tracks(self, spotify_playlist_url: str):
-        """
-        Gets information on the tracks of a playlist
-
-        :param spotify_playlist_url: A Spotify playlist url
-        :return: The Spotify playlist track information, in JSON format
-        """
-        playlist_id = self._get_spotify_item_id(spotify_playlist_url)
-        return self.make_request(f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks")
-
     def api_call(self, endpoint_template: str, placeholder_values=None, **query_params):
         """
         Makes a Spotify API request using the provided endpoint template and values
