@@ -278,6 +278,16 @@ class SongDownloader:
         pass
 
     def _fetch_spotify_album_data(self, album_id, max_length, offset):
+        """
+        Fetches Spotify album information
+
+        :param album_id: The id of the album
+        :param max_length: The maximum number of items to return
+        :param offset: The item number to start fetching information at
+        :return: A tuple of json objects
+            - The album information
+            - The information on the individual album tracks
+        """
         # Getting album info
         album_info = self.spotify_api.api_call(
             endpoint_template="albums/{album_id}",
@@ -294,6 +304,16 @@ class SongDownloader:
         return album_info, album_tracks
 
     def _fetch_spotify_playlist_data(self, playlist_id, max_length, offset):
+        """
+        Fetches Spotify playlist information
+
+        :param playlist_id: The id of the playlist
+        :param max_length: The maximum number of items to return
+        :param offset: The item number to start fetching information at
+        :return: A tuple of json objects
+            - The playlist information
+            - The information on the individual playlist tracks
+        """
         # Getting playlist info
         playlist_info = self.spotify_api.api_call(
             endpoint_template="playlists/{playlist_id}",
@@ -310,6 +330,16 @@ class SongDownloader:
         return playlist_info, playlist_tracks
 
     def _fetch_and_process_youtube_playlist_data(self, playlist_id, max_length, offset):
+        """
+        Fetches YouTube playlist information and processes it into a title and a list of PlaylistItems
+
+        :param playlist_id: The id of the playlist
+        :param max_length: The maximum number of items to return
+        :param offset: The item number to start fetching information at
+        :return: A tuple of information about the playlist
+            - The playlist's title
+            - A list of PlaylistItems
+        """
         # Getting playlist title
         yt_playlist_info_call = self.youtube_api.playlist().list(
             part="snippet",
@@ -356,6 +386,15 @@ class SongDownloader:
 
     @staticmethod
     def _process_spotify_list_data(list_info, list_tracks):
+        """
+        Processes Spotify list info and list tracks into a title and a list of PlaylistItems
+
+        :param list_info: A JSON object with information about the Spotify playlist. Directly from Spotify API.
+        :param list_tracks: A JSON object with a list of tracks. Directly from Spotify API.
+        :return: A tuple of information about the playlist
+            - The playlist's title
+            - A list of PlaylistItems
+        """
         # Parsing the title of the list
         playlist_title = list_info["name"]
 
