@@ -412,7 +412,7 @@ class SongDownloader:
                 artist=playlist_item_artist
             )
 
-            # Adding our new item to the request
+            # Adding our new item to the return_tracks list
             return_tracks.append(playlist_item)
 
         return playlist_title, return_tracks
