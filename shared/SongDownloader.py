@@ -382,7 +382,7 @@ class SongDownloader:
             next_page_token = yt_playlist_videos_response.get("nextPageToken")
             if not next_page_token:
                 break
-            return playlist_title, return_tracks
+        return playlist_title, return_tracks
 
     @staticmethod
     def _process_spotify_list_data(list_info, list_tracks):
