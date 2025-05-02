@@ -9,10 +9,6 @@ import discord
 from discord.ext import commands, tasks
 from discord import app_commands
 
-# DB imports
-from supabase import create_client, Client
-from shared.supabase_utils import signin_attempt_loop
-
 # Setting up logging
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
@@ -27,16 +23,6 @@ logger.addHandler(log_handler)
 logger.propagate = False
 
 logging.root = logger
-
-# Getting the supabase db info
-supabase_url: str = os.environ.get('SUPABASE_URL')
-supabase_key: str = os.environ.get('SUPABASE_KEY')
-supabase_email: str = os.environ.get('SUPABASE_EMAIL')
-supabase_password: str = os.environ.get('SUPABASE_PASSWORD')
-
-# Connecting to the database
-supabase: Client = create_client(supabase_url, supabase_key)
-signin_attempt_loop(supabase, supabase_email, supabase_password)
 
 # Getting the discord bot info
 DISCORD_TOKEN = os.environ.get('MAIN_DISCORD_TOKEN')
