@@ -3,6 +3,7 @@ import os
 import logging
 import sys
 from shared.numeric_helpers import get_suffix
+from shared.data_managers.data_manager import DataManager
 
 # Discord imports
 import discord
@@ -18,6 +19,14 @@ log_handler = logging.StreamHandler()
 logging_formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
 log_handler.setFormatter(logging_formatter)
 logger.addHandler(log_handler)
+
+# DB manager
+data_manager = DataManager(
+    db_table_names=[
+        "unwatched_movies",
+        "watched_movies"
+    ]
+)
 
 # Preventing double logs
 logger.propagate = False
