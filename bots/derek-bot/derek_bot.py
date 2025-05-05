@@ -1,9 +1,7 @@
 # General imports
 import os
 import logging
-import sys
-from shared.numeric_helpers import get_suffix
-from shared.data_managers.data_manager import DataManager
+from shared.data_manager import DataManager
 
 # Discord imports
 import discord
