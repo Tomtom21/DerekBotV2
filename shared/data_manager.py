@@ -51,7 +51,8 @@ class DataManager:
     def fetch_table_data(self, table_name):
         # Getting the table data from the db
         response = (
-            self.supabase.table(table_name)
+            self.supabase
+            .table(table_name)
             .select("*")
             .execute()
         )
@@ -65,7 +66,8 @@ class DataManager:
     def add_table_data(self, table_name, json_data):
         # Adding the item to the db
         response = (
-            self.supabase.table(table_name)
+            self.supabase
+            .table(table_name)
             .insert(json_data)
             .execute()
         )
@@ -75,16 +77,17 @@ class DataManager:
         # Fetching a new copy of the db
         self.fetch_table_data(table_name)
 
-    def delete_table_data(self, table_name, idx):
+    def delete_table_data(self, table_name, match_info):
         # Removing an item from the db based on an index
         response = (
-            self.supabase.table(table_name)
+            self.supabase
+            .table(table_name)
             .delete()
-            .eq("id", 1)
+            .match(match_info)
             .execute()
         )
         if response.error:
-            logging.error(f"Failed to remove index {idx} from table {table_name}")
+            logging.error(f"Failed to remove items matching info {match_info} from table {table_name}")
 
         # Fetching a new copy of the db
         self.fetch_table_data(table_name)
