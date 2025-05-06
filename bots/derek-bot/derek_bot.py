@@ -9,14 +9,10 @@ from discord.ext import commands, tasks
 from discord import app_commands
 
 # Setting up logging
-logger = logging.getLogger('discord')
-logger.setLevel(logging.INFO)
-
-# Adding a ha
-log_handler = logging.StreamHandler()
-logging_formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
-log_handler.setFormatter(logging_formatter)
-logger.addHandler(log_handler)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s]: %(message)s'
+)
 
 # DB manager
 data_manager = DataManager(
@@ -25,11 +21,6 @@ data_manager = DataManager(
         "watched_movies"
     ]
 )
-
-# Preventing double logs
-logger.propagate = False
-
-logging.root = logger
 
 # Getting the discord bot info
 DISCORD_TOKEN = os.environ.get('MAIN_DISCORD_TOKEN')
@@ -183,8 +174,7 @@ class DerekBot(commands.Bot):
         pass
 
 
-
 # Starting the bot
 if __name__ == '__main__':
     bot = DerekBot()
-    bot.run(DISCORD_TOKEN, log_handler=None)
+    bot.run(DISCORD_TOKEN, log_handler=None, root_logger=True)
