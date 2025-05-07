@@ -57,6 +57,7 @@ class DiscordList:
                 if self.item_fits_discord_limit(temp_page):
                     final_page = temp_page
                 else:
+                    final_page += "--*More Items Below*--\n"
                     break
         elif not self.have_pages and items:
             for idx, item in enumerate(items):
