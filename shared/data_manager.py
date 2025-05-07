@@ -79,18 +79,21 @@ class DataManager:
             self.data[table_name] = response.data
 
     def add_table_data(self, table_name, json_data):
-        # Adding the item to the db
-        response = (
-            self.supabase
-            .table(table_name)
-            .insert(json_data)
-            .execute()
-        )
-        if response.error:
-            logging.error(f"Failed to add {json_data} to table {table_name}")
+        # Building our add item query
+        query = self.supabase.table(table_name).insert(json_data)
+
+        # Executing our insert query
+        response = self.execute_db_query(query, table_name)
 
         # Fetching a new copy of the db
         self.fetch_table_data(table_name)
+
+        # Returning to the user whether it was successful or not
+        if response:
+            return True
+        else:
+            logging.error(f"Failed to add {json_data} to table {table_name}")
+            return False
 
     def delete_table_data(self, table_name, match_info):
         # Removing an item from the db based on an index
