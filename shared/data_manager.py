@@ -6,7 +6,7 @@ from abc import abstractmethod
 
 
 class DataManager:
-    def __init__(self, db_table_names: [str], max_login_attempts=5, wait_time=30):
+    def __init__(self, db_table_fetch_config: dict, max_login_attempts=5, wait_time=30):
         # Getting the supabase db info. These are not maintained in memory
         supabase_url: str = os.environ.get('SUPABASE_URL')
         supabase_key: str = os.environ.get('SUPABASE_KEY')
@@ -22,10 +22,15 @@ class DataManager:
             wait_time=wait_time
         )
 
+        self.db_table_fetch_config = db_table_fetch_config
+
         # Setting up our local cache of table data
         self.data: dict[str, list[dict]] = {}
-        for name in db_table_names:
+        for name in db_table_fetch_config.keys():
             self.data[name] = []
+
+        # Fetching all data needed
+        self.fetch_all_table_data()
 
     def signin_attempt_loop(self, supabase_username, supabase_password, max_login_attempts, wait_time):
         """
@@ -48,19 +53,29 @@ class DataManager:
                 attempts += 1
                 time.sleep(wait_time)
 
-    def fetch_table_data(self, table_name):
-        # Getting the table data from the db
-        response = (
-            self.supabase
-            .table(table_name)
-            .select("*")
-            .execute()
-        )
+    @staticmethod
+    def execute_db_query(query, table_name):
+        try:
+            response = query.execute()
+            return response
+        except Exception as e:
+            logging.error(f"An error occurred: {e}")
+            logging.error(f"Failed to retrieve data from table {table_name}")
+            return None
 
-        # Updating the data if it doesn't return an error
-        if response.error:
-            logging.error(f"Failed to retrieve data from table {table_name}. Defaulting to cache data.")
-        else:
+    def fetch_table_data(self, table_name):
+        # Table fetch config
+        config = self.db_table_fetch_config.get(table_name, {})
+        query = self.supabase.table(table_name).select(config.get("select", "*"))
+
+        # Doing orders
+        order_by = config.get("order_by")
+        if order_by:
+            query = query.order(order_by["column"], desc=not order_by["ascending"])
+
+        # Executing the query, saving the data
+        response = self.execute_db_query(query, table_name)
+        if response:
             self.data[table_name] = response.data
 
     def add_table_data(self, table_name, json_data):
@@ -91,3 +106,7 @@ class DataManager:
 
         # Fetching a new copy of the db
         self.fetch_table_data(table_name)
+
+    def fetch_all_table_data(self):
+        for name in self.db_table_fetch_config.keys():
+            self.fetch_table_data(name)

@@ -2,6 +2,7 @@
 import os
 import logging
 from shared.data_manager import DataManager
+from cogs.movie_cog import MovieGroupCog
 
 # Discord imports
 import discord
@@ -16,11 +17,16 @@ logging.basicConfig(
 
 # DB manager
 data_manager = DataManager(
-    db_table_names=[
-        "unwatched_movies",
-        "watched_movies"
-    ]
-)
+    {
+        "unwatched_movies": {
+            "select": "*, added_by(*)",
+            "order_by": {"column": "movie_name", "ascending": True}
+        },
+        "watched_movies": {
+            "select": "*, added_by(*)",
+            "order_by": {"column": "movie_name", "ascending": True}
+        }
+})
 
 # Getting the discord bot info
 DISCORD_TOKEN = os.environ.get('MAIN_DISCORD_TOKEN')
@@ -37,15 +43,17 @@ intents.message_content = True
 
 
 class DerekBot(commands.Bot):
-    def __init__(self):
+    def __init__(self, data_manager: DataManager):
         super().__init__(command_prefix=None, intents=intents, case_insensitive=True)
-        self.synced = False
+
+        self.data_manager = data_manager
+
+    async def setup_hook(self):
+        await self.add_cog(MovieGroupCog(self, self.data_manager))
+        await self.tree.sync()
+        logging.info("Synced commands")
 
     async def on_ready(self):
-        if not self.synced:
-            logging.info("Syncing commands...")
-            await self.tree.sync()
-            self.synced = True
         logging.info(f"Logged in as {self.user}")
         self.start_background_tasks()
 
@@ -71,14 +79,6 @@ class DerekBot(commands.Bot):
     # Pulls cached info from the database, and updated the local variables for up-to-date values
     @tasks.loop(hours=1)
     async def update_cached_info(self):
-        pass
-
-    @app_commands.command(name="unwatchedmovies", description="Show a list of unwatched movies")
-    async def unwatchedmovies(self, interaction: discord.Interaction):
-        pass
-
-    @app_commands.command(name="watchedmovies", description="Show a list of watched movies")
-    async def watchedmovies(self, interaction: discord.Interaction):
         pass
 
     @app_commands.command(name="addmovie", description="Add a movie to the unwatched list")
@@ -176,5 +176,5 @@ class DerekBot(commands.Bot):
 
 # Starting the bot
 if __name__ == '__main__':
-    bot = DerekBot()
+    bot = DerekBot(data_manager)
     bot.run(DISCORD_TOKEN, log_handler=None, root_logger=True)
