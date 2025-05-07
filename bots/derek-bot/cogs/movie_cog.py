@@ -53,7 +53,6 @@ class MovieGroupCog(commands.Cog):
             view=discord_list.create_view()
         )
 
-
     @group.command(name="watched_movies", description="Show a list of watched movies")
     async def watched_movies(self, interaction: Interaction):
         def get_watched_movie_data():
