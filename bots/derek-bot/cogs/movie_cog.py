@@ -11,10 +11,25 @@ class MovieGroupCog(commands.Cog):
 
     group = app_commands.Group(name="movies", description="Commands for managing movie lists")
 
+    @staticmethod
+    def process_movie_data(db_data):
+        """
+        Processes raw movie data from the DB to a list of data that can be shown in a list
+        :param db_data:
+        :return:
+        """
+        output_list = []
+        for item in db_data:
+            output_string = f"{item['movie_name']} - {item['added_by']['user_name']}"
+            output_list.append(output_string)
+        return output_list
+
     @group.command(name="unwatched_movies", description="Show a list of unwatched movies")
     async def unwatched_movies(self, interaction: Interaction):
         def get_unwatched_movie_data():
-            return self.data_manager.data.get("unwatched_movies", [])
+            return self.process_movie_data(
+                self.data_manager.data.get("unwatched_movies", [])
+            )
 
         discord_list = DiscordList(get_unwatched_movie_data)
 
@@ -27,7 +42,9 @@ class MovieGroupCog(commands.Cog):
     @group.command(name="watched_movies", description="Show a list of watched movies")
     async def watched_movies(self, interaction: Interaction):
         def get_watched_movie_data():
-            return self.data_manager.data.get("watched_movies", [])
+            return self.process_movie_data(
+                self.data_manager.data.get("watched_movies", [])
+            )
 
         discord_list = DiscordList(get_watched_movie_data)
 
