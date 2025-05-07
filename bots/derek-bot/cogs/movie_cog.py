@@ -24,6 +24,21 @@ class MovieGroupCog(commands.Cog):
             output_list.append(output_string)
         return output_list
 
+    def get_unwatched_with_index(self, movie_index: int, movie_count: int):
+        """
+        Gets an unwatched movie using an index (1-length).
+
+        :param movie_index: A 1 based indexing value.
+        :param movie_count: The number of movies in the list
+        :return: The unwatched movie item if it exists, otherwise None
+        """
+        if movie_count >= movie_index >= 1:
+            # Pulling movie item information
+            movie_item = self.data_manager.data.get("unwatched_movies")[movie_index - 1]
+            return movie_item
+        else:
+            return None
+
     @group.command(name="unwatched_movies", description="Show a list of unwatched movies")
     async def unwatched_movies(self, interaction: Interaction):
         def get_unwatched_movie_data():
@@ -70,9 +85,9 @@ class MovieGroupCog(commands.Cog):
     @app_commands.describe(movie_index="The item number associated with each movie in the movie list")
     async def remove_movie(self, interaction: Interaction, movie_index: int):
         movie_count = len(self.data_manager.data.get("unwatched_movies"))
-        if movie_count >= movie_index >= 1:
-            # Pulling movie item information for removal
-            movie_item = self.data_manager.data.get("unwatched_movies")[movie_index - 1]
+
+        movie_item = self.get_unwatched_with_index(movie_index, movie_count)
+        if movie_item:
             movie_name = movie_item["movie_name"]
             added_by_user_id = movie_item["added_by"]["user_id"]
 
