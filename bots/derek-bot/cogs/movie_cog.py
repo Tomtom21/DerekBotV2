@@ -65,3 +65,29 @@ class MovieGroupCog(commands.Cog):
             await interaction.response.send_message("Added **" + movie_name + "** to unwatched list")
         else:
             await interaction.response.send_message("`Failed to add movie to unwatched list`")
+
+    @group.command(name="remove_movie", description="Remove a movie from the unwatched list")
+    @app_commands.describe(movie_index="The item number associated with each movie in the movie list")
+    async def remove_movie(self, interaction: Interaction, movie_index: int):
+        movie_count = len(self.data_manager.data.get("unwatched_movies"))
+        if movie_count >= movie_index >= 1:
+            # Pulling movie item information for removal
+            movie_item = self.data_manager.data.get("unwatched_movies")[movie_index - 1]
+            movie_name = movie_item["movie_name"]
+            added_by_user_id = movie_item["added_by"]["user_id"]
+
+            # Removing the item
+            successfully_removed = self.data_manager.delete_table_data(
+                table_name="unwatched_movies",
+                match_json={"movie_name": movie_name, "added_by": added_by_user_id}
+            )
+
+            if successfully_removed:
+                await interaction.response.send_message("Removed **" + movie_name + "** from unwatched list")
+            else:
+                await interaction.response.send_message("`Failed to remove movie from unwatched list`")
+        else:
+            await interaction.response.send_message(
+                "Movie index is outside of the valid range (1-" + str(movie_count) + ")",
+                ephemeral=True
+            )
