@@ -4,6 +4,7 @@ from discord import app_commands, Interaction
 from shared.data_manager import DataManager
 import random
 
+
 class MiscGroupCog(commands.Cog):
     def __init__(self, bot: commands.Bot, data_manager: DataManager):
         self.bot = bot
