@@ -25,6 +25,9 @@ data_manager = DataManager(
         "watched_movies": {
             "select": "*, added_by(*)",
             "order_by": {"column": "movie_name", "ascending": True}
+        },
+        "movie_phrases": {
+            "select": "*"
         }
 })
 

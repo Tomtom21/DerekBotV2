@@ -1,5 +1,6 @@
 from discord.ext import commands
 from discord import app_commands, Interaction
+import random
 
 from shared.data_manager import DataManager, ListIndexOutOfBounds
 from shared.DiscordList import DiscordList
@@ -24,6 +25,14 @@ class MovieGroupCog(commands.Cog):
             output_string = f"{item['movie_name']} - {item['added_by']['user_name']}"
             output_list.append(output_string)
         return output_list
+
+    def search_unwatched_by_keyword(self, keyword: str):
+        lowercase_keyword = keyword.lower()
+        movies = [
+            movie for movie in self.data_manager.data.get("unwatched_movies")
+            if lowercase_keyword in movie.get("movie_name", "").lower()
+        ]
+        return movies
 
     @group.command(name="unwatched_movies", description="Show a list of unwatched movies")
     async def unwatched_movies(self, interaction: Interaction):
@@ -135,11 +144,7 @@ class MovieGroupCog(commands.Cog):
     @app_commands.describe(keyword="Keyword movie name")
     async def search_movie(self, interaction: Interaction, keyword: str):
         def get_search_movies():
-            lowercase_keyword = keyword.lower()
-            movies = [
-                movie for movie in self.data_manager.data.get("unwatched_movies")
-                if lowercase_keyword in movie.get("movie_name", "").lower()
-            ]
+            movies = self.search_unwatched_by_keyword(keyword)
             return self.process_movie_data(movies)
 
         discord_list = DiscordList(
@@ -153,3 +158,33 @@ class MovieGroupCog(commands.Cog):
             discord_list.get_page(),
             view=discord_list.create_view()
         )
+
+    @group.command(name="random_movie", description="Choose a random movie to watch (from unwatched list)")
+    @app_commands.describe(keyword="[OPTIONAL] Keyword movie name")
+    async def random_movie(self, interaction: Interaction, keyword: str = ""):
+        # Getting a list of movies to choose a random selection from
+        if keyword:
+            possible_movies = self.search_unwatched_by_keyword(keyword)
+        else:
+            possible_movies = self.data_manager.data.get("unwatched_movies")
+
+        # Checking if we have any movies avaiable
+        if possible_movies:
+            # Getting a random movie and a random movie phrase
+            movie = random.choice(possible_movies)
+            phrase = random.choice(self.data_manager.data.get("movie_phrases"))
+
+            # Generating the output string. Determining if we should return the added_by user
+            output_string = f"**{movie.get('movie_name', '')}** {phrase.get('phrase')}"
+
+            added_by = movie.get("added_by")
+            if added_by.get("user_id") != 0:
+                output_string += f" It was recommended by **{added_by.get('user_name')}**."
+
+            await interaction.response.send_message(output_string)
+        else:
+            await interaction.response.send_message(
+                f"`No movies found with keyword '{keyword}'`",
+                ephemeral=True
+            )
+

@@ -12,7 +12,7 @@ class ListIndexOutOfBounds(Exception):
 
     async def handle_index_error(self, interaction: Interaction):
         await interaction.response.send_message(
-            "Item index is outside of the valid range (1-" + str(self.item_count) + ")",
+            "`Item index is outside of the valid range (1-" + str(self.item_count) + ")`",
             ephemeral=True
         )
 
