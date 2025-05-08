@@ -81,11 +81,6 @@ class DerekBot(commands.Bot):
     async def update_cached_info(self):
         pass
 
-    @app_commands.command(name="markwatched", description="Marks a movie in the unwatched list as watched")
-    @app_commands.describe(movie_index="Index number associated with each movie in the movie list")
-    async def markwatched(self, interaction: discord.Interaction, movie_index: int):
-        pass
-
     @app_commands.command(name="searchmovie", description="List all movies that contain the keyword (from unwatched list)")
     @app_commands.describe(keyword="Keyword movie name")
     async def searchmovie(self, interaction: discord.Interaction, keyword: str):
