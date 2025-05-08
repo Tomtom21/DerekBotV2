@@ -84,11 +84,6 @@ class DerekBot(commands.Bot):
     async def update_cached_info(self):
         pass
 
-    @app_commands.command(name="randommovie", description="Choose a random movie to watch (from unwatched list)")
-    @app_commands.describe(keyword="[OPTIONAL] Keyword movie name")
-    async def randommovie(self, interaction: discord.Interaction, keyword: str = ""):
-        pass
-
     @app_commands.command(name="toggletts", description="Enables/Disables TTS in TTS channels (admin only)")
     async def toggletts(self, interaction: discord.Interaction):
         pass
