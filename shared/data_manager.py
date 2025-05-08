@@ -2,6 +2,7 @@ import os
 from supabase import create_client, Client
 import logging
 import time
+from discord import Interaction
 from abc import abstractmethod
 
 
@@ -11,7 +12,7 @@ class ListIndexOutOfBounds(Exception):
 
     async def handle_index_error(self, interaction: Interaction):
         await interaction.response.send_message(
-            "Movie index is outside of the valid range (1-" + str(self.item_count) + ")",
+            "Item index is outside of the valid range (1-" + str(self.item_count) + ")",
             ephemeral=True
         )
 
@@ -139,7 +140,7 @@ class DataManager:
         item_count = len(self.data.get(table_name))
         if item_count >= item_index >= 1:
             # Pulling item information from the table
-            movie_item = self.data.get("unwatched_movies")[item_index - 1]
-            return movie_item
+            item = self.data.get(table_name)[item_index - 1]
+            return item
         else:
             raise ListIndexOutOfBounds(item_count)
