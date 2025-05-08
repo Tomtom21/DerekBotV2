@@ -129,3 +129,27 @@ class MovieGroupCog(commands.Cog):
                 await interaction.response.send_message("`Failed to add movie to the watched list`")
         except ListIndexOutOfBounds as error:
             await error.handle_index_error(interaction)
+
+    @group.command(name="search_movie",
+                   description="List all movies that contain the keyword (from unwatched list)")
+    @app_commands.describe(keyword="Keyword movie name")
+    async def search_movie(self, interaction: Interaction, keyword: str):
+        def get_search_movies():
+            lowercase_keyword = keyword.lower()
+            movies = [
+                movie for movie in self.data_manager.data.get("unwatched_movies")
+                if lowercase_keyword in movie.get("movie_name", "").lower()
+            ]
+            return self.process_movie_data(movies)
+
+        discord_list = DiscordList(
+            get_items=get_search_movies,
+            title="Unwatched Movie Search",
+            have_pages=False,
+            items_per_page=15
+        )
+
+        await interaction.response.send_message(
+            discord_list.get_page(),
+            view=discord_list.create_view()
+        )
