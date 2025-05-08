@@ -3,6 +3,7 @@ import os
 import logging
 from shared.data_manager import DataManager
 from cogs.movie_cog import MovieGroupCog
+from cogs.misc_cog import MiscGroupCog
 
 # Discord imports
 import discord
@@ -27,6 +28,9 @@ data_manager = DataManager(
             "order_by": {"column": "movie_name", "ascending": True}
         },
         "movie_phrases": {
+            "select": "*"
+        },
+        "eight_ball_phrases": {
             "select": "*"
         }
 })
@@ -53,6 +57,7 @@ class DerekBot(commands.Bot):
 
     async def setup_hook(self):
         await self.add_cog(MovieGroupCog(self, self.data_manager))
+        await self.add_cog(MiscGroupCog(self, self.data_manager))
         await self.tree.sync()
         logging.info("Synced commands")
 
@@ -118,10 +123,6 @@ class DerekBot(commands.Bot):
 
     @app_commands.command(name="simonsays", description="Repeats what the user says")
     async def simonsays(self, interaction: discord.Interaction, text: str):
-        pass
-
-    @app_commands.command(name="magic8ball", description="Replies with a magic 8-ball answer")
-    async def magic8ball(self, interaction: discord.Interaction, question: str):
         pass
 
     @app_commands.command(name="addbirthday", description="Save a birthday for Derek to remember later")
