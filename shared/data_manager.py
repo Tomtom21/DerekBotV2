@@ -5,6 +5,17 @@ import time
 from abc import abstractmethod
 
 
+class ListIndexOutOfBounds(Exception):
+    def __init__(self, item_count: int):
+        self.item_count = item_count
+
+    async def handle_index_error(self, interaction: Interaction):
+        await interaction.response.send_message(
+            "Movie index is outside of the valid range (1-" + str(self.item_count) + ")",
+            ephemeral=True
+        )
+
+
 class DataManager:
     def __init__(self, db_table_fetch_config: dict, max_login_attempts=5, wait_time=30):
         # Getting the supabase db info. These are not maintained in memory
@@ -115,3 +126,20 @@ class DataManager:
     def fetch_all_table_data(self):
         for name in self.db_table_fetch_config.keys():
             self.fetch_table_data(name)
+
+    def get_db_item_with_index(self, table_name: str, item_index: int):
+        """
+        Gets an item from a DB table using an index (1-length).
+        This is made for processing user input referencing a DiscordList item index.
+
+        :param table_name: The name of the table to get the item from
+        :param item_index: The index of the item in the DB cache
+        :return: The item from the table in the DB cache
+        """
+        item_count = len(self.data.get(table_name))
+        if item_count >= item_index >= 1:
+            # Pulling item information from the table
+            movie_item = self.data.get("unwatched_movies")[item_index - 1]
+            return movie_item
+        else:
+            raise ListIndexOutOfBounds(item_count)

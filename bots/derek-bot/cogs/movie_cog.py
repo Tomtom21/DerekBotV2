@@ -1,8 +1,9 @@
 from discord.ext import commands
 from discord import app_commands, Interaction
 
-from shared.data_manager import DataManager
+from shared.data_manager import DataManager, ListIndexOutOfBounds
 from shared.DiscordList import DiscordList
+
 
 class MovieGroupCog(commands.Cog):
     def __init__(self, bot: commands.Bot, data_manager: DataManager):
@@ -23,21 +24,6 @@ class MovieGroupCog(commands.Cog):
             output_string = f"{item['movie_name']} - {item['added_by']['user_name']}"
             output_list.append(output_string)
         return output_list
-
-    def get_unwatched_with_index(self, movie_index: int, movie_count: int):
-        """
-        Gets an unwatched movie using an index (1-length).
-
-        :param movie_index: A 1 based indexing value.
-        :param movie_count: The number of movies in the list
-        :return: The unwatched movie item if it exists, otherwise None
-        """
-        if movie_count >= movie_index >= 1:
-            # Pulling movie item information
-            movie_item = self.data_manager.data.get("unwatched_movies")[movie_index - 1]
-            return movie_item
-        else:
-            return None
 
     @group.command(name="unwatched_movies", description="Show a list of unwatched movies")
     async def unwatched_movies(self, interaction: Interaction):
@@ -83,10 +69,12 @@ class MovieGroupCog(commands.Cog):
     @group.command(name="remove_movie", description="Remove a movie from the unwatched list")
     @app_commands.describe(movie_index="The item number associated with each movie in the movie list")
     async def remove_movie(self, interaction: Interaction, movie_index: int):
-        movie_count = len(self.data_manager.data.get("unwatched_movies"))
+        try:
+            movie_item = self.data_manager.get_db_item_with_index(
+                table_name="unwatched_movies",
+                item_index=movie_index
+            )
 
-        movie_item = self.get_unwatched_with_index(movie_index, movie_count)
-        if movie_item:
             movie_name = movie_item["movie_name"]
             added_by_user_id = movie_item["added_by"]["user_id"]
 
@@ -100,8 +88,6 @@ class MovieGroupCog(commands.Cog):
                 await interaction.response.send_message("Removed **" + movie_name + "** from unwatched list")
             else:
                 await interaction.response.send_message("`Failed to remove movie from unwatched list`")
-        else:
-            await interaction.response.send_message(
-                "Movie index is outside of the valid range (1-" + str(movie_count) + ")",
-                ephemeral=True
-            )
+
+        except ListIndexOutOfBounds as error:
+            await error.handle_index_error(interaction)
