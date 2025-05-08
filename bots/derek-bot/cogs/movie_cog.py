@@ -32,7 +32,10 @@ class MovieGroupCog(commands.Cog):
                 self.data_manager.data.get("unwatched_movies", [])
             )
 
-        discord_list = DiscordList(get_unwatched_movie_data)
+        discord_list = DiscordList(
+            get_items=get_unwatched_movie_data,
+            title="Unwatched Movies"
+        )
 
         await interaction.response.send_message(
             discord_list.get_page(),
@@ -46,7 +49,10 @@ class MovieGroupCog(commands.Cog):
                 self.data_manager.data.get("watched_movies", [])
             )
 
-        discord_list = DiscordList(get_watched_movie_data)
+        discord_list = DiscordList(
+            get_items=get_watched_movie_data,
+            title="Watched Movies"
+        )
 
         await interaction.response.send_message(
             discord_list.get_page(),
