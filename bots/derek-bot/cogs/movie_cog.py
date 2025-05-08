@@ -91,3 +91,35 @@ class MovieGroupCog(commands.Cog):
 
         except ListIndexOutOfBounds as error:
             await error.handle_index_error(interaction)
+
+    @group.command(name="mark_watched", description="Marks a movie in the unwatched list as watched")
+    @app_commands.describe(movie_index="Index number associated with each movie in the movie list")
+    async def mark_watched(self, interaction: Interaction, movie_index: int):
+        try:
+            unwatched_item = self.data_manager.get_db_item_with_index(
+                table_name="unwatched_movies",
+                item_index=movie_index
+            )
+            unwatched_name = unwatched_item["movie_name"]
+            unwatched_user_id = unwatched_item["added_by"]["user_id"]
+
+            # Removing the item from the unwatched list
+            successfully_removed = self.data_manager.delete_table_data(
+                table_name="unwatched_movies",
+                match_json={"movie_name": unwatched_name, "added_by": unwatched_user_id}
+            )
+            if not successfully_removed:
+                await interaction.response.send_message("`Failed to remove movie from unwatched list during marking`")
+                return
+
+            # Adding it to the watched list
+            successfully_added = self.data_manager.add_table_data(
+                table_name="watched_movies",
+                json_data={"movie_name": unwatched_name, "added_by": unwatched_user_id}
+            )
+            if successfully_added:
+                await interaction.response.send_message("Marked **" + unwatched_name + "** as watched")
+            else:
+                await interaction.response.send_message("`Failed to add movie to the watched list`")
+        except ListIndexOutOfBounds as error:
+            await error.handle_index_error(interaction)
