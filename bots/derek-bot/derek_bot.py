@@ -25,6 +25,9 @@ data_manager = DataManager(
         "watched_movies": {
             "select": "*, added_by(*)",
             "order_by": {"column": "movie_name", "ascending": True}
+        },
+        "movie_phrases": {
+            "select": "*"
         }
 })
 
@@ -79,31 +82,6 @@ class DerekBot(commands.Bot):
     # Pulls cached info from the database, and updated the local variables for up-to-date values
     @tasks.loop(hours=1)
     async def update_cached_info(self):
-        pass
-
-    @app_commands.command(name="addmovie", description="Add a movie to the unwatched list")
-    @app_commands.describe(movie_name="Name of the movie to add to the list")
-    async def addmovie(self, interaction: discord.Interaction, movie_name: str):
-        pass
-
-    @app_commands.command(name="removemovie", description="Remove a movie from the unwatched list")
-    @app_commands.describe(movie_index="Index number associated with each movie in the movie list")
-    async def removemovie(self, interaction: discord.Interaction, movie_index: int):
-        pass
-
-    @app_commands.command(name="markwatched", description="Marks a movie in the unwatched list as watched")
-    @app_commands.describe(movie_index="Index number associated with each movie in the movie list")
-    async def markwatched(self, interaction: discord.Interaction, movie_index: int):
-        pass
-
-    @app_commands.command(name="searchmovie", description="List all movies that contain the keyword (from unwatched list)")
-    @app_commands.describe(keyword="Keyword movie name")
-    async def searchmovie(self, interaction: discord.Interaction, keyword: str):
-        pass
-
-    @app_commands.command(name="randommovie", description="Choose a random movie to watch (from unwatched list)")
-    @app_commands.describe(keyword="[OPTIONAL] Keyword movie name")
-    async def randommovie(self, interaction: discord.Interaction, keyword: str = ""):
         pass
 
     @app_commands.command(name="toggletts", description="Enables/Disables TTS in TTS channels (admin only)")

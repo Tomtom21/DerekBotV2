@@ -2,7 +2,19 @@ import os
 from supabase import create_client, Client
 import logging
 import time
+from discord import Interaction
 from abc import abstractmethod
+
+
+class ListIndexOutOfBounds(Exception):
+    def __init__(self, item_count: int):
+        self.item_count = item_count
+
+    async def handle_index_error(self, interaction: Interaction):
+        await interaction.response.send_message(
+            "`Item index is outside of the valid range (1-" + str(self.item_count) + ")`",
+            ephemeral=True
+        )
 
 
 class DataManager:
@@ -79,34 +91,56 @@ class DataManager:
             self.data[table_name] = response.data
 
     def add_table_data(self, table_name, json_data):
-        # Adding the item to the db
-        response = (
-            self.supabase
-            .table(table_name)
-            .insert(json_data)
-            .execute()
-        )
-        if response.error:
+        # Building our add item query
+        query = self.supabase.table(table_name).insert(json_data)
+
+        # Executing our insert query
+        response = self.execute_db_query(query, table_name)
+
+        # Fetching a new copy of the db
+        self.fetch_table_data(table_name)
+
+        # Returning to the user whether it was successful or not
+        if response:
+            return True
+        else:
             logging.error(f"Failed to add {json_data} to table {table_name}")
+            return False
+
+    def delete_table_data(self, table_name, match_json):
+        # Building the remove item query
+        query = self.supabase.table(table_name).delete().match(match_json)
+
+        # Executing the remove query
+        response = self.execute_db_query(query, table_name)
 
         # Fetching a new copy of the db
         self.fetch_table_data(table_name)
 
-    def delete_table_data(self, table_name, match_info):
-        # Removing an item from the db based on an index
-        response = (
-            self.supabase
-            .table(table_name)
-            .delete()
-            .match(match_info)
-            .execute()
-        )
-        if response.error:
-            logging.error(f"Failed to remove items matching info {match_info} from table {table_name}")
-
-        # Fetching a new copy of the db
-        self.fetch_table_data(table_name)
+        # Returning to the user whether it was successful or not
+        if response:
+            return True
+        else:
+            logging.error(f"Failed to remove items matching info {match_json} from table {table_name}")
+            return False
 
     def fetch_all_table_data(self):
         for name in self.db_table_fetch_config.keys():
             self.fetch_table_data(name)
+
+    def get_db_item_with_index(self, table_name: str, item_index: int):
+        """
+        Gets an item from a DB table using an index (1-length).
+        This is made for processing user input referencing a DiscordList item index.
+
+        :param table_name: The name of the table to get the item from
+        :param item_index: The index of the item in the DB cache
+        :return: The item from the table in the DB cache
+        """
+        item_count = len(self.data.get(table_name))
+        if item_count >= item_index >= 1:
+            # Pulling item information from the table
+            item = self.data.get(table_name)[item_index - 1]
+            return item
+        else:
+            raise ListIndexOutOfBounds(item_count)
