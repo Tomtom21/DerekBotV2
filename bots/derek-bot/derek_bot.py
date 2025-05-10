@@ -32,6 +32,9 @@ data_manager = DataManager(
         },
         "eight_ball_phrases": {
             "select": "*"
+        },
+        "users": {
+            "select": "*"
         }
 })
 

@@ -2,7 +2,7 @@ import os
 from supabase import create_client, Client
 import logging
 import time
-from discord import Interaction
+from discord import Interaction, Member
 from abc import abstractmethod
 
 
@@ -144,3 +144,27 @@ class DataManager:
             return item
         else:
             raise ListIndexOutOfBounds(item_count)
+
+    def ensure_user_exists(self, user: Member):
+        """
+        Ensures that a user exists in the users table
+
+        :param user: The use to check for existence
+        :return: True if they exist or have been added, False if an error occurred
+        """
+        # If the user is not in the users table
+        if not any(db_user["user_id"] == user.id for db_user in self.data.get("users")):
+            successfully_added = self.add_table_data(
+                table_name="users",
+                json_data={
+                    "user_name": user.name,
+                    "user_id": user.id,
+                    "is_administrator": False,
+                    "is_creator": False,
+                    "shuffle_nickname": False
+                }
+            )
+            if successfully_added:
+                logging.info(f"User {user.name}({user.id}) has been added to the users list")
+            else:
+                logging.error(f"There was an issue adding user {user.name}({user.id})")
