@@ -20,3 +20,9 @@ class MiscGroupCog(commands.Cog):
                          f"🎱: **{ball_phrase.get('phrase')}**")
 
         await interaction.response.send_message(output_string)
+
+    @group.command(name="simon_says")
+    @app_commands.describe(text="The text to mimic")
+    async def simon_says(self, interaction: Interaction, text: str):
+        await interaction.channel.send(text)
+        await interaction.response.send_message("Sent the simonsays message.", ephemeral=True)
