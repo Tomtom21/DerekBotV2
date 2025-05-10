@@ -71,6 +71,8 @@ class MovieGroupCog(commands.Cog):
     @group.command(name="add_movie", description="Add a movie to the unwatched list")
     @app_commands.describe(movie_name="The name of the movie to add to the list")
     async def add_movie(self, interaction: Interaction, movie_name: str):
+        self.data_manager.ensure_user_exists(interaction.user)
+
         successfully_added = self.data_manager.add_table_data(
             table_name="unwatched_movies",
             json_data={"movie_name": movie_name, "added_by": interaction.user.id}
@@ -168,7 +170,7 @@ class MovieGroupCog(commands.Cog):
         else:
             possible_movies = self.data_manager.data.get("unwatched_movies")
 
-        # Checking if we have any movies avaiable
+        # Checking if we have any movies available
         if possible_movies:
             # Getting a random movie and a random movie phrase
             movie = random.choice(possible_movies)
