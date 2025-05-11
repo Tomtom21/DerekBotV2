@@ -30,10 +30,12 @@ COMMON_TIMEZONES = {
     "NZST (New Zealand)": "Pacific/Auckland"
 }
 
-timezone_choices = [
+TIMEZONE_CHOICES = [
     app_commands.Choice(name=label, value=tz)
     for label, tz in COMMON_TIMEZONES.items()
 ]
+
+DEFAULT_TIMEZONE = app_commands.Choice(name="EST (US Eastern)", value="America/New_York")
 
 
 class BirthdayGroupCog(commands.Cog):
@@ -44,13 +46,17 @@ class BirthdayGroupCog(commands.Cog):
     group = app_commands.Group(name="birthday", description="Commands for managing birthday information")
 
     @group.command(name="add_birthday", description="Save a birthday for Derek to remember later")
-    @app_commands.choices(timezone=timezone_choices)
+    @app_commands.choices(timezone=TIMEZONE_CHOICES)
     async def add_birthday(self, interaction: Interaction,
                            month: app_commands.Range[int, 1, 12],
                            day: app_commands.Range[int, 1, 31],
                            year: app_commands.Range[int, 1985, 2010] = None,
-                           timezone: app_commands.Choice[str] = "America/New_York"):
+                           timezone: app_commands.Choice[str] = None):
         self.data_manager.ensure_user_exists(interaction.user)
+
+        # Setting a default timezone
+        if not timezone:
+            timezone = DEFAULT_TIMEZONE
 
         # Checking if the user already has a set birthday
         if any(birthday["user_id"] == interaction.user.id for birthday in self.data_manager.data.get("birthdays")):
