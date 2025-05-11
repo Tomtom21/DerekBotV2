@@ -52,20 +52,24 @@ class BirthdayGroupCog(commands.Cog):
                            timezone: app_commands.Choice[str] = "America/New_York"):
         self.data_manager.ensure_user_exists(interaction.user)
 
-        successfully_added = self.data_manager.add_table_data(
-            table_name="birthdays",
-            json_data={
-                "month": month,
-                "day": day,
-                "year": year,
-                "user_id": interaction.user.id,
-                "nickname": interaction.user.name,
-                "timezone": timezone
-            }
-        )
-
-        if successfully_added:
-            await interaction.response.send_message("Your birthday is saved!")
+        # Checking if the user already has a set birthday
+        if any(birthday["user_id"] == interaction.user.id for birthday in self.data_manager.data.get("birthdays")):
+            # If the user already has a birthday
+            successfully_updated = self.data_manager.update_table_data(
+                table_name="birthdays",
+                match_json={"user_id": interaction.user.id},
+                update_json={
+                    "month": month,
+                    "day": day,
+                    "year": year,
+                    "nickname": interaction.user.name,
+                    "timezone": timezone
+                }
+            )
+            if successfully_updated:
+                await interaction.response.send_message("Your birthday has been updated!")
+            else:
+                await interaction.response.send_message("`Failed to updated birthday`")
         else:
             await interaction.response.send_message("`Failed to save birthday`")
 

@@ -38,7 +38,7 @@ data_manager = DataManager(
             "select": "*"
         },
         "birthdays": {
-            "select": "*, user_id(*)"
+            "select": "*"
         }
 })
 
