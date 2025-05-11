@@ -69,8 +69,21 @@ class BirthdayGroupCog(commands.Cog):
             if successfully_updated:
                 await interaction.response.send_message("Your birthday has been updated!")
             else:
-                await interaction.response.send_message("`Failed to updated birthday`")
+                await interaction.response.send_message("`Failed to update birthday`")
         else:
-            await interaction.response.send_message("`Failed to save birthday`")
-
-
+            # If the user doesn't have a birthday
+            successfully_added = self.data_manager.add_table_data(
+                table_name="birthdays",
+                json_data={
+                    "month": month,
+                    "day": day,
+                    "year": year,
+                    "user_id": interaction.user.id,
+                    "nickname": interaction.user.name,
+                    "timezone": timezone
+                }
+            )
+            if successfully_added:
+                await interaction.response.send_message("Your birthday is saved!")
+            else:
+                await interaction.response.send_message("`Failed to save birthday`")
