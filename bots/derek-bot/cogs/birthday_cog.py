@@ -63,7 +63,7 @@ class BirthdayGroupCog(commands.Cog):
                     "day": day,
                     "year": year,
                     "nickname": interaction.user.name,
-                    "timezone": timezone
+                    "timezone": timezone.value
                 }
             )
             if successfully_updated:
@@ -80,7 +80,7 @@ class BirthdayGroupCog(commands.Cog):
                     "year": year,
                     "user_id": interaction.user.id,
                     "nickname": interaction.user.name,
-                    "timezone": timezone
+                    "timezone": timezone.value
                 }
             )
             if successfully_added:
