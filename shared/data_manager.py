@@ -72,7 +72,7 @@ class DataManager:
             return response
         except Exception as e:
             logging.error(f"An error occurred: {e}")
-            logging.error(f"Failed to retrieve data from table {table_name}")
+            logging.error(f"Failed to execute command in table {table_name}")
             return None
 
     def fetch_table_data(self, table_name):
@@ -122,6 +122,23 @@ class DataManager:
             return True
         else:
             logging.error(f"Failed to remove items matching info {match_json} from table {table_name}")
+            return False
+
+    def update_table_data(self, table_name, match_json, update_json):
+        # Building the update item query
+        query = self.supabase.table(table_name).update(update_json).match(match_json)
+
+        # Executing the update query
+        response = self.execute_db_query(query, table_name)
+
+        # Fetching a new copy of the db
+        self.fetch_table_data(table_name)
+
+        # Return to the user whether it was successful or not
+        if response:
+            return True
+        else:
+            logging.error(f"Failed to update items matching info {match_json} from table {table_name}")
             return False
 
     def fetch_all_table_data(self):
