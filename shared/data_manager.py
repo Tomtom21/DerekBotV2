@@ -72,7 +72,7 @@ class DataManager:
             return response
         except Exception as e:
             logging.error(f"An error occurred: {e}")
-            logging.error(f"Failed to retrieve data from table {table_name}")
+            logging.error(f"Failed to execute command in table {table_name}")
             return None
 
     def fetch_table_data(self, table_name):

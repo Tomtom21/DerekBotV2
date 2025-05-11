@@ -4,6 +4,7 @@ import logging
 from shared.data_manager import DataManager
 from cogs.movie_cog import MovieGroupCog
 from cogs.misc_cog import MiscGroupCog
+from cogs.birthday_cog import BirthdayGroupCog
 
 # Discord imports
 import discord
@@ -35,6 +36,9 @@ data_manager = DataManager(
         },
         "users": {
             "select": "*"
+        },
+        "birthdays": {
+            "select": "*, user_id(*)"
         }
 })
 
@@ -61,6 +65,7 @@ class DerekBot(commands.Bot):
     async def setup_hook(self):
         await self.add_cog(MovieGroupCog(self, self.data_manager))
         await self.add_cog(MiscGroupCog(self, self.data_manager))
+        await self.add_cog(BirthdayGroupCog(self, self.data_manager))
         await self.tree.sync()
         logging.info("Synced commands")
 
