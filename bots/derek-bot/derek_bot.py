@@ -5,6 +5,7 @@ from shared.data_manager import DataManager
 from cogs.movie_cog import MovieGroupCog
 from cogs.misc_cog import MiscGroupCog
 from cogs.birthday_cog import BirthdayGroupCog
+import random
 
 # Discord imports
 import discord
@@ -38,6 +39,9 @@ db_manager = DataManager(
             "select": "*"
         },
         "birthdays": {
+            "select": "*"
+        },
+        "statuses": {
             "select": "*"
         }
 })
@@ -75,6 +79,7 @@ class DerekBot(commands.Bot):
 
     # Starts our TTS and data collection background tasks
     def start_background_tasks(self):
+        self.cycle_statuses.start()
         self.update_cached_info.start()
 
     # Repeatedly checks to see if there is a new TTS item to say
@@ -90,7 +95,31 @@ class DerekBot(commands.Bot):
     # Changes the status of the bot
     @tasks.loop(minutes=45)
     async def cycle_statuses(self):
-        pass
+        statuses = self.data_manager.data.get("statuses")
+        random_status_string = random.choice(statuses).get("status", "")
+
+        # Setting the status based on the status type
+        if random_status_string.startswith("$p "):
+            await self.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.playing,
+                    name=random_status_string[3:]
+                )
+            )
+        elif random_status_string.startswith("$l "):
+            await self.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.listening,
+                    name=random_status_string[3:]
+                )
+            )
+        elif random_status_string.startswith("$w "):
+            await self.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.watching,
+                    name=random_status_string[3:]
+                )
+            )
 
     # Pulls cached info from the database, and updated the local variables for up-to-date values
     @tasks.loop(hours=1)
