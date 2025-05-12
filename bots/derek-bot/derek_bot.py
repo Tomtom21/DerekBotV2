@@ -18,7 +18,7 @@ logging.basicConfig(
 )
 
 # DB manager
-data_manager = DataManager(
+db_manager = DataManager(
     {
         "unwatched_movies": {
             "select": "*, added_by(*)",
@@ -75,7 +75,7 @@ class DerekBot(commands.Bot):
 
     # Starts our TTS and data collection background tasks
     def start_background_tasks(self):
-        pass
+        self.update_cached_info.start()
 
     # Repeatedly checks to see if there is a new TTS item to say
     @tasks.loop(seconds=1)
@@ -95,7 +95,8 @@ class DerekBot(commands.Bot):
     # Pulls cached info from the database, and updated the local variables for up-to-date values
     @tasks.loop(hours=1)
     async def update_cached_info(self):
-        pass
+        self.data_manager.fetch_all_table_data()
+        logging.info("Updated all table information")
 
     @app_commands.command(name="toggletts", description="Enables/Disables TTS in TTS channels (admin only)")
     async def toggletts(self, interaction: discord.Interaction):
@@ -163,5 +164,5 @@ class DerekBot(commands.Bot):
 
 # Starting the bot
 if __name__ == '__main__':
-    bot = DerekBot(data_manager)
+    bot = DerekBot(db_manager)
     bot.run(DISCORD_TOKEN, log_handler=None, root_logger=True)
