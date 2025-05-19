@@ -87,7 +87,7 @@ class DerekBot(commands.Bot):
     # Starts our TTS and data collection background tasks
     def start_background_tasks(self):
         self.cycle_statuses.start()
-        self.update_cached_info.start()
+        # self.update_cached_info.start()
 
     # Repeatedly checks to see if there is a new TTS item to say
     @tasks.loop(seconds=1)
