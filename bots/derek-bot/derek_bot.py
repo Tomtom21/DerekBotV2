@@ -6,6 +6,9 @@ from cogs.movie_cog import MovieGroupCog
 from cogs.misc_cog import MiscGroupCog
 from cogs.birthday_cog import BirthdayGroupCog
 import random
+import datetime
+import pytz
+from shared.numeric_helpers import get_suffix
 
 # Discord imports
 import discord
@@ -44,7 +47,8 @@ db_manager = DataManager(
         "statuses": {
             "select": "*"
         }
-})
+    }
+)
 
 # Getting the discord bot info
 DISCORD_TOKEN = os.environ.get('MAIN_DISCORD_TOKEN')
@@ -65,6 +69,9 @@ class DerekBot(commands.Bot):
         super().__init__(command_prefix=None, intents=intents, case_insensitive=True)
 
         self.data_manager = data_manager
+
+        if "MAIN_CHANNEL_ID" in os.environ:
+            self.MAIN_CHANNEL_ID = os.environ.get("MAIN_CHANNEL_ID")
 
     async def setup_hook(self):
         await self.add_cog(MovieGroupCog(self, self.data_manager))
@@ -90,7 +97,37 @@ class DerekBot(commands.Bot):
     # Checks whether it is someone's birthday, sends a birthday message to the appropriate user
     @tasks.loop(minutes=30)
     async def birthday_check(self):
-        pass
+        date = datetime.datetime.now()
+        for birthday in self.data_manager.data.get("birthdays"):
+            # Getting the current date for the birthday's timezone
+            timezone_date = date.astimezone(pytz.timezone(birthday["timezone"]))
+
+            # If a birthday matches the timezone data
+            if timezone_date.month == birthday["month"] and timezone_date.day == birthday["day"]:
+                # If the birthday is not already marked for this year, say something and mark it
+                if not any(
+                        (birthday_track["birthday_id"] == birthday["id"]) and
+                        (birthday_track["year"] == timezone_date.year)
+                        for birthday_track in self.data_manager.data.get("birthday_tracks")
+                ):
+                    # Making sure that we have a channel id to send to
+                    if "MAIN_CHANNEL_ID" in os.environ:
+                        # Updating the brithday tracking table
+                        self.data_manager.add_table_data(
+                            table_name="birthday_tracks",
+                            json_data={"birthday_id": birthday["id"], "year": timezone_date.year}
+                        )
+
+                        # Sending a birthday message
+                        birthday_string = f"<@ {birthday['user_id']}> Happy"
+                        if birthday["year"]:
+                            age = timezone_date.year - birthday["year"]
+                            suffix = get_suffix(age)
+                            birthday_string += f" {age}{suffix}"
+                        birthday_string += f" birthday!"
+
+                        channel_id = int(os.environ.get("MAIN_CHANNEL_ID"))
+                        await self.get_channel(channel_id).send()
 
     # Changes the status of the bot
     @tasks.loop(minutes=45)
