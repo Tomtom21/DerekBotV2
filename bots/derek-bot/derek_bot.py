@@ -44,6 +44,9 @@ db_manager = DataManager(
         "birthdays": {
             "select": "*"
         },
+        "birthday_tracks": {
+            "select": "*"
+        },
         "statuses": {
             "select": "*"
         }
@@ -86,6 +89,7 @@ class DerekBot(commands.Bot):
 
     # Starts our TTS and data collection background tasks
     def start_background_tasks(self):
+        self.birthday_check.start()
         self.cycle_statuses.start()
         # self.update_cached_info.start()
 
@@ -119,7 +123,7 @@ class DerekBot(commands.Bot):
                         )
 
                         # Sending a birthday message
-                        birthday_string = f"<@ {birthday['user_id']}> Happy"
+                        birthday_string = f"<@{birthday['user_id']}> Happy"
                         if birthday["year"]:
                             age = timezone_date.year - birthday["year"]
                             suffix = get_suffix(age)
@@ -127,7 +131,7 @@ class DerekBot(commands.Bot):
                         birthday_string += f" birthday!"
 
                         channel_id = int(os.environ.get("MAIN_CHANNEL_ID"))
-                        await self.get_channel(channel_id).send()
+                        await self.get_channel(channel_id).send(birthday_string)
 
     # Changes the status of the bot
     @tasks.loop(minutes=45)
