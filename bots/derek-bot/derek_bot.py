@@ -93,8 +93,17 @@ class DerekBot(commands.Bot):
 
     # Starts our TTS and data collection background tasks
     def start_background_tasks(self):
-        self.birthday_check.start()
-        self.cycle_statuses.start()
+        """
+        Starts background processes if they aren't already started
+        """
+        if not self.birthday_check.is_running():
+            self.birthday_check.start()
+            logging.info("Birthday check background process started")
+
+        if not self.cycle_statuses.is_running():
+            self.cycle_statuses.start()
+            logging.info("Status cycling background process started")
+
         # self.update_cached_info.start()
 
     # Repeatedly checks to see if there is a new TTS item to say
