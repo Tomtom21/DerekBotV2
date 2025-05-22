@@ -73,8 +73,12 @@ class DerekBot(commands.Bot):
 
         self.data_manager = data_manager
 
-        if "MAIN_CHANNEL_ID" in os.environ:
-            self.MAIN_CHANNEL_ID = os.environ.get("MAIN_CHANNEL_ID")
+        self.MAIN_CHANNEL_ID = self.get_channel_id("MAIN_CHANNEL_ID")
+
+    @staticmethod
+    def get_channel_id(env_var_name):
+        val = os.environ.get(env_var_name)
+        return int(val) if val is not None else None
 
     async def setup_hook(self):
         await self.add_cog(MovieGroupCog(self, self.data_manager))
@@ -115,8 +119,8 @@ class DerekBot(commands.Bot):
                         for birthday_track in self.data_manager.data.get("birthday_tracks")
                 ):
                     # Making sure that we have a channel id to send to
-                    if "MAIN_CHANNEL_ID" in os.environ:
-                        # Updating the brithday tracking table
+                    if self.MAIN_CHANNEL_ID:
+                        # Updating the birthday tracking table
                         self.data_manager.add_table_data(
                             table_name="birthday_tracks",
                             json_data={"birthday_id": birthday["id"], "year": timezone_date.year}
@@ -130,8 +134,7 @@ class DerekBot(commands.Bot):
                             birthday_string += f" {age}{suffix}"
                         birthday_string += f" birthday!"
 
-                        channel_id = int(os.environ.get("MAIN_CHANNEL_ID"))
-                        await self.get_channel(channel_id).send(birthday_string)
+                        await self.get_channel(self.MAIN_CHANNEL_ID).send(birthday_string)
 
     # Changes the status of the bot
     @tasks.loop(minutes=45)
