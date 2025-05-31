@@ -34,3 +34,21 @@ class AICog(commands.Cog):
                 await interaction.response.send_message("Memory successfully saved")
             else:
                 await interaction.response.send_message("`Failed to save memory`")
+
+    @group.command(name="memories", description="Shows a list of Derek's memories")
+    async def memories(self, interaction: Interaction):
+        def get_memory_data():
+            return [
+                f"{memory['memory']} - {memory['added_by']['user_name']}"
+                for memory in self.data_manager.data.get("chat_memories")
+            ]
+
+        discord_list = DiscordList(
+            get_items=get_memory_data,
+            title="Derek's Memories"
+        )
+
+        await interaction.response.send_message(
+            discord_list.get_page(),
+            view=discord_list.create_view()
+        )

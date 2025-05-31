@@ -52,7 +52,7 @@ db_manager = DataManager(
             "select": "*"
         },
         "chat_memories": {
-            "select": "*",
+            "select": "*, added_by(*)",
             "order_by": {"column": "created", "ascending": False}
         }
     }
