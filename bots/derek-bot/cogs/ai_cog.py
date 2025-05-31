@@ -16,6 +16,7 @@ class AICog(commands.Cog):
     group = app_commands.Group(name="ai", description="Commands for managing Derek's AI functionality")
 
     @group.command(name="add_memory", description="Adds a memory for Derek to remember")
+    @app_commands.describe(memory="The information you'd like Derek to remember")
     async def add_memory(self, interaction: Interaction, memory: str):
         if len(memory) > 100:
             logging.warning(f"{interaction.user.name} tried to save a memory with more than 100 characters: {memory}")
@@ -54,6 +55,7 @@ class AICog(commands.Cog):
         )
 
     @group.command(name="remove_memory", description="Deletes a memory from Derek")
+    @app_commands.describe(memory_index="The number in the memory list corresponding to the memory you want to remove")
     async def remove_memory(self, interaction: Interaction, memory_index: int):
         try:
             memory = self.data_manager.get_db_item_with_index(
