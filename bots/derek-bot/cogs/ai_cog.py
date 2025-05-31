@@ -52,3 +52,28 @@ class AICog(commands.Cog):
             discord_list.get_page(),
             view=discord_list.create_view()
         )
+
+    @group.command(name="remove_memory", description="Deletes a memory from Derek")
+    async def remove_memory(self, interaction: Interaction, memory_index: int):
+        try:
+            memory = self.data_manager.get_db_item_with_index(
+                table_name="chat_memories",
+                item_index=memory_index
+            )
+
+            memory_name = memory["memory"]
+            added_by_user_id = memory["added_by"]["user_id"]
+
+            # Removing the memory
+            successfully_removed = self.data_manager.delete_table_data(
+                table_name="chat_memories",
+                match_json={"memory": memory_name, "added_by": added_by_user_id}
+            )
+
+            if successfully_removed:
+                await interaction.response.send_message("Removed **" + memory_name + "** from Derek's memory")
+            else:
+                await interaction.response.send_message("`Failed to remove memory`")
+
+        except ListIndexOutOfBounds as error:
+            await error.handle_index_error(interaction)
