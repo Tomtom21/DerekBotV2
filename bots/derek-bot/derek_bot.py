@@ -5,6 +5,7 @@ from shared.data_manager import DataManager
 from cogs.movie_cog import MovieGroupCog
 from cogs.misc_cog import MiscGroupCog
 from cogs.birthday_cog import BirthdayGroupCog
+from cogs.ai_cog import AICog
 import random
 import datetime
 import pytz
@@ -49,6 +50,10 @@ db_manager = DataManager(
         },
         "statuses": {
             "select": "*"
+        },
+        "chat_memories": {
+            "select": "*, added_by(*)",
+            "order_by": {"column": "created", "ascending": False}
         }
     }
 )
@@ -84,6 +89,7 @@ class DerekBot(commands.Bot):
         await self.add_cog(MovieGroupCog(self, self.data_manager))
         await self.add_cog(MiscGroupCog(self, self.data_manager))
         await self.add_cog(BirthdayGroupCog(self, self.data_manager))
+        await self.add_cog(AICog(self, self.data_manager))
         await self.tree.sync()
         logging.info("Synced commands")
 
