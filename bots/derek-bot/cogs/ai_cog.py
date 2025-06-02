@@ -36,8 +36,9 @@ class AICog(commands.Cog):
                 table_name="chat_memories",
                 json_data={"memory": memory, "created": get_est_iso_date(), "added_by": interaction.user.id}
             )
-            logging.info(f"User {interaction.user.name} saved memory: {memory}")
+
             if successfully_added:
+                logging.info(f"User {interaction.user.name} saved memory: {memory}")
                 await interaction.response.send_message("Memory successfully saved")
             else:
                 await interaction.response.send_message("`Failed to save memory`")
@@ -80,17 +81,18 @@ class AICog(commands.Cog):
                 item_index=memory_index
             )
 
-            memory_name = memory["memory"]
+            memory_text = memory["memory"]
             added_by_user_id = memory["added_by"]["user_id"]
 
             # Removing the memory
             successfully_removed = self.data_manager.delete_table_data(
                 table_name="chat_memories",
-                match_json={"memory": memory_name, "added_by": added_by_user_id}
+                match_json={"memory": memory_text, "added_by": added_by_user_id}
             )
 
             if successfully_removed:
-                await interaction.response.send_message("Removed **" + memory_name + "** from Derek's memory")
+                logging.info(f"User {interaction.user.name} removed memory: {memory_text}")
+                await interaction.response.send_message("Removed **" + memory_text + "** from Derek's memory")
             else:
                 await interaction.response.send_message("`Failed to remove memory`")
 
