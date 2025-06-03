@@ -2,6 +2,7 @@ from discord.ext import commands
 from discord import app_commands, Interaction
 
 from shared.data_manager import DataManager
+from shared.DiscordList import DiscordList
 import random
 
 
@@ -26,3 +27,21 @@ class MiscGroupCog(commands.Cog):
     async def simon_says(self, interaction: Interaction, text: str):
         await interaction.channel.send(text)
         await interaction.response.send_message("Sent the simonsays message.", ephemeral=True)
+
+    @group.command(name="random_nicknames")
+    async def random_nicknames(self, interaction: Interaction):
+        def get_random_nickname_data():
+            return [
+                f"{random_nickname['nickname']} - {random_nickname['added_by']['user_name']}"
+                for random_nickname in self.data_manager.data.get("random_user_nicknames")
+            ]
+
+        discord_list = DiscordList(
+            get_items=get_random_nickname_data,
+            title="Random Nicknames"
+        )
+
+        await interaction.response.send_message(
+            discord_list.get_page(),
+            view=discord_list.create_view()
+        )
