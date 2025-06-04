@@ -105,3 +105,28 @@ class MiscGroupCog(commands.Cog):
 
         except ListIndexOutOfBounds as error:
             await error.handle_index_error(interaction)
+
+    @group.command(name="shuffle_nickname", description="Set whether to shuffle your nickname daily")
+    @app_commands.describe(shuffle_nickname="Do you want to shuffle your nickname daily?")
+    async def shuffle_nickname(self, interaction: Interaction, shuffle_nickname: bool):
+        """
+        Command to set whether to shuffle a user's nickname on a daily basis
+
+        :param interaction: The interaction for the command
+        :param shuffle_nickname: Boolean value on whether to shuffle the nickname or not
+        """
+        successfully_updated = self.data_manager.update_table_data(
+            table_name="users",
+            match_json={"user_id": interaction.user.id},
+            update_json={"shuffle_nickname": shuffle_nickname}
+        )
+
+        if successfully_updated:
+            logging.info(f"Successfully updated nickname shuffling state for {interaction.user.name}")
+            await interaction.response.send_message(
+                f"Successfully updated nickname shuffling state to {shuffle_nickname}",
+                ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(f"`Failed to update nickname shuffling state`")
+
