@@ -54,6 +54,10 @@ db_manager = DataManager(
         "chat_memories": {
             "select": "*, added_by(*)",
             "order_by": {"column": "created", "ascending": False}
+        },
+        "random_user_nicknames": {
+            "select": "*, added_by(*)",
+            "order_by": {"column": "created", "ascending": False}
         }
     }
 )
