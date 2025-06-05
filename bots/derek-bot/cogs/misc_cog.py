@@ -69,7 +69,7 @@ class MiscGroupCog(commands.Cog):
         )
 
         if successfully_added:
-            logging.info(f"Saved new random nickname: {nickname}")
+            logging.info(f"User {interaction.user.name} saved new random nickname: {nickname}")
             await interaction.response.send_message(f"Saved random nickname **{nickname}**")
         else:
             await interaction.response.send_message("`Failed to save random nickname`")
@@ -98,7 +98,7 @@ class MiscGroupCog(commands.Cog):
             )
 
             if successfully_removed:
-                logging.info(f"Removed random nickname: {nickname_string}")
+                logging.info(f"User {interaction.user.name} removed random nickname: {nickname_string}")
                 await interaction.response.send_message(f"Removed random nickname **{nickname_string}**")
             else:
                 await interaction.response.send_message(f"`Failed to remove random nickname`")
@@ -124,9 +124,8 @@ class MiscGroupCog(commands.Cog):
         if successfully_updated:
             logging.info(f"Successfully updated nickname shuffling state for {interaction.user.name}")
             await interaction.response.send_message(
-                f"Successfully updated nickname shuffling state to {shuffle_nickname}",
+                f"Successfully updated nickname shuffling state to **{shuffle_nickname}**",
                 ephemeral=True
             )
         else:
             await interaction.response.send_message(f"`Failed to update nickname shuffling state`")
-
