@@ -37,7 +37,7 @@
 ## Operation
 | Type     | Operation             | Implemented | Notes                                      | 
 |----------|-----------------------|-------------|--------------------------------------------|
-| General  | on_member_join        | -❌          |                                            |
+| General  | on_member_join        | ❌           |                                            |
 | General  | on_member_remove      | ❌           |                                            |
 | General  | on_message            | ❌           | Handles reactions, AI messages, or vc-text | 
 | Birthday | birthday_check_loop   | ✅           |                                            | 
