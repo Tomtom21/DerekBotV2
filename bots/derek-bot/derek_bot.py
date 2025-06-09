@@ -115,6 +115,10 @@ class DerekBot(commands.Bot):
             self.cycle_statuses.start()
             logging.info("Status cycling background process started")
 
+        if not self.cycle_nicknames.is_running():
+            self.cycle_nicknames.start()
+            logging.info("Nickname cycling background process started")
+        
         # self.update_cached_info.start()
 
     # Repeatedly checks to see if there is a new TTS item to say
