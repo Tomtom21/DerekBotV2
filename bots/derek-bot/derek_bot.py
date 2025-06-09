@@ -82,10 +82,11 @@ class DerekBot(commands.Bot):
 
         self.data_manager = data_manager
 
-        self.MAIN_CHANNEL_ID = self.get_channel_id("MAIN_CHANNEL_ID")
+        self.guild = self.get_guild(self.get_discord_id_from_env("NICKNAME_SHUFFLE_GUILD_ID"))
+        self.MAIN_CHANNEL_ID = self.get_discord_id_from_env("MAIN_CHANNEL_ID")
 
     @staticmethod
-    def get_channel_id(env_var_name):
+    def get_discord_id_from_env(env_var_name):
         val = os.environ.get(env_var_name)
         return int(val) if val is not None else None
 
@@ -189,6 +190,35 @@ class DerekBot(commands.Bot):
     async def update_cached_info(self):
         self.data_manager.fetch_all_table_data()
         logging.info("Updated all table information")
+
+    async def give_user_random_nickname(self, user_id):
+        """
+        Gives a user a random nickname given a user id
+
+        :param user_id: The user id of the user whose nickname we want to change
+        """
+        nicknames = self.data_manager.data.get("random_user_nicknames")
+
+        # Getting the member and updating their name if nicknames exist
+        if nicknames:
+            member = self.guild.get_member(user_id)
+            await member.edit(nick=random.choice(nicknames)["nickname"])
+
+    @tasks.loop(hours=24)
+    async def cycle_nicknames(self):
+        """
+        Participating users will have their nickname set to a random nickname on a daily basis
+        """
+        # Getting participating users
+        user_ids_to_update = [
+            user["user_id"]
+            for user in self.data_manager.data.get("users")
+            if user["shuffle_nickname"] is True
+        ]
+
+        # Looping through users and giving them a random nickname
+        for user_id in user_ids_to_update:
+            await self.give_user_random_nickname(user_id)
 
     @app_commands.command(name="toggletts", description="Enables/Disables TTS in TTS channels (admin only)")
     async def toggletts(self, interaction: discord.Interaction):
