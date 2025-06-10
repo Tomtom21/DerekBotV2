@@ -80,7 +80,7 @@ class MiscGroupCog(commands.Cog):
         Command to remove a random nickname from the random nickname table in the DB
 
         :param interaction: The interaction for the command
-        :param nickname_index: The index of the nickname in the local db cache
+        :param nickname_index: The index of the nickname in the user facing list (local db index + 1)
         """
         try:
             nickname_item = self.data_manager.get_db_item_with_index(
