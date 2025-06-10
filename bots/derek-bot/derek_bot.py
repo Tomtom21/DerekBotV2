@@ -58,6 +58,9 @@ db_manager = DataManager(
         "random_user_nicknames": {
             "select": "*, added_by(*)",
             "order_by": {"column": "created", "ascending": False}
+        },
+        "system_config": {
+            "select": "*"
         }
     }
 )
@@ -83,7 +86,7 @@ class DerekBot(commands.Bot):
         self.data_manager = data_manager
 
         self.guild = None
-        self.MAIN_CHANNEL_ID = self.get_discord_id_from_env("MAIN_CHANNEL_ID")
+        self.main_channel_id = None
 
     @staticmethod
     def get_discord_id_from_env(env_var_name):
@@ -108,6 +111,10 @@ class DerekBot(commands.Bot):
         """
         Starts background processes if they aren't already started
         """
+        if not self.refresh_cached_info.is_running():
+            self.refresh_cached_info.start()
+            logging.info("Local DB Cache refresh process started")
+
         if not self.birthday_check.is_running():
             self.birthday_check.start()
             logging.info("Birthday check background process started")
@@ -119,8 +126,6 @@ class DerekBot(commands.Bot):
         if not self.cycle_nicknames.is_running():
             self.cycle_nicknames.start()
             logging.info("Nickname cycling background process started")
-
-        # self.update_cached_info.start()
 
     # Repeatedly checks to see if there is a new TTS item to say
     @tasks.loop(seconds=1)
@@ -144,7 +149,7 @@ class DerekBot(commands.Bot):
                         for birthday_track in self.data_manager.data.get("birthday_tracks")
                 ):
                     # Making sure that we have a channel id to send to
-                    if self.MAIN_CHANNEL_ID:
+                    if self.main_channel_id:
                         # Updating the birthday tracking table
                         self.data_manager.add_table_data(
                             table_name="birthday_tracks",
@@ -159,7 +164,8 @@ class DerekBot(commands.Bot):
                             birthday_string += f" {age}{suffix}"
                         birthday_string += f" birthday!"
 
-                        await self.get_channel(self.MAIN_CHANNEL_ID).send(birthday_string)
+                        logging.info(f"Wishing happy birthday to a user")
+                        await self.get_channel(self.main_channel_id).send(birthday_string)
 
     # Changes the status of the bot
     @tasks.loop(minutes=45)
@@ -192,9 +198,17 @@ class DerekBot(commands.Bot):
 
     # Pulls cached info from the database, and updated the local variables for up-to-date values
     @tasks.loop(hours=1)
-    async def update_cached_info(self):
+    async def refresh_cached_info(self):
         self.data_manager.fetch_all_table_data()
-        logging.info("Updated all table information")
+        logging.info("Refreshed/updated all table information")
+
+        # Updating our channel ids/other config information
+        config_data = self.data_manager.data.get("system_config")
+        if config_data:
+            self.main_channel_id = next(
+                (item["config_value_int"] for item in config_data if item["config_name"] == "main_channel_id"),
+                None
+            )
 
     async def give_user_random_nickname(self, user_id):
         """
