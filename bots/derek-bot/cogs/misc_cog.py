@@ -131,7 +131,7 @@ class MiscGroupCog(commands.Cog):
             )
             return
 
-        # Otherwise updating the nickname
+        # Otherwise updating the nickname shuffling state
         successfully_updated = self.data_manager.update_table_data(
             table_name="users",
             match_json={"user_id": interaction.user.id},
