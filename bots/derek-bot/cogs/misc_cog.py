@@ -115,6 +115,19 @@ class MiscGroupCog(commands.Cog):
         :param interaction: The interaction for the command
         :param shuffle_nickname: Boolean value on whether to shuffle the nickname or not
         """
+        # Preventing admins from enabling this feature
+        admin_users = [
+            user["user_id"]
+            for user in self.data_manager.data.get("users")
+            if user["is_administrator"] is True
+        ]
+        if interaction.user.id in admin_users:
+            await interaction.response.send_message(
+                f"`Administrators are unable to enable nickname shuffling.`"
+            )
+            return
+
+        # Otherwise updating the nickname
         successfully_updated = self.data_manager.update_table_data(
             table_name="users",
             match_json={"user_id": interaction.user.id},
