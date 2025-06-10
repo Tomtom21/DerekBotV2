@@ -258,6 +258,8 @@ class DerekBot(commands.Bot):
                     await vc_activity_channel.send(
                         f"🔀 ***{member.display_name}** joined {after.channel.name} from {before.channel.name}.*"
                     )
+        else:
+            logging.warning("Unable to find vc-activity channel. Not sending voice activity.")
 
     @app_commands.command(name="toggletts", description="Enables/Disables TTS in TTS channels (admin only)")
     async def toggletts(self, interaction: discord.Interaction):
