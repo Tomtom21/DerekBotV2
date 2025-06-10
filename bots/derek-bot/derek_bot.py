@@ -206,8 +206,13 @@ class DerekBot(commands.Bot):
 
         # Getting the member and updating their name if nicknames exist
         if nicknames:
-            member = self.guild.get_member(user_id)
-            await member.edit(nick=random.choice(nicknames)["nickname"])
+            try:
+                member = self.guild.get_member(user_id)
+                nickname_string = random.choice(nicknames)["nickname"]
+                await member.edit(nick=nickname_string)
+                logging.info(f"Set nickname for user {user_id} to {nickname_string}")
+            except Exception as e:
+                logging.error(f"Failed to change nickname for user {user_id}: {e}")
         else:
             logging.warning(f"No nicknames found in database. Not updating nickname for user {user_id}")
 
