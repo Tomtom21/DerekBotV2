@@ -264,37 +264,6 @@ class DerekBot(commands.Bot):
     async def announcename(self, interaction: discord.Interaction):
         pass
 
-    @app_commands.command(name="simonsays", description="Repeats what the user says")
-    async def simonsays(self, interaction: discord.Interaction, text: str):
-        pass
-
-    @app_commands.command(name="addbirthday", description="Save a birthday for Derek to remember later")
-    @app_commands.choices(timezone=[
-        app_commands.Choice(name='EST', value="US/Eastern"),
-        app_commands.Choice(name='CST', value="US/Central"),
-        app_commands.Choice(name='MST', value="US/Mountain"),
-        app_commands.Choice(name='PST', value="US/Pacific"),
-        app_commands.Choice(name='AKT', value="US/Alaska"),
-        app_commands.Choice(name='HAT', value="US/Hawaii"),
-        app_commands.Choice(name='CET', value="Europe/Brussels"),
-        app_commands.Choice(name='London', value="Europe/London")
-    ])
-    async def addbirthday(self,
-                          interaction: discord.Interaction,
-                          month: app_commands.Range[int, 1, 12],
-                          day: app_commands.Range[int, 1, 31],
-                          year: app_commands.Range[int, 1985, 2010] = -1,
-                          timezone: app_commands.Choice[str] = "US/Eastern"):
-        pass
-
-    @app_commands.command(name="time", description="Shows the current time in various timezones")
-    async def time(self, interaction: discord.Interaction):
-        pass
-
-    @app_commands.command(name="featurerq", description="Request a feature to be added in the future")
-    async def featurerq(self, interaction: discord.Interaction, request_text: str):
-        pass
-
 
 # Starting the bot
 if __name__ == '__main__':
