@@ -45,7 +45,7 @@
 | TTS      | VC Audio              | ✅           | Implemented in helper class                |
 | DB       | update_cached_info    | ⚠️          | Implemented but not running ATM            | 
 | General  | on_voice_state_update | ❌           | For vc-activity updates                    | 
-| General  | nickname_cycling      | ❌           | For shuffling random nicknames             | 
+| General  | nickname_cycling      | ✅           | For shuffling random nicknames             | 
 
 ## AI Tools
 | Type         | Implemented |
