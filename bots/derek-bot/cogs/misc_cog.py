@@ -122,6 +122,10 @@ class MiscGroupCog(commands.Cog):
             if user["is_administrator"] is True
         ]
         if interaction.user.id in admin_users and shuffle_nickname:
+            logging.warning(
+                f"User {interaction.user.id}({interaction.user.name}) attempted to enable nickname shuffling"
+                f" as an admin"
+            )
             await interaction.response.send_message(
                 f"`Administrators cannot enable nickname shuffling.`"
             )
