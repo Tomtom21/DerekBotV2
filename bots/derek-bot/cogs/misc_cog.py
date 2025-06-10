@@ -115,19 +115,17 @@ class MiscGroupCog(commands.Cog):
         :param interaction: The interaction for the command
         :param shuffle_nickname: Boolean value on whether to shuffle the nickname or not
         """
-        # Preventing admins from enabling this feature
-        admin_users = [
-            user["user_id"]
-            for user in self.data_manager.data.get("users")
-            if user["is_administrator"] is True
-        ]
-        if interaction.user.id in admin_users and shuffle_nickname:
+        # Preventing higher or equal roles from enabling this feature
+        bot_member_top_role = interaction.guild.me.top_role
+        user_top_role = interaction.user.top_role
+
+        if bot_member_top_role <= user_top_role and shuffle_nickname:
             logging.warning(
-                f"User {interaction.user.id}({interaction.user.name}) attempted to enable nickname shuffling"
-                f" as an admin"
+                f"User {interaction.user.id}({interaction.user.name}) failed to enable nickname shuffling. "
+                f"Bot/User role levels were: {bot_member_top_role.position} > {user_top_role.position}"
             )
             await interaction.response.send_message(
-                f"`Administrators cannot enable nickname shuffling.`"
+                f"`Derek is unable to shuffle nicknames for users who are of equal role level or higher.`"
             )
             return
 
