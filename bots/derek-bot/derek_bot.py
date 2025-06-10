@@ -207,6 +207,8 @@ class DerekBot(commands.Bot):
         if nicknames:
             member = self.guild.get_member(user_id)
             await member.edit(nick=random.choice(nicknames)["nickname"])
+        else:
+            logging.warning(f"No nicknames found in database. Not updating nickname for user {user_id}")
 
     @tasks.loop(hours=24)
     async def cycle_nicknames(self):
