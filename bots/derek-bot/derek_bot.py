@@ -82,7 +82,7 @@ class DerekBot(commands.Bot):
 
         self.data_manager = data_manager
 
-        self.guild = self.get_guild(self.get_discord_id_from_env("NICKNAME_SHUFFLE_GUILD_ID"))
+        self.guild = None
         self.MAIN_CHANNEL_ID = self.get_discord_id_from_env("MAIN_CHANNEL_ID")
 
     @staticmethod
@@ -100,6 +100,7 @@ class DerekBot(commands.Bot):
 
     async def on_ready(self):
         logging.info(f"Logged in as {self.user}")
+        self.guild = self.get_guild(self.get_discord_id_from_env("NICKNAME_SHUFFLE_GUILD_ID"))
         self.start_background_tasks()
 
     # Starts our TTS and data collection background tasks
@@ -118,7 +119,7 @@ class DerekBot(commands.Bot):
         if not self.cycle_nicknames.is_running():
             self.cycle_nicknames.start()
             logging.info("Nickname cycling background process started")
-        
+
         # self.update_cached_info.start()
 
     # Repeatedly checks to see if there is a new TTS item to say
