@@ -121,9 +121,9 @@ class MiscGroupCog(commands.Cog):
             for user in self.data_manager.data.get("users")
             if user["is_administrator"] is True
         ]
-        if interaction.user.id in admin_users:
+        if interaction.user.id in admin_users and shuffle_nickname:
             await interaction.response.send_message(
-                f"`Administrators are unable to enable nickname shuffling.`"
+                f"`Administrators cannot enable nickname shuffling.`"
             )
             return
 
