@@ -87,6 +87,7 @@ class DerekBot(commands.Bot):
 
         self.guild = None
         self.main_channel_id = None
+        self.vc_activity_channel_id = None
 
     @staticmethod
     def get_discord_id_from_env(env_var_name):
@@ -209,6 +210,10 @@ class DerekBot(commands.Bot):
                 (item["config_value_int"] for item in config_data if item["config_name"] == "main_channel_id"),
                 None
             )
+            self.vc_activity_channel_id = next(
+                (item["config_value_int"] for item in config_data if item["config_name"] == "vc_activity_channel_id"),
+                None
+            )
 
     async def give_user_random_nickname(self, user_id):
         """
@@ -254,7 +259,7 @@ class DerekBot(commands.Bot):
         :param before: The channel they were in before, None if they were not
         :param after: The channel they were in ebfore, None if they were not
         """
-        vc_activity_channel = discord.utils.get(member.guild.channels, name="vc-activity")
+        vc_activity_channel = self.get_channel(self.vc_activity_channel_id)
 
         # If we have found the vc-activity channel
         if vc_activity_channel:
