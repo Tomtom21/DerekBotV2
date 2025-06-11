@@ -88,6 +88,7 @@ class DerekBot(commands.Bot):
         self.guild = None
         self.main_channel_id = None
         self.vc_activity_channel_id = None
+        self.joins_leaves_channel_id = None
 
     @staticmethod
     def get_discord_id_from_env(env_var_name):
@@ -214,6 +215,10 @@ class DerekBot(commands.Bot):
                 (item["config_value_int"] for item in config_data if item["config_name"] == "vc_activity_channel_id"),
                 None
             )
+            self.joins_leaves_channel_id = next(
+                (item["config_value_int"] for item in config_data if item["config_name"] == "joins_leaves_channel_id"),
+                None
+            )
 
     async def give_user_random_nickname(self, user_id):
         """
@@ -279,6 +284,25 @@ class DerekBot(commands.Bot):
                     )
         else:
             logging.warning("Unable to find vc-activity channel. Not sending voice activity.")
+
+    async def on_member_join(self, member):
+        """
+        Called when a user joins the server, logs the occurrence
+
+        :param member: The user who joined
+        """
+        logging.info(f"{member.name} has joined the server")
+
+    async def on_member_remove(self, member):
+        """
+        Called when a member leaves the server, sends a message announcing who the user to leave was
+
+        :param member: The user who left
+        """
+        logging.info(f"{member.name} has left the server")
+        joins_leaves_channel = self.get_channel(self.joins_leaves_channel_id)
+        if joins_leaves_channel:
+            await joins_leaves_channel.send(f"<@{member.id}> has left the server")
 
     @app_commands.command(name="toggletts", description="Enables/Disables TTS in TTS channels (admin only)")
     async def toggletts(self, interaction: discord.Interaction):
