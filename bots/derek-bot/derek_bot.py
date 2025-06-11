@@ -1,6 +1,8 @@
 # General imports
 import os
 import logging
+import re
+
 from shared.data_manager import DataManager
 from cogs.movie_cog import MovieGroupCog
 from cogs.misc_cog import MiscGroupCog
@@ -61,6 +63,9 @@ db_manager = DataManager(
         },
         "system_config": {
             "select": "*"
+        },
+        "reactions": {
+            "select": "*"
         }
     }
 )
@@ -89,6 +94,7 @@ class DerekBot(commands.Bot):
         self.main_channel_id = None
         self.vc_activity_channel_id = None
         self.joins_leaves_channel_id = None
+        self.reactions_list = []
 
     @staticmethod
     def get_discord_id_from_env(env_var_name):
@@ -220,6 +226,9 @@ class DerekBot(commands.Bot):
                 None
             )
 
+        # Updating our list of reactions
+        self.reactions_list = self.data_manager.data.get("reactions")
+
     async def give_user_random_nickname(self, user_id):
         """
         Gives a user a random nickname given a user id
@@ -303,6 +312,16 @@ class DerekBot(commands.Bot):
         joins_leaves_channel = self.get_channel(self.joins_leaves_channel_id)
         if joins_leaves_channel:
             await joins_leaves_channel.send(f"<@{member.id}> has left the server")
+
+    async def on_message(self, message):
+        # Reacting to messages using the regex strings found in the DB
+        for reaction in self.reactions_list:
+            match = re.search(reaction["regex"], message.content)
+            if match:
+                try:
+                    await message.add_reaction(reaction["emoji"])
+                except Exception as e:
+                    logging.error(f"Failed to add reaction to message '{message.content[:25]}': {e}")
 
     @app_commands.command(name="toggletts", description="Enables/Disables TTS in TTS channels (admin only)")
     async def toggletts(self, interaction: discord.Interaction):
