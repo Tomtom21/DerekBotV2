@@ -87,6 +87,7 @@ class DerekBot(commands.Bot):
 
         self.guild = None
         self.main_channel_id = None
+        self.vc_activity_channel_id = None
 
     @staticmethod
     def get_discord_id_from_env(env_var_name):
@@ -209,6 +210,10 @@ class DerekBot(commands.Bot):
                 (item["config_value_int"] for item in config_data if item["config_name"] == "main_channel_id"),
                 None
             )
+            self.vc_activity_channel_id = next(
+                (item["config_value_int"] for item in config_data if item["config_name"] == "vc_activity_channel_id"),
+                None
+            )
 
     async def give_user_random_nickname(self, user_id):
         """
@@ -245,6 +250,35 @@ class DerekBot(commands.Bot):
         # Looping through users and giving them a random nickname
         for user_id in user_ids_to_update:
             await self.give_user_random_nickname(user_id)
+
+    async def on_voice_state_update(self, member, before, after):
+        """
+        Prints a message in a dedicated voice activity channel when a member leaves, joins, or moves voice channels
+
+        :param member: The member whose voice channel activity we're tracking
+        :param before: The channel they were in before, None if they were not
+        :param after: The channel they were in ebfore, None if they were not
+        """
+        vc_activity_channel = self.get_channel(self.vc_activity_channel_id)
+
+        # If we have found the vc-activity channel
+        if vc_activity_channel:
+            # Determining whether someone joined, left, or moved voice channels
+            if not before.channel and after.channel:
+                await vc_activity_channel.send(
+                    f"🟩 ***{member.display_name}** joined {after.channel.name}.*"
+                )
+            elif before.channel and not after.channel:
+                await vc_activity_channel.send(
+                    f"🟥 ***{member.display_name}** left {before.channel.name}.*"
+                )
+            elif before.channel and after.channel:
+                if before.channel.id != after.channel.id:
+                    await vc_activity_channel.send(
+                        f"🔀 ***{member.display_name}** joined {after.channel.name} from {before.channel.name}.*"
+                    )
+        else:
+            logging.warning("Unable to find vc-activity channel. Not sending voice activity.")
 
     @app_commands.command(name="toggletts", description="Enables/Disables TTS in TTS channels (admin only)")
     async def toggletts(self, interaction: discord.Interaction):
