@@ -65,9 +65,14 @@ class DataManager:
                 attempts += 1
                 time.sleep(wait_time)
 
-    @staticmethod
-    def execute_db_query(query, table_name):
+    def execute_db_query(self, query, table_name):
         try:
+            # Refreshing our session if it already expired or expires within 60 seconds
+            session = self.supabase.auth.get_session()
+            if session and session.expires_at - time.time() < 60:
+                self.supabase.auth.refresh_session()
+                logging.info("Refreshing DB JWT token")
+
             response = query.execute()
             return response
         except Exception as e:
