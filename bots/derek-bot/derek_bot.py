@@ -91,6 +91,7 @@ class DerekBot(commands.Bot):
         self.data_manager = data_manager
 
         self.guild = None
+        self.guild_id = None
         self.main_channel_id = None
         self.vc_activity_channel_id = None
         self.joins_leaves_channel_id = None
@@ -109,9 +110,37 @@ class DerekBot(commands.Bot):
         await self.tree.sync()
         logging.info("Synced commands")
 
+    def set_config_data_from_db_manager(self):
+        """
+        Updates variables for variable discord ids to ensure all id information is up to date. Also refreshes reactions
+        """
+        config_data = self.data_manager.data.get("system_config")
+
+        # If we don't get the config data
+        if not config_data:
+            return
+
+        # Helper functions to make things cleaner
+        def get_config_int(config_name):
+            return next((item["config_value_int"] for item in config_data if item["config_name"] == config_name), None)
+
+        def get_config_str(config_name):
+            return next((item["config_value_text"] for item in config_data if item["config_name"] == config_name), None)
+
+        self.main_channel_id = get_config_int("main_channel_id")
+        self.vc_activity_channel_id = get_config_int("vc_activity_channel_id")
+        self.joins_leaves_channel_id = get_config_int("joins_leaves_channel_id")
+        self.guild_id = get_config_int("guild_id")
+        logging.info("Config data from DB set")
+
+        # Updating our list of reactions
+        self.reactions_list = self.data_manager.data.get("reactions")
+        logging.info("Reactions_list from DB set")
+
     async def on_ready(self):
         logging.info(f"Logged in as {self.user}")
-        self.guild = self.get_guild(self.get_discord_id_from_env("NICKNAME_SHUFFLE_GUILD_ID"))
+        self.set_config_data_from_db_manager()
+        self.guild = self.get_guild(self.guild_id)
         self.start_background_tasks()
 
     # Starts our TTS and data collection background tasks
@@ -210,24 +239,8 @@ class DerekBot(commands.Bot):
         self.data_manager.fetch_all_table_data()
         logging.info("Refreshed/updated all table information")
 
-        # Updating our channel ids/other config information
-        config_data = self.data_manager.data.get("system_config")
-        if config_data:
-            self.main_channel_id = next(
-                (item["config_value_int"] for item in config_data if item["config_name"] == "main_channel_id"),
-                None
-            )
-            self.vc_activity_channel_id = next(
-                (item["config_value_int"] for item in config_data if item["config_name"] == "vc_activity_channel_id"),
-                None
-            )
-            self.joins_leaves_channel_id = next(
-                (item["config_value_int"] for item in config_data if item["config_name"] == "joins_leaves_channel_id"),
-                None
-            )
-
-        # Updating our list of reactions
-        self.reactions_list = self.data_manager.data.get("reactions")
+        # Updating our config data periodically incase anything changes
+        self.set_config_data_from_db_manager()
 
     async def give_user_random_nickname(self, user_id):
         """
@@ -238,7 +251,7 @@ class DerekBot(commands.Bot):
         nicknames = self.data_manager.data.get("random_user_nicknames")
 
         # Getting the member and updating their name if nicknames exist
-        if nicknames:
+        if nicknames and self.guild:
             try:
                 member = self.guild.get_member(user_id)
                 nickname_string = random.choice(nicknames)["nickname"]
