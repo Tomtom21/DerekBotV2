@@ -1,11 +1,10 @@
 import asyncio
 import logging
 import random
-import threading
 from enum import Enum
 from typing import List, Optional
 import discord
-from TTSManager import TTSManager
+from shared.TTSManager import TTSManager
 
 
 class AudioState(Enum):
@@ -68,18 +67,8 @@ class VCAudioManager:
         self.processing_task = None
         self.idle_task = None
         self.lock = asyncio.Lock()
-        self._loop = asyncio.new_event_loop()
-        self._thread = threading.Thread(target=self._setup_asyncio_thread, daemon=True)
-        self._thread.start()
 
-    def _setup_asyncio_thread(self):
-        """
-        Sets up a new event loop
-        """
-        asyncio.set_event_loop(self._loop)
-        self._loop.run_forever()
-
-    def add_to_queue(self, audio_file_path, voice_channel, high_priority=True):
+    async def add_to_queue(self, audio_file_path, voice_channel, high_priority=True):
         """
         Adds an audio to the queue, positions it in the list based on priority
 
@@ -101,7 +90,7 @@ class VCAudioManager:
 
         # Determining whether to start the processing loop task
         if not self.processing_task or self.processing_task.done():
-            self.processing_task = asyncio.run_coroutine_threadsafe(self._playback_loop(), self._loop)
+            self.processing_task = asyncio.create_task(self._playback_loop())
 
         # If the idle task is set and not done, cancel it
         if self.idle_task and not self.idle_task.done():
@@ -120,11 +109,10 @@ class VCAudioManager:
                 # Connecting to the proper voice channel
                 if self._current_voice_channel is None:
                     self._current_voice_channel = await self.current_audio_item.voice_channel.connect()
-                    logging.info(f"Joined new voice channel {self._current_voice_channel.name}")
-                elif self._current_voice_channel != self.current_audio_item.voice_channel:
+                    logging.info(f"Joined new voice channel {self._current_voice_channel.channel.name}")
+                elif self._current_voice_channel.channel != self.current_audio_item.voice_channel:
                     await self._current_voice_channel.move_to(self.current_audio_item.voice_channel)
-                    self._current_voice_channel = self.current_audio_item.voice_channel
-                    logging.info(f"Moved to voice channel {self._current_voice_channel.name}")
+                    logging.info(f"Moved to voice channel {self._current_voice_channel.channel.name}")
 
                 # Playing the audio
                 self._current_voice_channel.play(discord.FFmpegPCMAudio(self.current_audio_item.audio_file_path),
@@ -151,7 +139,7 @@ class VCAudioManager:
         except asyncio.CancelledError:
             pass
 
-    def disconnect_from_vc(self):
+    async def disconnect_from_vc(self):
         """
         User-callable function to ask the bot to disconnect from the current voice channel
 
@@ -159,7 +147,7 @@ class VCAudioManager:
         """
         if self._current_voice_channel:
             # Calling the async disconnect
-            asyncio.run_coroutine_threadsafe(self._disconnect(), self._loop)
+            await self._disconnect()
             return True
         else:
             return False
