@@ -116,7 +116,10 @@ class VCAudioManager:
                         logging.info(f"Joined new voice channel {self._current_voice_channel.channel.name}")
                     except asyncio.TimeoutError as e:
                         logging.error(f"Timeout while connecting to voice channel: {e}")
-                        self._current_voice_channel = None
+                        # NOTE: Experimental fix
+                        if self._current_voice_channel:
+                            self._current_voice_channel.disconnect()
+                            self._current_voice_channel = None
                         continue  # Skip to next item
                 elif self._current_voice_channel.channel != self.current_audio_item.voice_channel:
                     try:
