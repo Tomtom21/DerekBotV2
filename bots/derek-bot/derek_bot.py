@@ -377,11 +377,19 @@ class DerekBot(commands.Bot):
 
             # Making sure that they are in a voice channel
             if message.author.voice and message.author.voice.channel:
+                # Getting the user and checking if they have announce name enabled
+                db_user = self.data_manager.get_item_by_key(
+                    table_name="users",
+                    key="user_id",
+                    value=message.author.id
+                )
+                if db_user and db_user.get("vc_text_announce_name"):
+                    final_tts_message = f"{message.author.name} says: {message.content}"
+                else:
+                    final_tts_message = message.content
 
-                # NOTE: Implement name announcements
-                file_path = self.tts_manager.process(message.content)
-
-                # If we have a valid file path for the TTS
+                # Generating the audio file and adding it to the queue for VC
+                file_path = self.tts_manager.process(final_tts_message)
                 if file_path:
                     await self.audio_manager.add_to_queue(file_path, message.author.voice.channel)
             else:
