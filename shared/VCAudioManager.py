@@ -106,13 +106,28 @@ class VCAudioManager:
                 self.queue.pop(0)
 
             try:
-                # Connecting to the proper voice channel
+                # Connecting to the proper voice channel with timeout
                 if self._current_voice_channel is None:
-                    self._current_voice_channel = await self.current_audio_item.voice_channel.connect()
-                    logging.info(f"Joined new voice channel {self._current_voice_channel.channel.name}")
+                    try:
+                        self._current_voice_channel = await asyncio.wait_for(
+                            self.current_audio_item.voice_channel.connect(),
+                            timeout=10
+                        )
+                        logging.info(f"Joined new voice channel {self._current_voice_channel.channel.name}")
+                    except asyncio.TimeoutError as e:
+                        logging.error(f"Timeout while connecting to voice channel: {e}")
+                        self._current_voice_channel = None
+                        continue  # Skip to next item
                 elif self._current_voice_channel.channel != self.current_audio_item.voice_channel:
-                    await self._current_voice_channel.move_to(self.current_audio_item.voice_channel)
-                    logging.info(f"Moved to voice channel {self._current_voice_channel.channel.name}")
+                    try:
+                        await asyncio.wait_for(
+                            self._current_voice_channel.move_to(self.current_audio_item.voice_channel),
+                            timeout=10
+                        )
+                        logging.info(f"Moved to voice channel {self._current_voice_channel.channel.name}")
+                    except asyncio.TimeoutError as e:
+                        logging.error(f"Timeout while moving to voice channel: {e}")
+                        continue  # Skip to next item
 
                 # Playing the audio
                 self._current_voice_channel.play(
