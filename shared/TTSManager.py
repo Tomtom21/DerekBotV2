@@ -1,5 +1,5 @@
 from google.cloud import texttospeech
-from constants import GOOGLE_TTS_VOICE_INFO
+from shared.constants import GOOGLE_TTS_VOICE_INFO
 import os
 import logging
 
@@ -39,7 +39,7 @@ class TTSManager:
         :param language: A language key from 'GOOGLE_TTS_VOICE_INFO'
         """
         # Making sure we definitely have a valid value
-        default = next(iter(self.voice_info))
+        default = self.voice_info[next(iter(self.voice_info))]
         voice = self.voice_info.get(language, default)
 
         # Updating the voice configuration
@@ -57,7 +57,7 @@ class TTSManager:
         """
         # Generating a random filename
         new_file_id = get_random_file_id(self.output_path)
-        new_file_path = os.path.join(self.output_path, new_file_id + ".mp3")
+        new_file_path = os.path.join(self.output_path, f"{new_file_id}.mp3")
 
         try:
             # Making the synthesis request
@@ -73,3 +73,4 @@ class TTSManager:
             return new_file_path
         except Exception as e:
             logging.error(e)
+            return None
