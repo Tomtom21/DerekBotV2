@@ -208,3 +208,12 @@ class VCAudioManager:
             self.bot_leave_messages = leave_messages
         else:
             logging.warning("The leave messages list is either empty or not all strings")
+
+    def skip_current(self):
+        """
+        Skips the currently playing audio, if any.
+        """
+        if self._current_voice_channel and self._current_voice_channel.is_playing():
+            self._current_voice_channel.stop()
+            return True
+        return False

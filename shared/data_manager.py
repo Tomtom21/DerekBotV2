@@ -183,7 +183,8 @@ class DataManager:
                     "user_id": user.id,
                     "is_administrator": False,
                     "is_creator": False,
-                    "shuffle_nickname": False
+                    "shuffle_nickname": False,
+                    "vc_text_announce_name": True
                 }
             )
             if successfully_added:
