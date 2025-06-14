@@ -14,6 +14,33 @@ class TTSGroupCog(commands.Cog):
 
     group = app_commands.Group(name="tts", description="Commands for managing TTS features")
 
+    @group.command(name="enable_tts", description="Enable/Disable TTS")
+    @app_commands.describe(tts_enabled="Whether TTS should be enabled or not")
+    async def enable_tts(self, interaction: Interaction, tts_enabled: bool):
+        db_user = self.data_manager.get_item_by_key(
+            table_name="users",
+            key="user_id",
+            value=interaction.user.id
+        )
+        if db_user.get("is_administrator"):
+            successfully_updated = self.data_manager.update_table_data(
+                table_name="system_config",
+                match_json={"config_name": 'tts_enabled'},
+                update_json={"config_value_bool": tts_enabled}
+            )
+            if successfully_updated:
+                await interaction.response.send_message(
+                    f"{'Enabled' if tts_enabled else 'Disabled'} TTS for server.", 
+                    ephemeral=True
+                )
+            else:
+                await interaction.response.send_message("`Failed to update TTS state.", ephemeral=True)
+        else:
+            await interaction.response.send_message(
+                "`You must be an administrator to update this value.`", 
+                ephemeral=True
+            )
+
     @group.command(name="tts_language", description="Set the TTS language")
     @app_commands.describe(language="Language choice")
     @app_commands.choices(

@@ -191,3 +191,14 @@ class DataManager:
                 logging.info(f"User {user.name}({user.id}) has been added to the users list")
             else:
                 logging.error(f"There was an issue adding user {user.name}({user.id})")
+
+    def get_item_by_key(self, table_name: str, key: str, value):
+        """
+        Returns the first dictionary in the table where key == value, or None if not found.
+
+        :param table_name: The table to search
+        :param key: The key to match
+        :param value: The value to match
+        :return: The dictionary if found, else None
+        """
+        return next((item for item in self.data.get(table_name, []) if item.get(key) == value), None)

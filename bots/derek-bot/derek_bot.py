@@ -118,6 +118,8 @@ class DerekBot(commands.Bot):
         # Limiting the number of times Derek warns a user that they aren't in a voice channel
         self.last_vc_text_warning_time = 0
 
+        self.tts_enabled = True  # Default to enabled, will be set from DB
+
     @staticmethod
     def get_discord_id_from_env(env_var_name):
         val = os.environ.get(env_var_name)
@@ -148,6 +150,9 @@ class DerekBot(commands.Bot):
         def get_config_str(config_name):
             return next((item["config_value_text"] for item in config_data if item["config_name"] == config_name), None)
 
+        def get_config_bool(config_name):
+            return next((item["config_value_bool"] for item in config_data if item["config_name"] == config_name), None)
+
         self.main_channel_id = get_config_int("main_channel_id")
         self.vc_activity_channel_id = get_config_int("vc_activity_channel_id")
         self.joins_leaves_channel_id = get_config_int("joins_leaves_channel_id")
@@ -162,6 +167,11 @@ class DerekBot(commands.Bot):
         # Setting VC Audio Manager leave messages
         vc_leave_phrases = [phrase['phrase'] for phrase in self.data_manager.data.get("leave_phrases")]
         self.audio_manager.set_bot_leave_messages(vc_leave_phrases)
+
+        # Set TTS enabled/disabled from system_config
+        tts_enabled_config = get_config_bool("tts_enabled")
+        if tts_enabled_config:
+            self.tts_enabled = tts_enabled_config
 
     async def on_ready(self):
         logging.info(f"Logged in as {self.user}")
@@ -362,10 +372,13 @@ class DerekBot(commands.Bot):
                 except Exception as e:
                     logging.error(f"Failed to add reaction to message '{message.content[:25]}': {e}")
 
-        # TTS processing. Checking if messages are in the tts channel and not from the bot
-        if message.channel.id == self.vc_text_channel_id and message.author != self.user:
+        # TTS processing. Checking if messages are in the tts channel, are not from the bot, and tts is enabled
+        if self.tts_enabled and message.channel.id == self.vc_text_channel_id and message.author != self.user:
+
             # Making sure that they are in a voice channel
             if message.author.voice and message.author.voice.channel:
+
+                # NOTE: Implement name announcements
                 file_path = self.tts_manager.process(message.content)
 
                 # If we have a valid file path for the TTS
@@ -377,10 +390,6 @@ class DerekBot(commands.Bot):
                     logging.info(f"Warning user {message.author.name} that they aren't in a voice channel")
                     await message.reply("No voice channel detected")
                     self.last_vc_text_warning_time = time.time()
-
-    @app_commands.command(name="toggletts", description="Enables/Disables TTS in TTS channels (admin only)")
-    async def toggletts(self, interaction: discord.Interaction):
-        pass
 
     @app_commands.command(name="ttslang", description="Changes the language of tts (admin only)")
     @app_commands.choices(language=[
