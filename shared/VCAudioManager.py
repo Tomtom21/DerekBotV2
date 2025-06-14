@@ -182,3 +182,14 @@ class VCAudioManager:
             logging.info(f"Disconnecting from voice channel {self._current_voice_channel.channel.name}")
             await self._current_voice_channel.disconnect()
             self._current_voice_channel = None
+
+    def set_bot_leave_messages(self, leave_messages: list):
+        """
+        Updates the bot leave messages if the provided list is not empty.
+
+        :param messages: List of leave messages (strings)
+        """
+        if leave_messages and all(isinstance(m, str) for m in leave_messages):
+            self.bot_leave_messages = leave_messages
+        else:
+            logging.warning("The leave messages list is either empty or not all strings")

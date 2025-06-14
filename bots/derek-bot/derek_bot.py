@@ -70,6 +70,9 @@ db_manager = DataManager(
         },
         "reactions": {
             "select": "*"
+        },
+        "leave_phrases": {
+            "select": "*"
         }
     }
 )
@@ -155,6 +158,10 @@ class DerekBot(commands.Bot):
         # Updating our list of reactions
         self.reactions_list = self.data_manager.data.get("reactions")
         logging.info("Reactions_list from DB set")
+
+        # Setting VC Audio Manager leave messages
+        vc_leave_phrases = [phrase['phrase'] for phrase in self.data_manager.data.get("leave_phrases")]
+        self.audio_manager.set_bot_leave_messages(vc_leave_phrases)
 
     async def on_ready(self):
         logging.info(f"Logged in as {self.user}")
