@@ -2,6 +2,7 @@
 import os
 import logging
 import re
+import time
 
 from shared.data_manager import DataManager
 from cogs.movie_cog import MovieGroupCog
@@ -12,6 +13,9 @@ import random
 import datetime
 import pytz
 from shared.numeric_helpers import get_suffix
+from shared.TTSManager import TTSManager
+from shared.VCAudioManager import VCAudioManager
+from shared.cred_utils import save_google_service_file
 
 # Discord imports
 import discord
@@ -70,6 +74,14 @@ db_manager = DataManager(
     }
 )
 
+# Setting up the google credentials file
+save_google_service_file()
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'google-services.json'
+
+# Setting up the TTS manager and VC Audio Manager
+tts_manager = TTSManager(os.path.join("tts_files"))
+audio_manager = VCAudioManager(tts_manager)
+
 # Getting the discord bot info
 DISCORD_TOKEN = os.environ.get('MAIN_DISCORD_TOKEN')
 OPEN_AI_KEY = os.environ.get('OPEN_AI_KEY')
@@ -85,17 +97,23 @@ intents.message_content = True
 
 
 class DerekBot(commands.Bot):
-    def __init__(self, data_manager: DataManager):
+    def __init__(self, data_manager: DataManager, tts_manager: TTSManager, audio_manager: VCAudioManager):
         super().__init__(command_prefix=None, intents=intents, case_insensitive=True)
 
         self.data_manager = data_manager
+        self.tts_manager = tts_manager
+        self.audio_manager = audio_manager
 
         self.guild = None
         self.guild_id = None
         self.main_channel_id = None
         self.vc_activity_channel_id = None
         self.joins_leaves_channel_id = None
+        self.vc_text_channel_id = None
         self.reactions_list = []
+
+        # Limiting the number of times Derek warns a user that they aren't in a voice channel
+        self.last_vc_text_warning_time = 0
 
     @staticmethod
     def get_discord_id_from_env(env_var_name):
@@ -130,6 +148,7 @@ class DerekBot(commands.Bot):
         self.main_channel_id = get_config_int("main_channel_id")
         self.vc_activity_channel_id = get_config_int("vc_activity_channel_id")
         self.joins_leaves_channel_id = get_config_int("joins_leaves_channel_id")
+        self.vc_text_channel_id = get_config_int("vc_text_channel_id")
         self.guild_id = get_config_int("guild_id")
         logging.info("Config data from DB set")
 
@@ -336,6 +355,22 @@ class DerekBot(commands.Bot):
                 except Exception as e:
                     logging.error(f"Failed to add reaction to message '{message.content[:25]}': {e}")
 
+        # TTS processing. Checking if messages are in the tts channel and not from the bot
+        if message.channel.id == self.vc_text_channel_id and message.author != self.user:
+            # Making sure that they are in a voice channel
+            if message.author.voice and message.author.voice.channel:
+                file_path = self.tts_manager.process(message.content)
+
+                # If we have a valid file path for the TTS
+                if file_path:
+                    await self.audio_manager.add_to_queue(file_path, message.author.voice.channel)
+            else:
+                # If Derek hasn't warned a user of not being in the VC within the past 3 minutes, warn them
+                if time.time() - self.last_vc_text_warning_time >= 180:
+                    logging.info(f"Warning user {message.author.name} that they aren't in a voice channel")
+                    await message.reply("No voice channel detected")
+                    self.last_vc_text_warning_time = time.time()
+
     @app_commands.command(name="toggletts", description="Enables/Disables TTS in TTS channels (admin only)")
     async def toggletts(self, interaction: discord.Interaction):
         pass
@@ -371,5 +406,5 @@ class DerekBot(commands.Bot):
 
 # Starting the bot
 if __name__ == '__main__':
-    bot = DerekBot(db_manager)
+    bot = DerekBot(db_manager, tts_manager, audio_manager)
     bot.run(DISCORD_TOKEN, log_handler=None, root_logger=True)
