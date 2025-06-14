@@ -177,4 +177,4 @@ class VCAudioManager:
             # Disconnecting from the server
             await self._current_voice_channel.disconnect()
             self._current_voice_channel = None
-            logging.info(f"Disconnecting from voice channel{self._current_voice_channel}")
+            logging.info(f"Disconnecting from voice channel {self._current_voice_channel}")
