@@ -115,8 +115,12 @@ class VCAudioManager:
                     logging.info(f"Moved to voice channel {self._current_voice_channel.channel.name}")
 
                 # Playing the audio
-                self._current_voice_channel.play(discord.FFmpegPCMAudio(self.current_audio_item.audio_file_path),
-                                                 options="-loglevel quiet")
+                self._current_voice_channel.play(
+                    discord.FFmpegPCMAudio(
+                        self.current_audio_item.audio_file_path,
+                        options="-loglevel quiet"
+                    )
+                )
             except discord.DiscordException as e:
                 logging.error(f"Discord Exception: {e}")
             except Exception as e:
@@ -164,8 +168,10 @@ class VCAudioManager:
             # Announcing that the bot is disconnecting.
             leave_audio_path = self.tts_manager.process(random.choice(self.bot_leave_messages))
             self._current_voice_channel.play(
-                discord.FFmpegPCMAudio(leave_audio_path),
-                options="-loglevel quiet"
+                discord.FFmpegPCMAudio(
+                    leave_audio_path,
+                    options="-loglevel quiet"
+                )
             )
 
             # Disconnecting from the server
