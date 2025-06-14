@@ -174,7 +174,11 @@ class VCAudioManager:
                 )
             )
 
+            # Wait for the leave message to finish playing
+            while self._current_voice_channel.is_playing():
+                await asyncio.sleep(0.5)
+
             # Disconnecting from the server
+            logging.info(f"Disconnecting from voice channel {self._current_voice_channel.channel.name}")
             await self._current_voice_channel.disconnect()
             self._current_voice_channel = None
-            logging.info(f"Disconnecting from voice channel {self._current_voice_channel}")
