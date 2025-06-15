@@ -116,7 +116,10 @@ class VCAudioManager:
                         logging.info(f"Joined new voice channel {self._current_voice_channel.channel.name}")
                     except asyncio.TimeoutError as e:
                         logging.error(f"Timeout while connecting to voice channel: {e}")
-                        self._current_voice_channel = None
+                        # NOTE: Experimental fix
+                        if self._current_voice_channel:
+                            self._current_voice_channel.disconnect()
+                            self._current_voice_channel = None
                         continue  # Skip to next item
                 elif self._current_voice_channel.channel != self.current_audio_item.voice_channel:
                     try:
@@ -208,3 +211,12 @@ class VCAudioManager:
             self.bot_leave_messages = leave_messages
         else:
             logging.warning("The leave messages list is either empty or not all strings")
+
+    def skip_current(self):
+        """
+        Skips the currently playing audio, if any.
+        """
+        if self._current_voice_channel and self._current_voice_channel.is_playing():
+            self._current_voice_channel.stop()
+            return True
+        return False
