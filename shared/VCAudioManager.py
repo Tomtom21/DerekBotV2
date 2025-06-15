@@ -139,12 +139,18 @@ class VCAudioManager:
                         options="-loglevel quiet"
                     )
                 )
+
+                # Wait for the audio to finish playing before moving to the next item
+                while self._current_voice_channel.is_playing():
+                    await asyncio.sleep(0.5)
+
+                # Add a delay between audios
+                await asyncio.sleep(1)
+                
             except discord.DiscordException as e:
                 logging.error(f"Discord Exception: {e}")
             except Exception as e:
                 logging.error(f"Error: {e}")
-
-            await asyncio.sleep(1)
 
         # Starting the idle task if we finish all queue items
         self.idle_task = asyncio.create_task(self._idle_timer())
