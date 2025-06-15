@@ -34,7 +34,7 @@ class TTSGroupCog(commands.Cog):
                     ephemeral=True
                 )
             else:
-                await interaction.response.send_message("`Failed to update TTS state.", ephemeral=True)
+                await interaction.response.send_message("`Failed to update TTS state.`", ephemeral=True)
         else:
             await interaction.response.send_message(
                 "`You must be an administrator to update this value.`", 
