@@ -22,7 +22,7 @@ class TTSGroupCog(commands.Cog):
             key="user_id",
             value=interaction.user.id
         )
-        if db_user.get("is_administrator"):
+        if db_user and db_user.get("is_administrator"):
             successfully_updated = self.data_manager.update_table_data(
                 table_name="system_config",
                 match_json={"config_name": 'tts_enabled'},
