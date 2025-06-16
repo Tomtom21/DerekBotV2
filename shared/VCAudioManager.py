@@ -58,14 +58,12 @@ class VCAudioManager:
         self.current_state = AudioState.STOPPED
         self._current_voice_channel: Optional[discord.VoiceClient] = None
 
-        # Leaving VC
         self.disconnect_func = disconnect_func
         self.tts_manager = tts_manager
         self.bot_leave_messages = bot_leave_messages or ["Bot is leaving the voice channel"]
 
-        # Handling async/threading
-        self.processing_task = None
-        self.idle_task = None
+        self.processing_task: Optional[asyncio.Task] = None
+        self.idle_task: Optional[asyncio.Task] = None
         self.lock = asyncio.Lock()
 
     async def add_to_queue(self, audio_file_path, voice_channel, high_priority=True):
@@ -88,38 +86,37 @@ class VCAudioManager:
         else:
             self.queue.append(new_item)
 
-        # Determining whether to start the processing loop task
-        if not self.processing_task or self.processing_task.done():
-            self.processing_task = asyncio.create_task(self._playback_loop())
-
-        # If the idle task is set and not done, cancel it
+        # Cancel idle timer if running, since new audio is queued
         if self.idle_task and not self.idle_task.done():
             self.idle_task.cancel()
 
+        # Start playback loop if not already running
+        if not self.processing_task or self.processing_task.done():
+            self.processing_task = asyncio.create_task(self._playback_loop())
+
     async def _playback_loop(self):
         """
-        The loop used to join the voice channel and play audio from
+        The loop used to join the voice channel and play audio from the queue.
+        After the queue is empty, starts the idle timer.
         """
-        while self.queue:
+        while True:
             async with self.lock:
-                self.current_audio_item = self.queue[0]
-                self.queue.pop(0)
+                if not self.queue:
+                    break
+                self.current_audio_item = self.queue.pop(0)
 
             try:
-                # Connecting to the proper voice channel with timeout
-                if self._current_voice_channel is None:
+                # Connect or move to the correct voice channel
+                if self._current_voice_channel is None or not self._current_voice_channel.is_connected():
                     try:
                         self._current_voice_channel = await asyncio.wait_for(
                             self.current_audio_item.voice_channel.connect(),
                             timeout=10
                         )
                         logging.info(f"Joined new voice channel {self._current_voice_channel.channel.name}")
-                    except asyncio.TimeoutError as e:
-                        logging.error(f"Timeout while connecting to voice channel: {e}")
-                        # NOTE: Experimental fix
-                        if self._current_voice_channel:
-                            self._current_voice_channel.disconnect()
-                            self._current_voice_channel = None
+                    except Exception as e:
+                        logging.error(f"Failed to connect to voice channel: {e}")
+                        self._current_voice_channel = None
                         continue  # Skip to next item
                 elif self._current_voice_channel.channel != self.current_audio_item.voice_channel:
                     try:
@@ -128,11 +125,11 @@ class VCAudioManager:
                             timeout=10
                         )
                         logging.info(f"Moved to voice channel {self._current_voice_channel.channel.name}")
-                    except asyncio.TimeoutError as e:
-                        logging.error(f"Timeout while moving to voice channel: {e}")
+                    except Exception as e:
+                        logging.error(f"Failed to move to voice channel: {e}")
                         continue  # Skip to next item
 
-                # Playing the audio
+                # Play the audio
                 self._current_voice_channel.play(
                     discord.FFmpegPCMAudio(
                         self.current_audio_item.audio_file_path,
@@ -140,7 +137,7 @@ class VCAudioManager:
                     )
                 )
 
-                # Wait for the audio to finish playing before moving to the next item
+                # Wait for the audio to finish playing
                 while self._current_voice_channel.is_playing():
                     await asyncio.sleep(0.5)
 
@@ -152,18 +149,19 @@ class VCAudioManager:
             except Exception as e:
                 logging.error(f"Error: {e}")
 
-        # Starting the idle task if we finish all queue items
+        # After all queue items are played, start idle timer
         self.idle_task = asyncio.create_task(self._idle_timer())
 
     async def _idle_timer(self):
         """
-        Waiting for the leave_timeout_length, then leaving the current voice channel
+        Waits for leave_timeout_length after the last audio finishes.
+        If no new audio is queued, disconnects from the voice channel.
         """
         try:
             await asyncio.sleep(self.leave_timeout_length)
-
-            # Leaving the vc
-            await self._disconnect()
+            # Only disconnect if not playing and queue is still empty
+            if self._current_voice_channel and not self._current_voice_channel.is_playing() and not self.queue:
+                await self._disconnect()
         except asyncio.CancelledError:
             pass
 
@@ -185,11 +183,11 @@ class VCAudioManager:
         Async disconnect function that disconnects the bot from the current voice channel
         """
         if self._current_voice_channel:
-            # Running a provided disconnect function
+            # Run provided disconnect function
             if self.disconnect_func:
                 self.disconnect_func()
 
-            # Announcing that the bot is disconnecting.
+            # Announce bot is disconnecting
             leave_audio_path = self.tts_manager.process(random.choice(self.bot_leave_messages))
             self._current_voice_channel.play(
                 discord.FFmpegPCMAudio(
@@ -202,7 +200,7 @@ class VCAudioManager:
             while self._current_voice_channel.is_playing():
                 await asyncio.sleep(0.5)
 
-            # Disconnecting from the server
+            # Disconnect from the server
             logging.info(f"Disconnecting from voice channel {self._current_voice_channel.channel.name}")
             await self._current_voice_channel.disconnect()
             self._current_voice_channel = None
