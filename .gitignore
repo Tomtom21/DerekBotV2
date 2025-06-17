@@ -7,3 +7,4 @@ utils/*.csv
 test.ipynb
 *.pyc
 test.py
+trufflehog-exclude-patterns.txt
