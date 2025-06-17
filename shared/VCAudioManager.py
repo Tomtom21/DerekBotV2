@@ -76,15 +76,16 @@ class VCAudioManager:
         """
         new_item = AudioQueueItem(audio_file_path, voice_channel, high_priority)
 
-        # Finding the first low-priority item, other defaulting to appending
-        if high_priority:
-            insert_idx = next(
-                (idx for idx, item in enumerate(self.queue) if not item.high_priority),
-                len(self.queue)
-            )
-            self.queue.insert(insert_idx, new_item)
-        else:
-            self.queue.append(new_item)
+        async with self.lock:
+            # Finding the first low-priority item, other defaulting to appending
+            if high_priority:
+                insert_idx = next(
+                    (idx for idx, item in enumerate(self.queue) if not item.high_priority),
+                    len(self.queue)
+                )
+                self.queue.insert(insert_idx, new_item)
+            else:
+                self.queue.append(new_item)
 
         # Cancel idle timer if running, since new audio is queued
         if self.idle_task and not self.idle_task.done():
