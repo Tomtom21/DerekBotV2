@@ -137,10 +137,17 @@ class VCAudioManager:
                         options="-loglevel quiet"
                     )
                 )
+                self.current_state = AudioState.PLAYING
+                logging.info(f"Playing audio: {self.current_audio_item.audio_name}")
 
                 # Wait for the audio to finish playing
                 while self._current_voice_channel.is_playing():
                     await asyncio.sleep(0.5)
+
+                # After audio finishes, update state
+                self.current_state = AudioState.STOPPED
+                self.current_audio_item = None
+                logging.info(f"Finished playing audio: {self.current_audio_item.audio_name}")
 
                 # Add a delay between audios
                 await asyncio.sleep(1)
@@ -197,9 +204,9 @@ class VCAudioManager:
                 )
             )
 
-            # Wait for the leave message to finish playing
+            # Wait for the leave message to finish playing. It needs a longer audio sleep time than usual.
             while self._current_voice_channel.is_playing():
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(2)
 
             # Disconnect from the server
             logging.info(f"Disconnecting from voice channel {self._current_voice_channel.channel.name}")
@@ -223,5 +230,39 @@ class VCAudioManager:
         """
         if self._current_voice_channel and self._current_voice_channel.is_playing():
             self._current_voice_channel.stop()
+            self.current_state = AudioState.STOPPED
+            logging.info("Skipped current audio playback")
             return True
         return False
+    
+    def pause_current(self):
+        """
+        Pauses the currently playing audio, if any.
+        """
+        if self._current_voice_channel and self._current_voice_channel.is_playing():
+            self._current_voice_channel.pause()
+            self.current_state = AudioState.PAUSED
+            logging.info("Paused current audio playback")
+            return True
+        return False
+    
+    def resume_current(self):
+        """
+        Resumes the currently paused audio, if any.
+        """
+        if self._current_voice_channel and self._current_voice_channel.is_paused():
+            self._current_voice_channel.resume()
+            self.current_state = AudioState.PLAYING
+            logging.info("Resumed current audio playback")
+            return True
+        return False
+    
+    def get_current_audio_name(self):
+        """
+        Returns the name of the currently playing audio, if any.
+        
+        :return: The name of the current audio or None if no audio is playing
+        """
+        if self.current_audio_item:
+            return self.current_audio_item.audio_name
+        return None
