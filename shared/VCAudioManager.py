@@ -255,3 +255,13 @@ class VCAudioManager:
             logging.info("Resumed current audio playback")
             return True
         return False
+    
+    def get_current_audio_name(self):
+        """
+        Returns the name of the currently playing audio, if any.
+        
+        :return: The name of the current audio or None if no audio is playing
+        """
+        if self.current_audio_item:
+            return self.current_audio_item.audio_name
+        return None
