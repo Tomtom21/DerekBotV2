@@ -3,6 +3,7 @@ import os
 import logging
 import re
 import time
+import io
 
 from shared.data_manager import DataManager
 from cogs.movie_cog import MovieGroupCog
@@ -16,6 +17,7 @@ from shared.numeric_helpers import get_suffix
 from shared.TTSManager import TTSManager
 from shared.VCAudioManager import VCAudioManager
 from shared.cred_utils import save_google_service_file
+from shared.ChatLLMManager import ChatLLMManager, ConversationCache
 
 # Discord imports
 import discord
@@ -89,6 +91,21 @@ audio_manager = VCAudioManager(tts_manager)
 DISCORD_TOKEN = os.environ.get('MAIN_DISCORD_TOKEN')
 OPEN_AI_KEY = os.environ.get('OPEN_AI_KEY')
 
+# Conversation cache for message caching
+conversation_cache = ConversationCache()
+
+# Setting up LLM Manager
+gpt_system_prompt = db_manager.get_item_by_key(
+    table_name="system_config",
+    key="config_name",
+    value="derek_gpt_system_prompt"
+).get("config_value_text")
+if not gpt_system_prompt:
+    raise ValueError("gpt_system_prompt cannot be None. There was an issue pulling info from the DB.")
+
+llm_manager = ChatLLMManager(api_key=OPEN_AI_KEY,
+                             system_prompt=gpt_system_prompt)
+
 # Setting up intents for permissions
 intents = discord.Intents.default()
 intents.guilds = True
@@ -100,12 +117,18 @@ intents.message_content = True
 
 
 class DerekBot(commands.Bot):
-    def __init__(self, data_manager: DataManager, tts_manager: TTSManager, audio_manager: VCAudioManager):
+    def __init__(self, data_manager: DataManager,
+                 tts_manager: TTSManager,
+                 audio_manager: VCAudioManager,
+                 conversation_cache: ConversationCache,
+                 llm_manager: ChatLLMManager):
         super().__init__(command_prefix=None, intents=intents, case_insensitive=True)
 
         self.data_manager = data_manager
         self.tts_manager = tts_manager
         self.audio_manager = audio_manager
+        self.conversation_cache = conversation_cache
+        self.llm_manager = llm_manager
 
         self.guild = None
         self.guild_id = None
@@ -179,6 +202,7 @@ class DerekBot(commands.Bot):
         self.set_config_data_from_db_manager()
         self.guild = self.get_guild(self.guild_id)
         self.start_background_tasks()
+        self.conversation_cache.update_bot_user_id(self.user.id)
 
     # Starts our TTS and data collection background tasks
     def start_background_tasks(self):
@@ -400,8 +424,40 @@ class DerekBot(commands.Bot):
                     logging.info(f"Warning user {message.author.name} that they aren't in a voice channel")
                     await message.reply("No voice channel detected")
                     self.last_vc_text_warning_time = time.time()
+        
+        # Chat processing
+        if self.user.mentioned_in(message) and message.author != self.user:
+            # Letting the user know we're processing things
+            reply_message = await message.reply("```Typing...```")
+
+            # Keeping track of things in the cache
+            await self.conversation_cache.add_message(message)
+            message_chain = self.conversation_cache.get_message_chain(message)
+            gpt_message_list = self.llm_manager.generate_gpt_messages_list(message_chain)
+
+            # Getting the AI response
+            gpt_message, images = await self.llm_manager.run_model_with_funcs(gpt_message_list)
+            
+            # Converting images to discord files
+            discord_file_images = []
+            for idx, image in enumerate(images):
+                buffer = io.BytesIO()
+                image.save(buffer, format="PNG")
+                buffer.seek(0)
+                buffer.append(buffer) # Preventing garbage collection
+                discord_file_images.append(
+                    discord.File(buffer, filename=f"image_{idx}.png")
+                )
+
+            # Sending the message
+            await reply_message.edit(
+                content=gpt_message.content,
+                attachments=discord_file_images
+            )
+            await self.conversation_cache.add_message(reply_message)
+
 
 # Starting the bot
 if __name__ == '__main__':
-    bot = DerekBot(db_manager, tts_manager, audio_manager)
+    bot = DerekBot(db_manager, tts_manager, audio_manager, conversation_cache, llm_manager)
     bot.run(DISCORD_TOKEN, log_handler=None, root_logger=True)
