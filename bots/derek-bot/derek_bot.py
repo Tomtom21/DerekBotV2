@@ -460,7 +460,6 @@ class DerekBot(commands.Bot):
                 buffer = io.BytesIO()
                 image.save(buffer, format="PNG")
                 buffer.seek(0)
-                buffer.append(buffer) # Preventing garbage collection
                 discord_file_images.append(
                     discord.File(buffer, filename=f"image_{idx}.png")
                 )

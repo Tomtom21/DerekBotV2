@@ -7,7 +7,7 @@ class MemoryTools:
     def __init__(self, db_manager):
         self.db_manager = db_manager
 
-    def save_memory(self, memory_string: str, username: str):
+    async def save_memory(self, memory_string: str, username: str):
         """
         Saves a memory to the chat_memories table in the database.
 

@@ -24,7 +24,8 @@ tool_definitions = [
         "type": "function",
         "function": {
             "name": "generate_color_swatch",
-            "description": "Generates a color swatch image from a given hex color code.",
+            "description": "Generates a color swatch image from a given hex color code. "
+                           "Should be used when a user would like to see color samples.",
             "parameters": {
                 "type": "object",
                 "properties": {

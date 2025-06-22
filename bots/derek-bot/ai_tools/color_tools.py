@@ -3,7 +3,7 @@ import re
 import logging
 
 
-def generate_color_swatch(hex_code: str):
+async def generate_color_swatch(hex_code: str):
     # Normalize hex code (remove leading # if present)
     if hex_code.startswith('#'):
         hex_code = hex_code[1:]
