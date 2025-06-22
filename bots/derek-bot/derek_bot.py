@@ -20,6 +20,7 @@ from shared.cred_utils import save_google_service_file
 from shared.ChatLLMManager import ChatLLMManager, ConversationCache
 from ai_tools.memory_tools import MemoryTools
 from ai_tools.color_tools import generate_color_swatch
+from ai_tools.tool_configs import tool_definitions
 
 # Discord imports
 import discord
@@ -114,8 +115,9 @@ tool_references = {
 # Setting up the GPT model
 llm_manager = ChatLLMManager(
     api_key=OPEN_AI_KEY,
-    system_prompt=gpt_system_prompt
-
+    system_prompt=gpt_system_prompt,
+    tool_function_references=tool_references,
+    tool_definitions=tool_definitions
 )
 
 
