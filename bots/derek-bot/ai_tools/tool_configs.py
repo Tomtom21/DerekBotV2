@@ -10,9 +10,13 @@ tool_definitions = [
                     "memory_string": {
                         "type": "string",
                         "description": "The string to save as a memory. Should be short but descriptive."
+                    },
+                    "username": {
+                        "type": "string",
+                        "description": "The username of the user who requested to save the information."
                     }
                 },
-                "required": ["memory_string"]
+                "required": ["memory_string", "username"]
             }
         }
     }
