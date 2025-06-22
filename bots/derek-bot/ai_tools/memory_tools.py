@@ -10,7 +10,7 @@ class MemoryTools:
     def save_memory(self, memory_text: str, user: Member):
         """
         Saves a memory to the chat_memories table in the database.
-        
+
         :param memory_text: The memory text to save
         :param user_id: The ID of the user saving the memory
         :return: Text stating whether the memory was saved or not
@@ -26,6 +26,6 @@ class MemoryTools:
         )
         if successfully_added:
             logging.info(f"User {user.name} saved memory: {memory_text}")
-            return "Memory successfully saved."
+            return "Memory successfully saved.", None
         else:
-            return "Failed to save memory."
+            return "Failed to save memory.", None
