@@ -18,6 +18,8 @@ from shared.TTSManager import TTSManager
 from shared.VCAudioManager import VCAudioManager
 from shared.cred_utils import save_google_service_file
 from shared.ChatLLMManager import ChatLLMManager, ConversationCache
+from ai_tools.memory_tools import MemoryTools
+from ai_tools.color_tools import generate_color_swatch
 
 # Discord imports
 import discord
@@ -102,6 +104,12 @@ gpt_system_prompt = db_manager.get_item_by_key(
 ).get("config_value_text")
 if not gpt_system_prompt:
     raise ValueError("gpt_system_prompt cannot be None. There was an issue pulling info from the DB.")
+
+memory_tools = MemoryTools(db_manager=db_manager)
+tool_references = {
+    "save_memory": memory_tools.save_memory,
+    "generate_color_swatch": generate_color_swatch
+}
 
 # Setting up the GPT model
 llm_manager = ChatLLMManager(
