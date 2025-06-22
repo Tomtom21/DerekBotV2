@@ -117,7 +117,8 @@ llm_manager = ChatLLMManager(
     api_key=OPEN_AI_KEY,
     system_prompt=gpt_system_prompt,
     tool_function_references=tool_references,
-    tool_definitions=tool_definitions
+    tool_definitions=tool_definitions,
+    get_memories=memory_tools.get_memories
 )
 
 

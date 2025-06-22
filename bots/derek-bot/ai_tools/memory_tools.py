@@ -28,3 +28,14 @@ class MemoryTools:
             return "Memory successfully saved.", None
         else:
             return "Failed to save memory.", None
+
+    def get_memories(self):
+        """
+        Retrieves all memories from the chat_memories table in the database for bot consumption.
+
+        :return: A list of memory strings
+        """
+        return [
+            memory["memory"]
+            for memory in self.db_manager.data.get("chat_memories", [])
+        ]
