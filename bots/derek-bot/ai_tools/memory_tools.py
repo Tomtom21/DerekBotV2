@@ -7,7 +7,7 @@ class MemoryTools:
     def __init__(self, db_manager):
         self.db_manager = db_manager
 
-    def save_memory(self, memory_text: str, user: Member):
+    def save_memory(self, memory_string: str, user: Member):
         """
         Saves a memory to the chat_memories table in the database.
 
@@ -19,13 +19,13 @@ class MemoryTools:
         successfully_added = self.db_manager.add_table_data(
             table_name="chat_memories",
             json_data={
-                "memory": memory_text,
+                "memory": memory_string,
                 "created": get_est_iso_date(),
-                "added_by": user.id
+                "added_by": None
             }
         )
         if successfully_added:
-            logging.info(f"User {user.name} saved memory: {memory_text}")
+            logging.info(f"User {user.name} saved memory: {memory_string}")
             return "Memory successfully saved.", None
         else:
             return "Failed to save memory.", None

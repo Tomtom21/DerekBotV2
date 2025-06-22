@@ -94,7 +94,7 @@ OPEN_AI_KEY = os.environ.get('OPEN_AI_KEY')
 # Conversation cache for message caching
 conversation_cache = ConversationCache()
 
-# Setting up LLM Manager
+# Getting GPT config info
 gpt_system_prompt = db_manager.get_item_by_key(
     table_name="system_config",
     key="config_name",
@@ -103,8 +103,13 @@ gpt_system_prompt = db_manager.get_item_by_key(
 if not gpt_system_prompt:
     raise ValueError("gpt_system_prompt cannot be None. There was an issue pulling info from the DB.")
 
-llm_manager = ChatLLMManager(api_key=OPEN_AI_KEY,
-                             system_prompt=gpt_system_prompt)
+# Setting up the GPT model
+llm_manager = ChatLLMManager(
+    api_key=OPEN_AI_KEY,
+    system_prompt=gpt_system_prompt
+
+)
+
 
 # Setting up intents for permissions
 intents = discord.Intents.default()
