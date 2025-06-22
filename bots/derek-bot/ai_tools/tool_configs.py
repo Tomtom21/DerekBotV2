@@ -19,5 +19,22 @@ tool_definitions = [
                 "required": ["memory_string", "username"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "generate_color_swatch",
+            "description": "Generates a color swatch image from a given hex color code.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "hex_code": {
+                        "type": "string",
+                        "description": "The hex color code to generate a swatch for (e.g., '#ff0000' or 'ff0000')."
+                    }
+                },
+                "required": ["hex_code"]
+            }
+        }
     }
 ]
