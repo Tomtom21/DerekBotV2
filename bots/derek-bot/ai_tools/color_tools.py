@@ -37,11 +37,13 @@ async def generate_color_swatch(hex_code: str):
     text = f"#{hex_code.upper()}"
     x, y = 8, 8
     outline_color = (255, 255, 255) if sum(rgb) < 384 else (0, 0, 0)
+    
     # Draw outline
     for dx in [-1, 0, 1]:
         for dy in [-1, 0, 1]:
             if dx != 0 or dy != 0:
                 draw.text((x+dx, y+dy), text, font=font, fill=outline_color)
+    
     # Draw main text
     text_color = (0, 0, 0) if sum(rgb) > 384 else (255, 255, 255)
     draw.text((x, y), text, font=font, fill=text_color)
