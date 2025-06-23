@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import re
 import logging
 
@@ -20,7 +20,31 @@ async def generate_color_swatch(hex_code: str):
     # Convert to RGB tuple
     rgb = tuple(int(hex_code[i:i+2], 16) for i in (0, 2, 4))
 
-    # Create 50x50 image
-    img = Image.new('RGB', (50, 50), rgb)
+    # Create 200x200 image (larger for clearer text)
+    img = Image.new('RGB', (200, 200), rgb)
+
+    # Draw hex code in top left corner
+    draw = ImageDraw.Draw(img)
+    try:
+        # Use a larger font size for clarity
+        font = ImageFont.truetype("arial.ttf", 36)
+    except Exception:
+        try:
+            font = ImageFont.truetype("DejaVuSans.ttf", 36)
+        except Exception:
+            font = ImageFont.load_default()
+
+    text = f"#{hex_code.upper()}"
+    x, y = 8, 8
+    outline_color = (255, 255, 255) if sum(rgb) < 384 else (0, 0, 0)
+    # Draw outline
+    for dx in [-1, 0, 1]:
+        for dy in [-1, 0, 1]:
+            if dx != 0 or dy != 0:
+                draw.text((x+dx, y+dy), text, font=font, fill=outline_color)
+    # Draw main text
+    text_color = (0, 0, 0) if sum(rgb) > 384 else (255, 255, 255)
+    draw.text((x, y), text, font=font, fill=text_color)
+
     logging.info(f"Generated new color swatch for {hex_code}")
     return f"Generated color swatch for {hex_code}", img
