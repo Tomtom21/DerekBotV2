@@ -444,32 +444,31 @@ class DerekBot(commands.Bot):
         # Chat processing
         if self.user.mentioned_in(message) and message.author != self.user:
             # Letting the user know we're processing things
-            reply_message = await message.reply("```Typing...```")
+            async with message.channel.typing():
+                # Keeping track of things in the cache
+                await self.conversation_cache.add_message(message)
+                message_chain = self.conversation_cache.get_message_chain(message)
+                gpt_message_list = self.llm_manager.generate_gpt_messages_list(message_chain)
 
-            # Keeping track of things in the cache
-            await self.conversation_cache.add_message(message)
-            message_chain = self.conversation_cache.get_message_chain(message)
-            gpt_message_list = self.llm_manager.generate_gpt_messages_list(message_chain)
+                # Getting the AI response
+                gpt_message, images = await self.llm_manager.run_model_with_funcs(gpt_message_list)
 
-            # Getting the AI response
-            gpt_message, images = await self.llm_manager.run_model_with_funcs(gpt_message_list)
-            
-            # Converting images to discord files
-            discord_file_images = []
-            for idx, image in enumerate(images):
-                buffer = io.BytesIO()
-                image.save(buffer, format="PNG")
-                buffer.seek(0)
-                discord_file_images.append(
-                    discord.File(buffer, filename=f"image_{idx}.png")
+                # Converting images to discord files
+                discord_file_images = []
+                for idx, image in enumerate(images):
+                    buffer = io.BytesIO()
+                    image.save(buffer, format="PNG")
+                    buffer.seek(0)
+                    discord_file_images.append(
+                        discord.File(buffer, filename=f"image_{idx}.png")
+                    )
+
+                # Sending the message
+                reply_message = await message.reply(
+                    content=gpt_message.content,
+                    files=discord_file_images[:10]
                 )
-
-            # Sending the message
-            await reply_message.edit(
-                content=gpt_message.content,
-                attachments=discord_file_images
-            )
-            await self.conversation_cache.add_message(reply_message)
+                await self.conversation_cache.add_message(reply_message)
 
 
 # Starting the bot

@@ -3,13 +3,13 @@ tool_definitions = [
         "type": "function",
         "function": {
             "name": "save_memory",
-            "description": "Saves a string for the model to reference later in it's system message as a memory.",
+            "description": "Suggest saving important or relevant information the model might need later. If something seems worth remembering, say something like 'This might be useful later — want me to remember it?' Only call this tool if the user agrees or explicitly asks to save something.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "memory_string": {
                         "type": "string",
-                        "description": "The string to save as a memory. Should be short but descriptive."
+                        "description": "The descriptive memory to save. Include the user's username in the memory."
                     },
                     "username": {
                         "type": "string",
