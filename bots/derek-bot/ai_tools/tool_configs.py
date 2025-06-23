@@ -37,5 +37,52 @@ tool_definitions = [
                 "required": ["hex_code"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_spc_outlook_text",
+            "description": (
+                "Retrieves the Storm Prediction Center (SPC) outlook text for the specified day. "
+                "Use this to provide users with the latest severe weather outlook summary."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "day": {
+                        "type": "integer",
+                        "description": (
+                            "The outlook day (1-8). Use 1 for Day 1, 2 for Day 2, 3 for Day 3. "
+                            "Any value from 4 to 8 will return the same Day 4-8 combined outlook."
+                        )
+                    }
+                },
+                "required": ["day"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_spc_outlook_image",
+            "description": (
+                "Retrieves the Storm Prediction Center (SPC) outlook risk image for the specified day. "
+                "Use this to provide users with the latest severe weather risk map."
+                "If using this, do not attempt to embed an image via a text response."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "day": {
+                        "type": "integer",
+                        "description": (
+                            "The outlook day (1-8). Use 1 for Day 1, 2 for Day 2, 3 for Day 3. "
+                            "Any value from 4 to 8 will return the same Day 4-8 combined outlook."
+                        )
+                    }
+                },
+                "required": ["day"]
+            }
+        }
     }
 ]
