@@ -12,7 +12,7 @@ class MemoryTools:
         Saves a memory to the chat_memories table in the database.
 
         :param memory_text: The memory text to save
-        :param user_id: The ID of the user saving the memory
+        :param username: The name of the user saving the memory
         :return: Text stating whether the memory was saved or not
         """
         successfully_added = self.db_manager.add_table_data(
