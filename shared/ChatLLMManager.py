@@ -390,3 +390,15 @@ class ChatLLMManager:
         )
         response, images = await self.run_model_with_funcs(message_list)
         return response, images
+
+    def set_system_prompt(self, system_prompt: str):
+        """
+        Sets the system prompt for the model to use
+        
+        :param system_prompt: The new system prompt to set
+        """
+        if system_prompt:
+            self.system_prompt = system_prompt
+        else:
+            logging.warning("Failed to set system prompt: A new system prompt was not provided.")
+        
