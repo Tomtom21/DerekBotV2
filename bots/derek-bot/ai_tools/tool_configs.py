@@ -9,7 +9,9 @@ tool_definitions = [
                 "properties": {
                     "memory_string": {
                         "type": "string",
-                        "description": "The descriptive memory to save. Include the user's username in the memory."
+                        "description": "The memory to save. "
+                                       "If about a user, use their username (e.g., 'alice likes crayons'). "
+                                       "If about the bot or something else, do not use a username."
                     },
                     "username": {
                         "type": "string",
