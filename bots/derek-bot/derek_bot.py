@@ -21,7 +21,7 @@ from shared.ChatLLMManager import ChatLLMManager, ConversationCache
 from ai_tools.memory_tools import MemoryTools
 from ai_tools.color_tools import generate_color_swatch
 from ai_tools.tool_configs import tool_definitions
-from ai_tools.weather_tools import get_spc_outlook_text, get_spc_outlook_image
+from ai_tools.weather_tools import get_spc_outlook_text, get_spc_outlook_image, get_local_forecast
 
 # Discord imports
 import discord
@@ -112,7 +112,8 @@ tool_references = {
     "save_memory": memory_tools.save_memory,
     "generate_color_swatch": generate_color_swatch,
     "get_spc_outlook_text": get_spc_outlook_text,
-    "get_spc_outlook_image": get_spc_outlook_image
+    "get_spc_outlook_image": get_spc_outlook_image,
+    "get_local_forecast": get_local_forecast
 }
 
 # Setting up the GPT model

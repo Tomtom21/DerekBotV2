@@ -84,5 +84,30 @@ tool_definitions = [
                 "required": ["day"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_local_forecast",
+            "description": (
+                "Retrieves the local weather forecast for a specified latitude and longitude in the United States. "
+                "Use this to provide users with detailed weather forecasts for a specific U.S. location. "
+                "This tool only works for places within the United States."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "lat": {
+                        "type": "number",
+                        "description": "Latitude of the location (e.g., 40.7128)"
+                    },
+                    "lon": {
+                        "type": "number",
+                        "description": "Longitude of the location (e.g., -74.0060)"
+                    }
+                },
+                "required": ["lat", "lon"]
+            }
+        }
     }
 ]

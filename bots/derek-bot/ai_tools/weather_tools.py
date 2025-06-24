@@ -92,3 +92,33 @@ async def get_spc_outlook_image(day: int):
         return "Unable to get an outlook image for that date range.", None
     
     return await fetch_spc_outlook_image(image_url)
+
+async def get_local_forecast(lat: float, lon: float):
+    """
+    Retrieves the local weather forecast for the specified latitude and longitude.
+
+    :param lat: Latitude of the location
+    :param lon: Longitude of the location
+    :return: String containing the detailed local weather forecast or an error message
+    """
+    url = f"https://forecast.weather.gov/MapClick.php?lat={lat}&lon={lon}&FcstType=text"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            if response.status != 200:
+                return "Error fetching forecast data.", None
+            html = await response.text()
+    soup = BeautifulSoup(html, 'html.parser')
+    
+    # Find detailed forecast div
+    detailed_div = soup.find('div', id='detailed-forecast-body')
+    if not detailed_div:
+        return "Detailed forecast not found.", None
+
+    # Extract label and text pairs and combine into one string with line breaks
+    lines = []
+    for row in detailed_div.find_all('div', class_='row-forecast'):
+        label = row.find('div', class_='forecast-label').get_text(strip=True)
+        text = row.find('div', class_='forecast-text').get_text(strip=True)
+        lines.append(f"{label}: {text}")
+    
+    return '\n'.join(lines), None
