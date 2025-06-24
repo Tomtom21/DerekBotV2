@@ -48,10 +48,11 @@
 | General  | nickname_cycling      | ✅           | For shuffling random nicknames                 | 
 
 ## AI Tools
-| Type         | Implemented |
-|--------------|-------------|
-| NHC Map      | ❌           |
-| SPC Maps     | ❌           |
-| Color Swatch | ❌           |
+| Type          | Implemented |
+|---------------|-------------|
+| NHC Map       | ❌           |
+| SPC Maps      | ✅           |
+| Color Swatch  | ✅           |
+| Memory Saving | ✅           |
 
 

@@ -53,7 +53,9 @@ class AICog(commands.Cog):
         def get_memory_data():
             return [
                 f"{memory['memory']} - {memory['added_by']['user_name']}"
-                for memory in self.data_manager.data.get("chat_memories")
+                if memory.get("added_by") and memory["added_by"].get("user_name")
+                else memory["memory"]
+                for memory in self.data_manager.data.get("chat_memories", [])
             ]
 
         discord_list = DiscordList(
