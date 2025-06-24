@@ -52,6 +52,16 @@ class BirthdayGroupCog(commands.Cog):
                            day: app_commands.Range[int, 1, 31],
                            year: app_commands.Range[int, 1985, 2010] = None,
                            timezone: app_commands.Choice[str] = None):
+        """
+        Adds or updates a user's birthday in the database.
+
+        :param interaction: The Discord interaction object
+        :param month: The month of the birthday (1-12)
+        :param day: The day of the birthday (1-31)
+        :param year: The year of the birthday (optional, 1985-2010)
+        :param timezone: The user's timezone (optional, defaults to EST)
+        :return: Sends a message indicating success or failure
+        """
         self.data_manager.ensure_user_exists(interaction.user)
 
         # Setting a default timezone
