@@ -217,6 +217,10 @@ class DerekBot(commands.Bot):
         if tts_enabled_config:
             self.tts_enabled = tts_enabled_config
 
+        # Setting the GPT system prompt
+        gpt_system_prompt = get_config_str("derek_gpt_system_prompt")
+        self.llm_manager.set_system_prompt(gpt_system_prompt)
+
     async def on_ready(self):
         logging.info(f"Logged in as {self.user}")
         self.set_config_data_from_db_manager()
