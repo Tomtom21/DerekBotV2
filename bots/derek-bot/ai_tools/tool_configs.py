@@ -90,9 +90,10 @@ tool_definitions = [
         "function": {
             "name": "get_local_forecast",
             "description": (
-                "Retrieves the local weather forecast for a specified latitude and longitude in the United States. "
+                "Retrieves the local weather forecast for a specified latitude and longitude, "
+                "but only for locations within the United States. "
                 "Use this to provide users with detailed weather forecasts for a specific U.S. location. "
-                "This tool only works for places within the United States."
+                "This tool does not work for locations outside the United States."
             ),
             "parameters": {
                 "type": "object",
