@@ -17,6 +17,12 @@ class MiscGroupCog(commands.Cog):
 
     @group.command(name="magic8ball")
     async def magic8ball(self, interaction: Interaction, question: str):
+        """
+        Responds to a user's question with a random Magic 8 Ball phrase.
+
+        :param interaction: The Discord interaction object
+        :param question: The user's question to the Magic 8 Ball
+        """
         ball_phrase = random.choice(self.data_manager.data.get("eight_ball_phrases"))
 
         output_string = (f"{interaction.user.name} said: *{question}*\n"
@@ -27,15 +33,21 @@ class MiscGroupCog(commands.Cog):
     @group.command(name="simon_says")
     @app_commands.describe(text="The text to mimic")
     async def simon_says(self, interaction: Interaction, text: str):
+        """
+        Sends the provided text to the channel as if the bot said it.
+
+        :param interaction: The Discord interaction object
+        :param text: The text to send to the channel
+        """
         await interaction.channel.send(text)
         await interaction.response.send_message("Sent the simonsays message.", ephemeral=True)
 
     @group.command(name="random_nicknames")
     async def random_nicknames(self, interaction: Interaction):
         """
-        Command to show the list of random nicknames for users who opt-in
+        Shows the list of random nicknames for users who opt-in.
 
-        :param interaction: The interaction for the command
+        :param interaction: The Discord interaction object
         """
         def get_random_nickname_data():
             return [
@@ -56,9 +68,9 @@ class MiscGroupCog(commands.Cog):
     @group.command(name="add_nickname")
     async def add_nickname(self, interaction: Interaction, nickname: str):
         """
-        Command to add a random nickname to the random nickname table in the DB
+        Adds a new random nickname to the database.
 
-        :param interaction: The interaction for the command
+        :param interaction: The Discord interaction object
         :param nickname: The nickname string to save
         """
         self.data_manager.ensure_user_exists(interaction.user)
@@ -77,10 +89,10 @@ class MiscGroupCog(commands.Cog):
     @group.command(name="remove_nickname")
     async def remove_nickname(self, interaction: Interaction, nickname_index: int):
         """
-        Command to remove a random nickname from the random nickname table in the DB
+        Removes a random nickname from the database by index.
 
-        :param interaction: The interaction for the command
-        :param nickname_index: The index of the nickname in the user facing list (local db index + 1)
+        :param interaction: The Discord interaction object
+        :param nickname_index: The index of the nickname in the user-facing list (local db index + 1)
         """
         try:
             nickname_item = self.data_manager.get_db_item_with_index(
@@ -110,10 +122,10 @@ class MiscGroupCog(commands.Cog):
     @app_commands.describe(shuffle_nickname="Do you want to shuffle your nickname daily?")
     async def shuffle_nickname(self, interaction: Interaction, shuffle_nickname: bool):
         """
-        Command to set whether to shuffle a user's nickname on a daily basis
+        Sets whether to shuffle a user's nickname on a daily basis.
 
-        :param interaction: The interaction for the command
-        :param shuffle_nickname: Boolean value on whether to shuffle the nickname or not
+        :param interaction: The Discord interaction object
+        :param shuffle_nickname: Boolean value to enable or disable daily nickname shuffling
         """
         # Preventing higher or equal roles from enabling this feature
         bot_member_top_role = interaction.guild.me.top_role
