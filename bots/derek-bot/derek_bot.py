@@ -469,7 +469,7 @@ class DerekBot(commands.Bot):
 
                 # Sending the message
                 reply_message = await message.reply(
-                    content=gpt_message.content,
+                    content=gpt_message.content[:2000],
                     files=discord_file_images[:10]
                 )
                 await self.conversation_cache.add_message(reply_message)
