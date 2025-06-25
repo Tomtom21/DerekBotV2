@@ -10,6 +10,15 @@ class DiscordList:
                  have_pages=True,
                  items_per_page=10,
                  max_size_buffer=224):
+        """
+        Initializes a DiscordList for paginated or non-paginated list.
+
+        :param get_items: Function to retrieve the list items
+        :param title: The title of the list
+        :param have_pages: Whether to paginate the list
+        :param items_per_page: Number of items per page
+        :param max_size_buffer: Buffer for Discord message size limit
+        """
         self.get_items = get_items  # the function to get items
         self.title = title
         self.have_pages = have_pages
@@ -27,7 +36,7 @@ class DiscordList:
 
     def get_page(self):
         """
-        Generates the next page using the value of current_page
+        Generates the next page using the value of current_page.
 
         :return: Returns the text string for the page
         """
@@ -89,10 +98,10 @@ class DiscordList:
 
     def item_fits_discord_limit(self, string):
         """
-        Checks if a string is within the discord character limit. Includes a buffer for extra info
+        Checks if a string is within the Discord character limit. Includes a buffer for extra info.
 
         :param string: The string to check
-        :return: True if the string is within the discord message size limits, false otherwise
+        :return: True if the string is within the Discord message size limits, false otherwise
         """
         if (len(string) + self.max_size_buffer) < 2000:
             return True
@@ -101,7 +110,7 @@ class DiscordList:
 
     def add_metadata(self, metadata_name, metadata_callback):
         """
-        Adds metadata with an actively updating header to the list of metadata items to show
+        Adds metadata with an actively updating header to the list of metadata items to show.
 
         :param metadata_name: The name of the metadata item
         :param metadata_callback: The callback to update the metadata shown in the generated page
@@ -111,7 +120,7 @@ class DiscordList:
 
     def add_hint(self, text):
         """
-        Adds a hint to the bottom of the list
+        Adds a hint to the bottom of the list.
 
         :param text: The hint text to add
         """
@@ -119,7 +128,7 @@ class DiscordList:
 
     def add_custom_button(self, label, callback, style=ButtonStyle.secondary):
         """
-        Adds a custom button with a callback to the list of items to show in the list
+        Adds a custom button with a callback to the list of items to show in the list.
 
         :param label: The text for the button
         :param callback: The function to call when the button is pressed
@@ -131,7 +140,7 @@ class DiscordList:
 
     def get_max_page(self):
         """
-        Returns the maximum number of pages based on the number of items in the list, using max item count per page
+        Returns the maximum number of pages based on the number of items in the list, using max item count per page.
 
         :return: Max number of pages possible for the list
         """
@@ -141,7 +150,7 @@ class DiscordList:
 
     def create_view(self):
         """
-        Generates the view that contains any buttons the message needs
+        Generates the view that contains any buttons the message needs.
 
         :return: A discord.ui view with buttons and their callbacks ready
         """
