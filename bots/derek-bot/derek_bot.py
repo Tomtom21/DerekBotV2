@@ -142,6 +142,15 @@ class DerekBot(commands.Bot):
                  audio_manager: VCAudioManager,
                  conversation_cache: ConversationCache,
                  llm_manager: ChatLLMManager):
+        """
+        Initializes the DerekBot instance.
+
+        :param data_manager: The DataManager instance for DB access
+        :param tts_manager: The TTSManager instance for TTS features
+        :param audio_manager: The VCAudioManager instance for VC audio
+        :param conversation_cache: The ConversationCache instance for message caching
+        :param llm_manager: The ChatLLMManager instance for LLM features
+        """
         super().__init__(command_prefix=None, intents=intents, case_insensitive=True)
 
         self.data_manager = data_manager
@@ -164,12 +173,10 @@ class DerekBot(commands.Bot):
         self.tts_enabled = True  # Default to enabled, will be set from DB
         self.last_tts_user_id = None # For not repeating the "___ says:" phrase
 
-    @staticmethod
-    def get_discord_id_from_env(env_var_name):
-        val = os.environ.get(env_var_name)
-        return int(val) if val is not None else None
-
     async def setup_hook(self):
+        """
+        Called by discord.py to set up cogs and sync commands.
+        """
         await self.add_cog(MovieGroupCog(self, self.data_manager))
         await self.add_cog(MiscGroupCog(self, self.data_manager))
         await self.add_cog(BirthdayGroupCog(self, self.data_manager))
@@ -179,7 +186,8 @@ class DerekBot(commands.Bot):
 
     def set_config_data_from_db_manager(self):
         """
-        Updates variables for variable discord ids to ensure all id information is up to date. Also refreshes reactions
+        Updates variables for Discord IDs and other config data from the database.
+        Also refreshes reactions, TTS, and LLM settings.
         """
         config_data = self.data_manager.data.get("system_config")
 
@@ -222,6 +230,10 @@ class DerekBot(commands.Bot):
         self.llm_manager.set_system_prompt(gpt_system_prompt)
 
     async def on_ready(self):
+        """
+        Called when the bot is ready and connected to Discord.
+        Sets up config data, guild, background tasks, and updates the conversation cache.
+        """
         logging.info(f"Logged in as {self.user}")
         self.set_config_data_from_db_manager()
         self.guild = self.get_guild(self.guild_id)
@@ -252,6 +264,9 @@ class DerekBot(commands.Bot):
     # Checks whether it is someone's birthday, sends a birthday message to the appropriate user
     @tasks.loop(minutes=30)
     async def birthday_check(self):
+        """
+        Checks if it is any user's birthday and sends a birthday message if so.
+        """
         date = datetime.datetime.now()
         for birthday in self.data_manager.data.get("birthdays"):
             # Getting the current date for the birthday's timezone
@@ -287,6 +302,9 @@ class DerekBot(commands.Bot):
     # Changes the status of the bot
     @tasks.loop(minutes=45)
     async def cycle_statuses(self):
+        """
+        Changes the bot's status message at regular intervals.
+        """
         statuses = self.data_manager.data.get("statuses")
         random_status_string = random.choice(statuses).get("status", "")
 
@@ -316,6 +334,9 @@ class DerekBot(commands.Bot):
     # Pulls cached info from the database, and updated the local variables for up-to-date values
     @tasks.loop(hours=1)
     async def refresh_cached_info(self):
+        """
+        Refreshes cached info from the database and updates config data.
+        """
         self.data_manager.fetch_all_table_data()
         logging.info("Refreshed/updated all table information")
 
@@ -324,7 +345,7 @@ class DerekBot(commands.Bot):
 
     async def give_user_random_nickname(self, user_id):
         """
-        Gives a user a random nickname given a user id
+        Gives a user a random nickname given a user id.
 
         :param user_id: The user id of the user whose nickname we want to change
         """
@@ -345,7 +366,7 @@ class DerekBot(commands.Bot):
     @tasks.loop(hours=24)
     async def cycle_nicknames(self):
         """
-        Participating users will have their nickname set to a random nickname on a daily basis
+        Sets a random nickname for participating users on a daily basis.
         """
         # Getting participating users
         user_ids_to_update = [
@@ -360,11 +381,11 @@ class DerekBot(commands.Bot):
 
     async def on_voice_state_update(self, member, before, after):
         """
-        Prints a message in a dedicated voice activity channel when a member leaves, joins, or moves voice channels
+        Sends a message in the voice activity channel when a member joins, leaves, or moves voice channels.
 
         :param member: The member whose voice channel activity we're tracking
         :param before: The channel they were in before, None if they were not
-        :param after: The channel they were in ebfore, None if they were not
+        :param after: The channel they are in after, None if they are not
         """
         vc_activity_channel = self.get_channel(self.vc_activity_channel_id)
 
@@ -389,7 +410,7 @@ class DerekBot(commands.Bot):
 
     async def on_member_join(self, member):
         """
-        Called when a user joins the server, logs the occurrence
+        Called when a user joins the server, logs the occurrence.
 
         :param member: The user who joined
         """
@@ -397,7 +418,7 @@ class DerekBot(commands.Bot):
 
     async def on_member_remove(self, member):
         """
-        Called when a member leaves the server, sends a message announcing who the user to leave was
+        Called when a member leaves the server, sends a message announcing who left.
 
         :param member: The user who left
         """
@@ -407,6 +428,11 @@ class DerekBot(commands.Bot):
             await joins_leaves_channel.send(f"<@{member.id}> has left the server")
 
     async def on_message(self, message):
+        """
+        Handles message events for reactions, TTS, and AI chat.
+
+        :param message: The Discord message object
+        """
         # Reacting to messages using the regex strings found in the DB
         for reaction in self.reactions_list:
             match = re.search(reaction["regex"], message.content)
