@@ -17,6 +17,12 @@ class TTSGroupCog(commands.Cog):
     @group.command(name="enable_tts", description="Enable/Disable TTS")
     @app_commands.describe(tts_enabled="Whether TTS should be enabled or not")
     async def enable_tts(self, interaction: Interaction, tts_enabled: bool):
+        """
+        Enables or disables TTS for the server (admin only).
+
+        :param interaction: The Discord interaction object
+        :param tts_enabled: Boolean to enable or disable TTS
+        """
         db_user = self.data_manager.get_item_by_key(
             table_name="users",
             key="user_id",
@@ -50,11 +56,22 @@ class TTSGroupCog(commands.Cog):
         ]
     )
     async def tts_language(self, interaction: Interaction, language: app_commands.Choice[str]):
+        """
+        Sets the TTS language for the bot.
+
+        :param interaction: The Discord interaction object
+        :param language: The language choice for TTS
+        """
         self.tts_manager.set_voice(language)
         await interaction.response.send_message(f"TTS language set to {language.value}.", ephemeral=True)
 
     @group.command(name="vckick", description="Kick the bot from the current voice channel")
     async def vckick(self, interaction: Interaction):
+        """
+        Disconnects the bot from the current voice channel.
+
+        :param interaction: The Discord interaction object
+        """
         successfully_kicked = await self.audio_manager.disconnect_from_vc()
         if successfully_kicked:
             await interaction.response.send_message("Bot kicked from voice channel.", ephemeral=True)
@@ -63,6 +80,11 @@ class TTSGroupCog(commands.Cog):
 
     @group.command(name="vcskip", description="Skip the current TTS or audio in the voice channel")
     async def vcskip(self, interaction: Interaction):
+        """
+        Skips the current TTS or audio in the voice channel.
+
+        :param interaction: The Discord interaction object
+        """
         successfully_skipped = self.audio_manager.skip_current()
         if successfully_skipped:
             await interaction.response.send_message("Skipped current VC audio.", ephemeral=True)
@@ -72,6 +94,12 @@ class TTSGroupCog(commands.Cog):
     @group.command(name="announce_name", description="Announce the name of the user when they use vc-text")
     @app_commands.describe(announce="Do you want your name to be announced when using vc-text?")
     async def announce_name(self, interaction: Interaction, announce: bool):
+        """
+        Sets whether to announce the user's name when using vc-text.
+
+        :param interaction: The Discord interaction object
+        :param announce: Boolean to enable or disable name announcement
+        """
         self.data_manager.ensure_user_exists(interaction.user)    
         successfully_updated = self.data_manager.update_table_data(
             table_name="users",
