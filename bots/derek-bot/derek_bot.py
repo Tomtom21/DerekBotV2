@@ -249,11 +249,6 @@ class DerekBot(commands.Bot):
             self.cycle_nicknames.start()
             logging.info("Nickname cycling background process started")
 
-    # Repeatedly checks to see if there is a new TTS item to say
-    @tasks.loop(seconds=1)
-    async def tts_check_loop(self):
-        pass
-
     # Checks whether it is someone's birthday, sends a birthday message to the appropriate user
     @tasks.loop(minutes=30)
     async def birthday_check(self):
