@@ -3,6 +3,7 @@ from discord import app_commands, Interaction
 
 from shared.data_manager import DataManager
 import pytz
+import logging
 
 COMMON_TIMEZONES = {
     "UTC": "Etc/UTC",
@@ -83,8 +84,10 @@ class BirthdayGroupCog(commands.Cog):
                 }
             )
             if successfully_updated:
+                logging.info(f"Updated birthday for user {interaction.user.name}")
                 await interaction.response.send_message("Your birthday has been updated!")
             else:
+                logging.warning(f"Failed to update birthday for user {interaction.user.name}")
                 await interaction.response.send_message("`Failed to update birthday`")
         else:
             # If the user doesn't have a birthday
@@ -100,6 +103,8 @@ class BirthdayGroupCog(commands.Cog):
                 }
             )
             if successfully_added:
+                logging.info(f"Added birthday for user {interaction.user.name}")
                 await interaction.response.send_message("Your birthday is saved!")
             else:
+                logging.warning(f"Failed to save birthday for user {interaction.user.name}")
                 await interaction.response.send_message("`Failed to save birthday`")
