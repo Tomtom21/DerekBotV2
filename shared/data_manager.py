@@ -8,9 +8,19 @@ from abc import abstractmethod
 
 class ListIndexOutOfBounds(Exception):
     def __init__(self, item_count: int):
+        """
+        Exception raised when a list index is out of bounds.
+
+        :param item_count: The number of items in the list
+        """
         self.item_count = item_count
 
     async def handle_index_error(self, interaction: Interaction):
+        """
+        Sends an error message to the user when an index is out of bounds.
+
+        :param interaction: The Discord interaction object
+        """
         await interaction.response.send_message(
             "`Item index is outside of the valid range (1-" + str(self.item_count) + ")`",
             ephemeral=True
@@ -19,6 +29,13 @@ class ListIndexOutOfBounds(Exception):
 
 class DataManager:
     def __init__(self, db_table_fetch_config: dict, max_login_attempts=5, wait_time=30):
+        """
+        Initializes the DataManager and fetches all table data.
+
+        :param db_table_fetch_config: Configuration for which tables to fetch and how
+        :param max_login_attempts: Maximum number of login attempts to Supabase
+        :param wait_time: Wait time between login attempts
+        """
         # Getting the supabase db info. These are not maintained in memory
         supabase_url: str = os.environ.get('SUPABASE_URL')
         supabase_key: str = os.environ.get('SUPABASE_KEY')
@@ -46,7 +63,7 @@ class DataManager:
 
     def signin_attempt_loop(self, supabase_username, supabase_password, max_login_attempts, wait_time):
         """
-        Make repeated attempts to sign in to Supabase
+        Make repeated attempts to sign in to Supabase.
 
         :param supabase_username: The Supabase username
         :param supabase_password: The Supabase password
@@ -66,6 +83,13 @@ class DataManager:
                 time.sleep(wait_time)
 
     def execute_db_query(self, query, table_name):
+        """
+        Executes a database query, refreshing the session if needed.
+
+        :param query: The Supabase query object
+        :param table_name: The name of the table being queried
+        :return: The response from the query, or None if failed
+        """
         try:
             # Refreshing our session if it already expired or expires within 60 seconds
             session = self.supabase.auth.get_session()
@@ -81,6 +105,11 @@ class DataManager:
             return None
 
     def fetch_table_data(self, table_name):
+        """
+        Fetches data for a single table and updates the local cache.
+
+        :param table_name: The name of the table to fetch
+        """
         # Table fetch config
         config = self.db_table_fetch_config.get(table_name, {})
         query = self.supabase.table(table_name).select(config.get("select", "*"))
@@ -96,6 +125,13 @@ class DataManager:
             self.data[table_name] = response.data
 
     def add_table_data(self, table_name, json_data):
+        """
+        Adds a new row to a table and updates the local cache.
+
+        :param table_name: The name of the table to add data to
+        :param json_data: The data to insert as a dictionary
+        :return: True if successful, False otherwise
+        """
         # Building our add item query
         query = self.supabase.table(table_name).insert(json_data)
 
@@ -113,6 +149,13 @@ class DataManager:
             return False
 
     def delete_table_data(self, table_name, match_json):
+        """
+        Deletes rows from a table matching the given criteria and updates the local cache.
+
+        :param table_name: The name of the table to delete from
+        :param match_json: The criteria for deletion as a dictionary
+        :return: True if successful, False otherwise
+        """
         # Building the remove item query
         query = self.supabase.table(table_name).delete().match(match_json)
 
@@ -130,6 +173,14 @@ class DataManager:
             return False
 
     def update_table_data(self, table_name, match_json, update_json):
+        """
+        Updates rows in a table matching the given criteria and updates the local cache.
+
+        :param table_name: The name of the table to update
+        :param match_json: The criteria for selecting rows to update
+        :param update_json: The data to update as a dictionary
+        :return: True if successful, False otherwise
+        """
         # Building the update item query
         query = self.supabase.table(table_name).update(update_json).match(match_json)
 
@@ -147,6 +198,9 @@ class DataManager:
             return False
 
     def fetch_all_table_data(self):
+        """
+        Fetches all table data as specified in the fetch config and updates the local cache.
+        """
         for name in self.db_table_fetch_config.keys():
             self.fetch_table_data(name)
 
@@ -156,8 +210,9 @@ class DataManager:
         This is made for processing user input referencing a DiscordList item index.
 
         :param table_name: The name of the table to get the item from
-        :param item_index: The index of the item in the DB cache
+        :param item_index: The index of the item in the DB cache (1-based)
         :return: The item from the table in the DB cache
+        :raises ListIndexOutOfBounds: If the index is out of bounds
         """
         item_count = len(self.data.get(table_name))
         if item_count >= item_index >= 1:
@@ -169,9 +224,9 @@ class DataManager:
 
     def ensure_user_exists(self, user: Member):
         """
-        Ensures that a user exists in the users table
+        Ensures that a user exists in the users table.
 
-        :param user: The use to check for existence
+        :param user: The user to check for existence
         :return: True if they exist or have been added, False if an error occurred
         """
         # If the user is not in the users table

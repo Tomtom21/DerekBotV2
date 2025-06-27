@@ -3,6 +3,7 @@ from discord import app_commands, Interaction
 
 from shared.data_manager import DataManager
 import pytz
+import logging
 
 COMMON_TIMEZONES = {
     "UTC": "Etc/UTC",
@@ -52,6 +53,15 @@ class BirthdayGroupCog(commands.Cog):
                            day: app_commands.Range[int, 1, 31],
                            year: app_commands.Range[int, 1985, 2010] = None,
                            timezone: app_commands.Choice[str] = None):
+        """
+        Adds or updates a user's birthday in the database.
+
+        :param interaction: The Discord interaction object
+        :param month: The month of the birthday (1-12)
+        :param day: The day of the birthday (1-31)
+        :param year: The year of the birthday (optional, 1985-2010)
+        :param timezone: The user's timezone (optional, defaults to EST)
+        """
         self.data_manager.ensure_user_exists(interaction.user)
 
         # Setting a default timezone
@@ -73,8 +83,10 @@ class BirthdayGroupCog(commands.Cog):
                 }
             )
             if successfully_updated:
+                logging.info(f"Updated birthday for user {interaction.user.name}")
                 await interaction.response.send_message("Your birthday has been updated!")
             else:
+                logging.warning(f"Failed to update birthday for user {interaction.user.name}")
                 await interaction.response.send_message("`Failed to update birthday`")
         else:
             # If the user doesn't have a birthday
@@ -90,6 +102,8 @@ class BirthdayGroupCog(commands.Cog):
                 }
             )
             if successfully_added:
+                logging.info(f"Added birthday for user {interaction.user.name}")
                 await interaction.response.send_message("Your birthday is saved!")
             else:
+                logging.error(f"Failed to save birthday for user {interaction.user.name}")
                 await interaction.response.send_message("`Failed to save birthday`")

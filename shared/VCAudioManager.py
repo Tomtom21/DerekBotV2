@@ -8,14 +8,25 @@ from shared.TTSManager import TTSManager
 
 
 class AudioState(Enum):
+    """
+    Enum representing the state of audio playback.
+    """
     PAUSED = "paused"
     PLAYING = "playing"
     STOPPED = "stopped"
 
 
 class AudioQueueItem:
-    """The queue items for the audio queue"""
     def __init__(self, audio_file_path, voice_channel, high_priority, audio_name="System audio", added_by="System"):
+        """
+        Initializes an AudioQueueItem.
+
+        :param audio_file_path: Path to the audio file
+        :param voice_channel: The Discord voice channel object
+        :param high_priority: Whether the audio is high priority
+        :param audio_name: Name of the audio (optional)
+        :param added_by: Who added the audio (optional)
+        """
         self.audio_file_path = audio_file_path
         self.voice_channel = voice_channel
         self.high_priority = high_priority
@@ -24,7 +35,7 @@ class AudioQueueItem:
 
     def __repr__(self):
         """
-        Changes the output representation when the object is printed to console
+        Changes the output representation when the object is printed to console.
 
         :return: The new output representation string
         """
@@ -44,8 +55,7 @@ class VCAudioManager:
                  disconnect_func=None,
                  leave_timeout_length=300):
         """
-        Audio manager that maintains the queue, plays audio in the vc
-        Threading and async are used to handle audio playback. Multiprocessing would be overkill
+        Audio manager that maintains the queue and plays audio in the VC.
 
         :param tts_manager: The TTSManager to be used for leave messages
         :param bot_leave_messages: A list of leave messages for the bot to randomly choose from
@@ -68,7 +78,7 @@ class VCAudioManager:
 
     async def add_to_queue(self, audio_file_path, voice_channel, high_priority=True):
         """
-        Adds an audio to the queue, positions it in the list based on priority
+        Adds an audio to the queue, positions it in the list based on priority.
 
         :param audio_file_path: The path to the audio
         :param voice_channel: The voice channel to play the audio in
@@ -175,7 +185,7 @@ class VCAudioManager:
 
     async def disconnect_from_vc(self):
         """
-        User-callable function to ask the bot to disconnect from the current voice channel
+        User-callable function to ask the bot to disconnect from the current voice channel.
 
         :return: True if the bot is in a voice channel and the bot has been disconnected, False otherwise
         """
@@ -188,7 +198,7 @@ class VCAudioManager:
 
     async def _disconnect(self):
         """
-        Async disconnect function that disconnects the bot from the current voice channel
+        Async disconnect function that disconnects the bot from the current voice channel.
         """
         if self._current_voice_channel:
             # Run provided disconnect function
@@ -217,7 +227,7 @@ class VCAudioManager:
         """
         Updates the bot leave messages if the provided list is not empty.
 
-        :param messages: List of leave messages (strings)
+        :param leave_messages: List of leave messages (strings)
         """
         if leave_messages and all(isinstance(m, str) for m in leave_messages):
             self.bot_leave_messages = leave_messages

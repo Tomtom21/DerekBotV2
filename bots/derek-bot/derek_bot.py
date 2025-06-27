@@ -142,6 +142,15 @@ class DerekBot(commands.Bot):
                  audio_manager: VCAudioManager,
                  conversation_cache: ConversationCache,
                  llm_manager: ChatLLMManager):
+        """
+        Initializes the DerekBot instance.
+
+        :param data_manager: The DataManager instance for DB access
+        :param tts_manager: The TTSManager instance for TTS features
+        :param audio_manager: The VCAudioManager instance for VC audio
+        :param conversation_cache: The ConversationCache instance for message caching
+        :param llm_manager: The ChatLLMManager instance for LLM features
+        """
         super().__init__(command_prefix=None, intents=intents, case_insensitive=True)
 
         self.data_manager = data_manager
@@ -164,27 +173,31 @@ class DerekBot(commands.Bot):
         self.tts_enabled = True  # Default to enabled, will be set from DB
         self.last_tts_user_id = None # For not repeating the "___ says:" phrase
 
-    @staticmethod
-    def get_discord_id_from_env(env_var_name):
-        val = os.environ.get(env_var_name)
-        return int(val) if val is not None else None
+        logging.info("DerekBot instance initialized")
 
     async def setup_hook(self):
+        """
+        Called by discord.py to set up cogs and sync commands.
+        """
+        logging.info("Adding cogs...")
         await self.add_cog(MovieGroupCog(self, self.data_manager))
         await self.add_cog(MiscGroupCog(self, self.data_manager))
         await self.add_cog(BirthdayGroupCog(self, self.data_manager))
         await self.add_cog(AICog(self, self.data_manager))
         await self.tree.sync()
-        logging.info("Synced commands")
+        logging.info("Synced commands and added all cogs")
 
     def set_config_data_from_db_manager(self):
         """
-        Updates variables for variable discord ids to ensure all id information is up to date. Also refreshes reactions
+        Updates variables for Discord IDs and other config data from the database.
+        Also refreshes reactions, TTS, and LLM settings.
         """
+        logging.info("Setting config data from DB manager")
         config_data = self.data_manager.data.get("system_config")
 
         # If we don't get the config data
         if not config_data:
+            logging.warning("No config data found in DB")
             return
 
         # Helper functions to make things cleaner
@@ -222,9 +235,17 @@ class DerekBot(commands.Bot):
         self.llm_manager.set_system_prompt(gpt_system_prompt)
 
     async def on_ready(self):
-        logging.info(f"Logged in as {self.user}")
+        """
+        Called when the bot is ready and connected to Discord.
+        Sets up config data, guild, background tasks, and updates the conversation cache.
+        """
+        logging.info(f"Bot ready event triggered. Logged in as {self.user}")
         self.set_config_data_from_db_manager()
         self.guild = self.get_guild(self.guild_id)
+        if self.guild:
+            logging.info(f"Guild set: {self.guild.name} ({self.guild_id})")
+        else:
+            logging.warning(f"Guild with ID {self.guild_id} not found")
         self.start_background_tasks()
         self.conversation_cache.update_bot_user_id(self.user.id)
 
@@ -249,15 +270,14 @@ class DerekBot(commands.Bot):
             self.cycle_nicknames.start()
             logging.info("Nickname cycling background process started")
 
-    # Repeatedly checks to see if there is a new TTS item to say
-    @tasks.loop(seconds=1)
-    async def tts_check_loop(self):
-        pass
-
     # Checks whether it is someone's birthday, sends a birthday message to the appropriate user
     @tasks.loop(minutes=30)
     async def birthday_check(self):
+        """
+        Checks if it is any user's birthday and sends a birthday message if so.
+        """
         date = datetime.datetime.now()
+        logging.info("Running birthday check loop")
         for birthday in self.data_manager.data.get("birthdays"):
             # Getting the current date for the birthday's timezone
             timezone_date = date.astimezone(pytz.timezone(birthday["timezone"]))
@@ -288,12 +308,18 @@ class DerekBot(commands.Bot):
 
                         logging.info(f"Wishing happy birthday to a user")
                         await self.get_channel(self.main_channel_id).send(birthday_string)
+                    else:
+                        logging.warning("Main channel ID not set, cannot send birthday message")
 
     # Changes the status of the bot
     @tasks.loop(minutes=45)
     async def cycle_statuses(self):
+        """
+        Changes the bot's status message at regular intervals.
+        """
         statuses = self.data_manager.data.get("statuses")
         random_status_string = random.choice(statuses).get("status", "")
+        logging.info(f"Cycling status to: {random_status_string}")
 
         # Setting the status based on the status type
         if random_status_string.startswith("$p "):
@@ -321,6 +347,10 @@ class DerekBot(commands.Bot):
     # Pulls cached info from the database, and updated the local variables for up-to-date values
     @tasks.loop(hours=1)
     async def refresh_cached_info(self):
+        """
+        Refreshes cached info from the database and updates config data.
+        """
+        logging.info("Refreshing cached info from DB")
         self.data_manager.fetch_all_table_data()
         logging.info("Refreshed/updated all table information")
 
@@ -329,7 +359,7 @@ class DerekBot(commands.Bot):
 
     async def give_user_random_nickname(self, user_id):
         """
-        Gives a user a random nickname given a user id
+        Gives a user a random nickname given a user id.
 
         :param user_id: The user id of the user whose nickname we want to change
         """
@@ -345,13 +375,14 @@ class DerekBot(commands.Bot):
             except Exception as e:
                 logging.error(f"Failed to change nickname for user {user_id}: {e}")
         else:
-            logging.warning(f"No nicknames found in database. Not updating nickname for user {user_id}")
+            logging.warning(f"No nicknames found in database or guild not set. Not updating nickname for user {user_id}")
 
     @tasks.loop(hours=24)
     async def cycle_nicknames(self):
         """
-        Participating users will have their nickname set to a random nickname on a daily basis
+        Sets a random nickname for participating users on a daily basis.
         """
+        logging.info("Cycling nicknames for users who opted in")
         # Getting participating users
         user_ids_to_update = [
             user["user_id"]
@@ -365,11 +396,11 @@ class DerekBot(commands.Bot):
 
     async def on_voice_state_update(self, member, before, after):
         """
-        Prints a message in a dedicated voice activity channel when a member leaves, joins, or moves voice channels
+        Sends a message in the voice activity channel when a member joins, leaves, or moves voice channels.
 
         :param member: The member whose voice channel activity we're tracking
         :param before: The channel they were in before, None if they were not
-        :param after: The channel they were in ebfore, None if they were not
+        :param after: The channel they are in after, None if they are not
         """
         vc_activity_channel = self.get_channel(self.vc_activity_channel_id)
 
@@ -377,15 +408,18 @@ class DerekBot(commands.Bot):
         if vc_activity_channel:
             # Determining whether someone joined, left, or moved voice channels
             if not before.channel and after.channel:
+                logging.info(f"{member.display_name} joined {after.channel.name}")
                 await vc_activity_channel.send(
                     f"🟩 ***{member.display_name}** joined {after.channel.name}.*"
                 )
             elif before.channel and not after.channel:
+                logging.info(f"{member.display_name} left {before.channel.name}")
                 await vc_activity_channel.send(
                     f"🟥 ***{member.display_name}** left {before.channel.name}.*"
                 )
             elif before.channel and after.channel:
                 if before.channel.id != after.channel.id:
+                    logging.info(f"{member.display_name} moved from {before.channel.name} to {after.channel.name}")
                     await vc_activity_channel.send(
                         f"🔀 ***{member.display_name}** joined {after.channel.name} from {before.channel.name}.*"
                     )
@@ -394,32 +428,40 @@ class DerekBot(commands.Bot):
 
     async def on_member_join(self, member):
         """
-        Called when a user joins the server, logs the occurrence
+        Called when a user joins the server, logs the occurrence.
 
         :param member: The user who joined
         """
-        logging.info(f"{member.name} has joined the server")
+        logging.info(f"{member.name} has joined the server (ID: {member.id})")
 
     async def on_member_remove(self, member):
         """
-        Called when a member leaves the server, sends a message announcing who the user to leave was
+        Called when a member leaves the server, sends a message announcing who left.
 
         :param member: The user who left
         """
-        logging.info(f"{member.name} has left the server")
+        logging.info(f"{member.name} has left the server (ID: {member.id})")
         joins_leaves_channel = self.get_channel(self.joins_leaves_channel_id)
         if joins_leaves_channel:
             await joins_leaves_channel.send(f"<@{member.id}> has left the server")
+        else:
+            logging.warning("Joins/leaves channel not found, cannot announce member leave.")
 
     async def on_message(self, message):
+        """
+        Handles message events for reactions, TTS, and AI chat.
+
+        :param message: The Discord message object
+        """
         # Reacting to messages using the regex strings found in the DB
         for reaction in self.reactions_list:
             match = re.search(reaction["regex"], message.content)
             if match:
                 try:
                     await message.add_reaction(reaction["emoji"])
+                    logging.info(f"Added reaction '{reaction['emoji']}' to message by {message.author.name}")
                 except Exception as e:
-                    logging.error(f"Failed to add reaction to message '{message.content[:25]}': {e}")
+                    logging.error(f"Failed to add reaction to message '{message.content[:25]}' by {message.author.name}: {e}")
 
         # TTS processing. Checking if messages are in the tts channel, are not from the bot, and tts is enabled
         if self.tts_enabled and message.channel.id == self.vc_text_channel_id and message.author != self.user:
@@ -442,6 +484,8 @@ class DerekBot(commands.Bot):
                 file_path = self.tts_manager.process(final_tts_message)
                 if file_path:
                     await self.audio_manager.add_to_queue(file_path, message.author.voice.channel)
+                else:
+                    logging.error(f"TTS processing failed for message by {message.author.name}")
             else:
                 # If Derek hasn't warned a user of not being in the VC within the past 3 minutes, warn them
                 if time.time() - self.last_vc_text_warning_time >= 180:
@@ -451,6 +495,7 @@ class DerekBot(commands.Bot):
         
         # Chat processing
         if self.user.mentioned_in(message) and message.author != self.user:
+            logging.info(f"AI chat triggered by {message.author.name} in channel {message.channel.name}")
             # Letting the user know we're processing things
             async with message.channel.typing():
                 # Keeping track of things in the cache
@@ -476,6 +521,7 @@ class DerekBot(commands.Bot):
                     content=gpt_message.content[:2000],
                     files=discord_file_images[:10]
                 )
+                logging.info(f"AI response sent to {message.author.name} in channel {message.channel.name}")
                 await self.conversation_cache.add_message(reply_message)
 
 

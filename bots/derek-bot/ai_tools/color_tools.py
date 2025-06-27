@@ -4,6 +4,12 @@ import logging
 
 
 async def generate_color_swatch(hex_code: str):
+    """
+    Generates a color swatch image for a given hex color code.
+
+    :param hex_code: The hex color code (with or without leading '#')
+    :return: Tuple of (status message, PIL Image or None)
+    """
     # Normalize hex code (remove leading # if present)
     if hex_code.startswith('#'):
         hex_code = hex_code[1:]

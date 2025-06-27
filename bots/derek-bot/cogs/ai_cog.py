@@ -41,6 +41,7 @@ class AICog(commands.Cog):
                 logging.info(f"User {interaction.user.name} saved memory: {memory}")
                 await interaction.response.send_message("Memory successfully saved")
             else:
+                logging.error(f"Failed to save memory for user {interaction.user.name}: {memory}")
                 await interaction.response.send_message("`Failed to save memory`")
 
     @group.command(name="memories", description="Shows a list of Derek's memories")
@@ -63,6 +64,7 @@ class AICog(commands.Cog):
             title="Derek's Memories"
         )
 
+        logging.info(f"User {interaction.user.name} requested Derek's memory list")
         await interaction.response.send_message(
             discord_list.get_page(),
             view=discord_list.create_view()
@@ -75,8 +77,9 @@ class AICog(commands.Cog):
         Command to remove a memory from the chat_memories table in the DB
 
         :param interaction: The interaction for the command
-        :param memory_index: The index of the memory in the local db cache
+        :param memory_index: The index of the memory in the user-facing list (local db index + 1)
         """
+        logging.info(f"User {interaction.user.name} is removing movie at index: {memory_index}")
         try:
             memory = self.data_manager.get_db_item_with_index(
                 table_name="chat_memories",
@@ -96,7 +99,9 @@ class AICog(commands.Cog):
                 logging.info(f"User {interaction.user.name} removed memory: {memory_text}")
                 await interaction.response.send_message("Removed **" + memory_text + "** from Derek's memory")
             else:
+                logging.error(f"Failed to remove memory for user {interaction.user.name}: {memory_text}")
                 await interaction.response.send_message("`Failed to remove memory`")
 
         except ListIndexOutOfBounds as error:
+            logging.warning(f"User {interaction.user.name} tried to remove memory at invalid index {memory_index}")
             await error.handle_index_error(interaction)
