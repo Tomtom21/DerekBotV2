@@ -4,6 +4,7 @@ from shared.constants import GOOGLE_TTS_VOICE_INFO
 from shared.TTSManager import TTSManager
 from shared.VCAudioManager import VCAudioManager
 from shared.data_manager import DataManager
+import logging
 
 class TTSGroupCog(commands.Cog):
     def __init__(self, bot: commands.Bot, data_manager: DataManager, tts_manager: TTSManager, audio_manager: VCAudioManager):
@@ -35,13 +36,16 @@ class TTSGroupCog(commands.Cog):
                 update_json={"config_value_bool": tts_enabled}
             )
             if successfully_updated:
+                logging.info(f"User {interaction.user.name} set TTS enabled to {tts_enabled}")
                 await interaction.response.send_message(
                     f"{'Enabled' if tts_enabled else 'Disabled'} TTS for server.", 
                     ephemeral=True
                 )
             else:
+                logging.error(f"Failed to update TTS enabled state for user {interaction.user.name}")
                 await interaction.response.send_message("`Failed to update TTS state.`", ephemeral=True)
         else:
+            logging.warning(f"User {interaction.user.name} attempted to change TTS enabled state without admin rights")
             await interaction.response.send_message(
                 "`You must be an administrator to update this value.`", 
                 ephemeral=True
@@ -63,6 +67,7 @@ class TTSGroupCog(commands.Cog):
         :param language: The language choice for TTS
         """
         self.tts_manager.set_voice(language)
+        logging.info(f"User {interaction.user.name} set TTS language to {language.value}")
         await interaction.response.send_message(f"TTS language set to {language.value}.", ephemeral=True)
 
     @group.command(name="vckick", description="Kick the bot from the current voice channel")
@@ -74,8 +79,10 @@ class TTSGroupCog(commands.Cog):
         """
         successfully_kicked = await self.audio_manager.disconnect_from_vc()
         if successfully_kicked:
+            logging.info(f"User {interaction.user.name} kicked bot from voice channel")
             await interaction.response.send_message("Bot kicked from voice channel.", ephemeral=True)
         else:
+            logging.warning(f"User {interaction.user.name} tried to kick bot, but bot was not in a voice channel")
             await interaction.response.send_message("`Bot is not in a voice channel.`", ephemeral=True)
 
     @group.command(name="vcskip", description="Skip the current TTS or audio in the voice channel")
@@ -87,8 +94,10 @@ class TTSGroupCog(commands.Cog):
         """
         successfully_skipped = self.audio_manager.skip_current()
         if successfully_skipped:
+            logging.info(f"User {interaction.user.name} skipped current VC audio")
             await interaction.response.send_message("Skipped current VC audio.", ephemeral=True)
         else:
+            logging.error(f"User {interaction.user.name} failed to skip current VC audio")
             await interaction.response.send_message("`Failed to skip current VC audio`", ephemeral=True)
 
     @group.command(name="announce_name", description="Announce the name of the user when they use vc-text")
@@ -108,10 +117,12 @@ class TTSGroupCog(commands.Cog):
         )
         
         if successfully_updated:
+            logging.info(f"User {interaction.user.name} set announce_name to {announce}")
             await interaction.response.send_message(
                 f"{'Enabled' if announce else 'Disabled'} name announcement for you when using vc-text.", ephemeral=True
             )
         else:
+            logging.error(f"Failed to update announce_name for user {interaction.user.name}")
             await interaction.response.send_message(
                 "`Failed to update name announcement setting.`", ephemeral=True
             )
