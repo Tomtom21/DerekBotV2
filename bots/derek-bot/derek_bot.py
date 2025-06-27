@@ -485,7 +485,7 @@ class DerekBot(commands.Bot):
                 if file_path:
                     await self.audio_manager.add_to_queue(file_path, message.author.voice.channel)
                 else:
-                    logging.warning(f"TTS processing failed for message by {message.author.name}")
+                    logging.error(f"TTS processing failed for message by {message.author.name}")
             else:
                 # If Derek hasn't warned a user of not being in the VC within the past 3 minutes, warn them
                 if time.time() - self.last_vc_text_warning_time >= 180:
