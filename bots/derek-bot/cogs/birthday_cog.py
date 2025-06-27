@@ -61,7 +61,6 @@ class BirthdayGroupCog(commands.Cog):
         :param day: The day of the birthday (1-31)
         :param year: The year of the birthday (optional, 1985-2010)
         :param timezone: The user's timezone (optional, defaults to EST)
-        :return: Sends a message indicating success or failure
         """
         self.data_manager.ensure_user_exists(interaction.user)
 
