@@ -106,5 +106,5 @@ class BirthdayGroupCog(commands.Cog):
                 logging.info(f"Added birthday for user {interaction.user.name}")
                 await interaction.response.send_message("Your birthday is saved!")
             else:
-                logging.warning(f"Failed to save birthday for user {interaction.user.name}")
+                logging.error(f"Failed to save birthday for user {interaction.user.name}")
                 await interaction.response.send_message("`Failed to save birthday`")

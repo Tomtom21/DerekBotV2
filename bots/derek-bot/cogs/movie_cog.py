@@ -107,7 +107,7 @@ class MovieGroupCog(commands.Cog):
             logging.info(f"Successfully added movie '{movie_name}' to unwatched list.")
             await interaction.response.send_message("Added **" + movie_name + "** to unwatched list")
         else:
-            logging.warning(f"Failed to add movie '{movie_name}' to unwatched list.")
+            logging.error(f"Failed to add movie '{movie_name}' to unwatched list.")
             await interaction.response.send_message("`Failed to add movie to unwatched list`")
 
     @group.command(name="remove_movie", description="Remove a movie from the unwatched list")
@@ -139,11 +139,11 @@ class MovieGroupCog(commands.Cog):
                 logging.info(f"Successfully removed movie '{movie_name}' from unwatched list.")
                 await interaction.response.send_message("Removed **" + movie_name + "** from unwatched list")
             else:
-                logging.warning(f"Failed to remove movie '{movie_name}' from unwatched list.")
+                logging.error(f"Failed to remove movie '{movie_name}' from unwatched list.")
                 await interaction.response.send_message("`Failed to remove movie from unwatched list`")
 
         except ListIndexOutOfBounds as error:
-            logging.error(f"ListIndexOutOfBounds error for user {interaction.user.name} at index {movie_index}: {error}")
+            logging.warning(f"ListIndexOutOfBounds error for user {interaction.user.name} at index {movie_index}: {error}")
             await error.handle_index_error(interaction)
 
     @group.command(name="mark_watched", description="Marks a movie in the unwatched list as watched")
@@ -170,7 +170,7 @@ class MovieGroupCog(commands.Cog):
                 match_json={"movie_name": unwatched_name, "added_by": unwatched_user_id}
             )
             if not successfully_removed:
-                logging.warning(f"Failed to remove movie '{unwatched_name}' from unwatched list during marking.")
+                logging.error(f"Failed to remove movie '{unwatched_name}' from unwatched list during marking.")
                 await interaction.response.send_message("`Failed to remove movie from unwatched list during marking`")
                 return
 
@@ -183,10 +183,10 @@ class MovieGroupCog(commands.Cog):
                 logging.info(f"Marked movie '{unwatched_name}' as watched.")
                 await interaction.response.send_message("Marked **" + unwatched_name + "** as watched")
             else:
-                logging.warning(f"Failed to add movie '{unwatched_name}' to the watched list.")
+                logging.error(f"Failed to add movie '{unwatched_name}' to the watched list.")
                 await interaction.response.send_message("`Failed to add movie to the watched list`")
         except ListIndexOutOfBounds as error:
-            logging.error(f"ListIndexOutOfBounds error for user {interaction.user.name} at index {movie_index}: {error}")
+            logging.warning(f"ListIndexOutOfBounds error for user {interaction.user.name} at index {movie_index}: {error}")
             await error.handle_index_error(interaction)
 
     @group.command(name="search_movie",

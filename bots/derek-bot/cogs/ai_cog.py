@@ -41,7 +41,7 @@ class AICog(commands.Cog):
                 logging.info(f"User {interaction.user.name} saved memory: {memory}")
                 await interaction.response.send_message("Memory successfully saved")
             else:
-                logging.warning(f"Failed to save memory for user {interaction.user.name}: {memory}")
+                logging.error(f"Failed to save memory for user {interaction.user.name}: {memory}")
                 await interaction.response.send_message("`Failed to save memory`")
 
     @group.command(name="memories", description="Shows a list of Derek's memories")
@@ -99,7 +99,7 @@ class AICog(commands.Cog):
                 logging.info(f"User {interaction.user.name} removed memory: {memory_text}")
                 await interaction.response.send_message("Removed **" + memory_text + "** from Derek's memory")
             else:
-                logging.warning(f"Failed to remove memory for user {interaction.user.name}: {memory_text}")
+                logging.error(f"Failed to remove memory for user {interaction.user.name}: {memory_text}")
                 await interaction.response.send_message("`Failed to remove memory`")
 
         except ListIndexOutOfBounds as error:
