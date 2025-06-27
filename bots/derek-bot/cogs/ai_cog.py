@@ -41,6 +41,7 @@ class AICog(commands.Cog):
                 logging.info(f"User {interaction.user.name} saved memory: {memory}")
                 await interaction.response.send_message("Memory successfully saved")
             else:
+                logging.warning(f"Failed to save memory for user {interaction.user.name}: {memory}")
                 await interaction.response.send_message("`Failed to save memory`")
 
     @group.command(name="memories", description="Shows a list of Derek's memories")
@@ -63,6 +64,7 @@ class AICog(commands.Cog):
             title="Derek's Memories"
         )
 
+        logging.info(f"User {interaction.user.name} requested Derek's memory list")
         await interaction.response.send_message(
             discord_list.get_page(),
             view=discord_list.create_view()
@@ -96,7 +98,9 @@ class AICog(commands.Cog):
                 logging.info(f"User {interaction.user.name} removed memory: {memory_text}")
                 await interaction.response.send_message("Removed **" + memory_text + "** from Derek's memory")
             else:
+                logging.warning(f"Failed to remove memory for user {interaction.user.name}: {memory_text}")
                 await interaction.response.send_message("`Failed to remove memory`")
 
         except ListIndexOutOfBounds as error:
+            logging.warning(f"User {interaction.user.name} tried to remove memory at invalid index {memory_index}")
             await error.handle_index_error(interaction)
