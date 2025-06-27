@@ -28,6 +28,7 @@ class MiscGroupCog(commands.Cog):
         output_string = (f"{interaction.user.name} said: *{question}*\n"
                          f"🎱: **{ball_phrase.get('phrase')}**")
 
+        logging.info(f"Magic8Ball: {interaction.user.name} asked '{question}' -> '{ball_phrase.get('phrase')}'")
         await interaction.response.send_message(output_string)
 
     @group.command(name="simon_says")
@@ -40,6 +41,7 @@ class MiscGroupCog(commands.Cog):
         :param text: The text to send to the channel
         """
         await interaction.channel.send(text)
+        logging.info(f"SimonSays: {interaction.user.name} made bot say '{text}'")
         await interaction.response.send_message("Sent the simonsays message.", ephemeral=True)
 
     @group.command(name="random_nicknames")
@@ -60,6 +62,7 @@ class MiscGroupCog(commands.Cog):
             title="Random Nicknames"
         )
 
+        logging.info(f"RandomNicknames: {interaction.user.name} requested random nicknames list")
         await interaction.response.send_message(
             discord_list.get_page(),
             view=discord_list.create_view()
@@ -84,6 +87,7 @@ class MiscGroupCog(commands.Cog):
             logging.info(f"User {interaction.user.name} saved new random nickname: {nickname}")
             await interaction.response.send_message(f"Saved random nickname **{nickname}**")
         else:
+            logging.warning(f"Failed to save random nickname for user {interaction.user.name}: {nickname}")
             await interaction.response.send_message("`Failed to save random nickname`")
 
     @group.command(name="remove_nickname")
@@ -113,9 +117,11 @@ class MiscGroupCog(commands.Cog):
                 logging.info(f"User {interaction.user.name} removed random nickname: {nickname_string}")
                 await interaction.response.send_message(f"Removed random nickname **{nickname_string}**")
             else:
+                logging.warning(f"Failed to remove random nickname for user {interaction.user.name}: {nickname_string}")
                 await interaction.response.send_message(f"`Failed to remove random nickname`")
 
         except ListIndexOutOfBounds as error:
+            logging.warning(f"User {interaction.user.name} tried to remove nickname at invalid index {nickname_index}")
             await error.handle_index_error(interaction)
 
     @group.command(name="shuffle_nickname", description="Set whether to shuffle your nickname daily")
@@ -149,10 +155,11 @@ class MiscGroupCog(commands.Cog):
         )
 
         if successfully_updated:
-            logging.info(f"Successfully updated nickname shuffling state for {interaction.user.name}")
+            logging.info(f"Successfully updated nickname shuffling state for {interaction.user.name} to {shuffle_nickname}")
             await interaction.response.send_message(
                 f"Successfully updated nickname shuffling state to **{shuffle_nickname}**",
                 ephemeral=True
             )
         else:
+            logging.warning(f"Failed to update nickname shuffling state for {interaction.user.name}")
             await interaction.response.send_message(f"`Failed to update nickname shuffling state`")
