@@ -77,8 +77,9 @@ class AICog(commands.Cog):
         Command to remove a memory from the chat_memories table in the DB
 
         :param interaction: The interaction for the command
-        :param memory_index: The index of the memory in the local db cache
+        :param memory_index: The index of the memory in the user-facing list (local db index + 1)
         """
+        logging.info(f"User {interaction.user.name} is removing movie at index: {memory_index}")
         try:
             memory = self.data_manager.get_db_item_with_index(
                 table_name="chat_memories",
