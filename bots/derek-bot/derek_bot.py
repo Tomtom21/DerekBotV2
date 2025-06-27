@@ -278,20 +278,21 @@ class DerekBot(commands.Bot):
         """
         date = datetime.datetime.now()
         logging.info("Running birthday check loop")
-        for birthday in self.data_manager.data.get("birthdays"):
-            # Getting the current date for the birthday's timezone
-            timezone_date = date.astimezone(pytz.timezone(birthday["timezone"]))
 
-            # If a birthday matches the timezone data
-            if timezone_date.month == birthday["month"] and timezone_date.day == birthday["day"]:
-                # If the birthday is not already marked for this year, say something and mark it
-                if not any(
-                        (birthday_track["birthday_id"] == birthday["id"]) and
-                        (birthday_track["year"] == timezone_date.year)
-                        for birthday_track in self.data_manager.data.get("birthday_tracks")
-                ):
-                    # Making sure that we have a channel id to send to
-                    if self.main_channel_id:
+        # Making sure that we have a channel id to send to
+        if self.main_channel_id:
+            for birthday in self.data_manager.data.get("birthdays"):
+                # Getting the current date for the birthday's timezone
+                timezone_date = date.astimezone(pytz.timezone(birthday["timezone"]))
+
+                # If a birthday matches the timezone data
+                if timezone_date.month == birthday["month"] and timezone_date.day == birthday["day"]:
+                    # If the birthday is not already marked for this year, say something and mark it
+                    if not any(
+                            (birthday_track["birthday_id"] == birthday["id"]) and
+                            (birthday_track["year"] == timezone_date.year)
+                            for birthday_track in self.data_manager.data.get("birthday_tracks")
+                    ):
                         # Updating the birthday tracking table
                         self.data_manager.add_table_data(
                             table_name="birthday_tracks",
@@ -308,8 +309,8 @@ class DerekBot(commands.Bot):
 
                         logging.info(f"Wishing happy birthday to a user")
                         await self.get_channel(self.main_channel_id).send(birthday_string)
-                    else:
-                        logging.warning("Main channel ID not set, cannot send birthday message")
+        else:
+            logging.warning("Main channel ID not set, cannot send birthday message")
 
     # Changes the status of the bot
     @tasks.loop(minutes=45)
