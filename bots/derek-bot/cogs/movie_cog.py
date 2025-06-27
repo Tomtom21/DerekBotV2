@@ -59,6 +59,7 @@ class MovieGroupCog(commands.Cog):
             title="Unwatched Movies"
         )
 
+        logging.info(f"User {interaction.user.name} requested unwatched movie list")
         await interaction.response.send_message(
             discord_list.get_page(),
             view=discord_list.create_view()
@@ -81,6 +82,7 @@ class MovieGroupCog(commands.Cog):
             title="Watched Movies"
         )
 
+        logging.info(f"User {interaction.user.name} requested watched movie list")
         await interaction.response.send_message(
             discord_list.get_page(),
             view=discord_list.create_view()
