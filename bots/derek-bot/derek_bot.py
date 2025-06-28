@@ -370,7 +370,7 @@ class DerekBot(commands.Bot):
         if nicknames and self.guild:
             try:
                 member = self.guild.get_member(user_id)
-                nickname_string = random.choice(nicknames)["nickname"]
+                nickname_string = random.choice(nicknames)["nickname"][:32]
                 await member.edit(nick=nickname_string)
                 logging.info(f"Set nickname for user {user_id} to {nickname_string}")
             except Exception as e:
