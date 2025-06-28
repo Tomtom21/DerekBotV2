@@ -103,5 +103,5 @@ class AICog(commands.Cog):
                 await interaction.response.send_message("`Failed to remove memory`", ephemeral=True)
 
         except ListIndexOutOfBounds as error:
-            logging.warning(f"User {interaction.user.name} tried to remove memory at invalid index {memory_index}", ephemeral=True)
+            logging.warning(f"User {interaction.user.name} tried to remove memory at invalid index {memory_index}")
             await error.handle_index_error(interaction)
