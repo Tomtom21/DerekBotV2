@@ -25,7 +25,8 @@ class MiscGroupCog(commands.Cog):
         :param question: The user's question to the Magic 8 Ball
         """
         ball_phrase = random.choice(self.data_manager.data.get("eight_ball_phrases"))
-
+        question = question[:200]
+        
         output_string = (f"{interaction.user.name} said: *{question}*\n"
                          f"🎱: **{ball_phrase.get('phrase')}**")
 
@@ -41,8 +42,8 @@ class MiscGroupCog(commands.Cog):
         :param interaction: The Discord interaction object
         :param text: The text to send to the channel
         """
-        await interaction.channel.send(text)
-        logging.info(f"SimonSays: {interaction.user.name} made bot say '{text}'")
+        await interaction.channel.send(text[:2000])
+        logging.info(f"SimonSays: {interaction.user.name} made bot say '{text[:50]}'")
         await interaction.response.send_message("Sent the simonsays message.", ephemeral=True)
 
     @group.command(name="random-nicknames", description="Show the list of random nicknames for nickname cycling.")
