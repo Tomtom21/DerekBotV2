@@ -15,7 +15,8 @@ class MiscGroupCog(commands.Cog):
 
     group = app_commands.Group(name="misc", description="Miscellaneous commands")
 
-    @group.command(name="magic8ball")
+    @group.command(name="magic8ball", description="Ask the Magic 8 Ball a question.")
+    @app_commands.describe(question="The question you want to ask the Magic 8 Ball")
     async def magic8ball(self, interaction: Interaction, question: str):
         """
         Responds to a user's question with a random Magic 8 Ball phrase.
@@ -31,7 +32,7 @@ class MiscGroupCog(commands.Cog):
         logging.info(f"Magic8Ball: {interaction.user.name} asked '{question}' -> '{ball_phrase.get('phrase')}'")
         await interaction.response.send_message(output_string)
 
-    @group.command(name="simon_says")
+    @group.command(name="simon_says", description="Make the bot repeat your message in the text channel.")
     @app_commands.describe(text="The text to mimic")
     async def simon_says(self, interaction: Interaction, text: str):
         """
@@ -44,7 +45,7 @@ class MiscGroupCog(commands.Cog):
         logging.info(f"SimonSays: {interaction.user.name} made bot say '{text}'")
         await interaction.response.send_message("Sent the simonsays message.", ephemeral=True)
 
-    @group.command(name="random_nicknames")
+    @group.command(name="random_nicknames", description="Show the list of random nicknames for nickname cycling.")
     async def random_nicknames(self, interaction: Interaction):
         """
         Shows the list of random nicknames for users who opt-in.
@@ -68,7 +69,8 @@ class MiscGroupCog(commands.Cog):
             view=discord_list.create_view()
         )
 
-    @group.command(name="add_nickname")
+    @group.command(name="add_nickname", description="Save a new random nickname to cycle through.")
+    @app_commands.describe(nickname="The nickname to save")
     async def add_nickname(self, interaction: Interaction, nickname: str):
         """
         Adds a new random nickname to the database.
@@ -90,7 +92,8 @@ class MiscGroupCog(commands.Cog):
             logging.error(f"Failed to save random nickname for user {interaction.user.name}: {nickname}")
             await interaction.response.send_message("`Failed to save random nickname`", ephemeral=True)
 
-    @group.command(name="remove_nickname")
+    @group.command(name="remove_nickname", description="Remove a random nickname by index.")
+    @app_commands.describe(nickname_index="The index of the nickname in the random nicknames list.")
     async def remove_nickname(self, interaction: Interaction, nickname_index: int):
         """
         Removes a random nickname from the database by index.
