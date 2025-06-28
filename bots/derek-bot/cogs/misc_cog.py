@@ -88,7 +88,7 @@ class MiscGroupCog(commands.Cog):
             await interaction.response.send_message(f"Saved random nickname **{nickname}**")
         else:
             logging.error(f"Failed to save random nickname for user {interaction.user.name}: {nickname}")
-            await interaction.response.send_message("`Failed to save random nickname`")
+            await interaction.response.send_message("`Failed to save random nickname`", ephemeral=True)
 
     @group.command(name="remove_nickname")
     async def remove_nickname(self, interaction: Interaction, nickname_index: int):
@@ -118,7 +118,7 @@ class MiscGroupCog(commands.Cog):
                 await interaction.response.send_message(f"Removed random nickname **{nickname_string}**")
             else:
                 logging.error(f"Failed to remove random nickname for user {interaction.user.name}: {nickname_string}")
-                await interaction.response.send_message(f"`Failed to remove random nickname`")
+                await interaction.response.send_message(f"`Failed to remove random nickname`", ephemeral=True)
 
         except ListIndexOutOfBounds as error:
             logging.warning(f"User {interaction.user.name} tried to remove nickname at invalid index {nickname_index}")
@@ -143,7 +143,8 @@ class MiscGroupCog(commands.Cog):
                 f"Bot/User role levels were: {bot_member_top_role.position} > {user_top_role.position}"
             )
             await interaction.response.send_message(
-                f"`Derek is unable to shuffle nicknames for users who are of equal role level or higher.`"
+                f"`Derek is unable to shuffle nicknames for users who are of equal role level or higher.`",
+                ephemeral=True
             )
             return
 
@@ -162,4 +163,4 @@ class MiscGroupCog(commands.Cog):
             )
         else:
             logging.error(f"Failed to update nickname shuffling state for {interaction.user.name}")
-            await interaction.response.send_message(f"`Failed to update nickname shuffling state`")
+            await interaction.response.send_message(f"`Failed to update nickname shuffling state`", ephemeral=True)

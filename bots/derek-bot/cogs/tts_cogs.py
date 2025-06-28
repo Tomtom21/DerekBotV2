@@ -80,7 +80,7 @@ class TTSGroupCog(commands.Cog):
         successfully_kicked = await self.audio_manager.disconnect_from_vc()
         if successfully_kicked:
             logging.info(f"User {interaction.user.name} kicked bot from voice channel")
-            await interaction.response.send_message("Bot kicked from voice channel.", ephemeral=True)
+            await interaction.response.send_message("Bot kicked from voice channel.")
         else:
             logging.warning(f"User {interaction.user.name} tried to kick bot, but bot was not in a voice channel")
             await interaction.response.send_message("`Bot is not in a voice channel.`", ephemeral=True)
@@ -95,7 +95,7 @@ class TTSGroupCog(commands.Cog):
         successfully_skipped = self.audio_manager.skip_current()
         if successfully_skipped:
             logging.info(f"User {interaction.user.name} skipped current VC audio")
-            await interaction.response.send_message("Skipped current VC audio.", ephemeral=True)
+            await interaction.response.send_message("Skipped current VC audio.")
         else:
             logging.error(f"User {interaction.user.name} failed to skip current VC audio")
             await interaction.response.send_message("`Failed to skip current VC audio`", ephemeral=True)
@@ -124,5 +124,6 @@ class TTSGroupCog(commands.Cog):
         else:
             logging.error(f"Failed to update announce_name for user {interaction.user.name}")
             await interaction.response.send_message(
-                "`Failed to update name announcement setting.`", ephemeral=True
+                "`Failed to update name announcement setting.`", 
+                ephemeral=True
             )
