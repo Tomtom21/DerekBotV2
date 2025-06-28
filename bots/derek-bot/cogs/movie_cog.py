@@ -42,7 +42,7 @@ class MovieGroupCog(commands.Cog):
         ]
         return movies
 
-    @group.command(name="unwatched_movies", description="Show a list of unwatched movies")
+    @group.command(name="unwatched-movies", description="Show a list of unwatched movies")
     async def unwatched_movies(self, interaction: Interaction):
         """
         Shows a paginated list of unwatched movies.
@@ -65,7 +65,7 @@ class MovieGroupCog(commands.Cog):
             view=discord_list.create_view()
         )
 
-    @group.command(name="watched_movies", description="Show a list of watched movies")
+    @group.command(name="watched-movies", description="Show a list of watched movies")
     async def watched_movies(self, interaction: Interaction):
         """
         Shows a paginated list of watched movies.
@@ -88,7 +88,7 @@ class MovieGroupCog(commands.Cog):
             view=discord_list.create_view()
         )
 
-    @group.command(name="add_movie", description="Add a movie to the unwatched list")
+    @group.command(name="add-movie", description="Add a movie to the unwatched list")
     @app_commands.describe(movie_name="The name of the movie to add to the list")
     async def add_movie(self, interaction: Interaction, movie_name: str):
         """
@@ -112,7 +112,7 @@ class MovieGroupCog(commands.Cog):
             logging.error(f"Failed to add movie '{movie_name}' to unwatched list.")
             await interaction.response.send_message("`Failed to add movie to unwatched list`", ephemeral=True)
 
-    @group.command(name="remove_movie", description="Remove a movie from the unwatched list")
+    @group.command(name="remove-movie", description="Remove a movie from the unwatched list")
     @app_commands.describe(movie_index="The item number associated with each movie in the movie list")
     async def remove_movie(self, interaction: Interaction, movie_index: int):
         """
@@ -148,7 +148,7 @@ class MovieGroupCog(commands.Cog):
             logging.warning(f"ListIndexOutOfBounds error for user {interaction.user.name} at index {movie_index}: {error}")
             await error.handle_index_error(interaction)
 
-    @group.command(name="mark_watched", description="Marks a movie in the unwatched list as watched")
+    @group.command(name="mark-watched", description="Marks a movie in the unwatched list as watched")
     @app_commands.describe(movie_index="Index number associated with each movie in the movie list")
     async def mark_watched(self, interaction: Interaction, movie_index: int):
         """
@@ -191,7 +191,7 @@ class MovieGroupCog(commands.Cog):
             logging.warning(f"ListIndexOutOfBounds error for user {interaction.user.name} at index {movie_index}: {error}")
             await error.handle_index_error(interaction)
 
-    @group.command(name="search_movie",
+    @group.command(name="search-movie",
                    description="List all unwatched movies that contain the keyword")
     @app_commands.describe(keyword="Keyword movie name")
     async def search_movie(self, interaction: Interaction, keyword: str):
@@ -219,7 +219,7 @@ class MovieGroupCog(commands.Cog):
             view=discord_list.create_view()
         )
 
-    @group.command(name="random_movie", description="Choose a random movie to watch (from unwatched list)")
+    @group.command(name="random-movie", description="Choose a random movie to watch (from unwatched list)")
     @app_commands.describe(keyword="[OPTIONAL] Keyword movie name")
     async def random_movie(self, interaction: Interaction, keyword: str = ""):
         """

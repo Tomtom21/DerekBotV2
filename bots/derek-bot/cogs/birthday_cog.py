@@ -46,7 +46,7 @@ class BirthdayGroupCog(commands.Cog):
 
     group = app_commands.Group(name="birthday", description="Commands for managing birthday information")
 
-    @group.command(name="add_birthday", description="Save a birthday for Derek to remember later")
+    @group.command(name="add-birthday", description="Save a birthday for Derek to remember later")
     @app_commands.describe(
         month="The month of your birthday (1-12)",
         day="The day of your birthday (1-31)",
