@@ -71,17 +71,21 @@ class MiscGroupCog(commands.Cog):
 
     @group.command(name="add_nickname", description="Save a new random nickname to cycle through.")
     @app_commands.describe(nickname="The nickname to save")
-    async def add_nickname(
-        self,
-        interaction: Interaction,
-        nickname: str = app_commands.Param(min_length=1, max_length=32)
-    ):
+    async def add_nickname(self, interaction: Interaction, nickname: str):
         """
         Adds a new random nickname to the database.
 
         :param interaction: The Discord interaction object
         :param nickname: The nickname string to save
         """
+        if len(nickname) > 32:
+            logging.warning(f"{interaction.user.name} attempted to submit a nickname that was too long")
+            await interaction.response.send_message(
+                "Nickname is too long. Please use 32 characters or fewer.",
+                ephemeral=True
+            )
+            return
+
         self.data_manager.ensure_user_exists(interaction.user)
 
         successfully_added = self.data_manager.add_table_data(
