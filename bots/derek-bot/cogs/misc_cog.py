@@ -71,7 +71,11 @@ class MiscGroupCog(commands.Cog):
 
     @group.command(name="add_nickname", description="Save a new random nickname to cycle through.")
     @app_commands.describe(nickname="The nickname to save")
-    async def add_nickname(self, interaction: Interaction, nickname: str):
+    async def add_nickname(
+        self,
+        interaction: Interaction,
+        nickname: str = app_commands.Param(min_length=1, max_length=32)
+    ):
         """
         Adds a new random nickname to the database.
 
