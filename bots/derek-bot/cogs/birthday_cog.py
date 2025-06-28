@@ -47,6 +47,12 @@ class BirthdayGroupCog(commands.Cog):
     group = app_commands.Group(name="birthday", description="Commands for managing birthday information")
 
     @group.command(name="add_birthday", description="Save a birthday for Derek to remember later")
+    @app_commands.describe(
+        month="The month of your birthday (1-12)",
+        day="The day of your birthday (1-31)",
+        year="The year of your birthday (optional, 1985-2010)",
+        timezone="Your timezone (optional, defaults to EST)"
+    )
     @app_commands.choices(timezone=TIMEZONE_CHOICES)
     async def add_birthday(self, interaction: Interaction,
                            month: app_commands.Range[int, 1, 12],
