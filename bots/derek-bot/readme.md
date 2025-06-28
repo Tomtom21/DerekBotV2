@@ -10,28 +10,28 @@
 ## Commands
 | Type     | Command          | Implemented |
 |----------|------------------|-------------|
-| AI       | add_memory       | ✅           |
+| AI       | add-memory       | ✅           |
 | AI       | memories         | ✅           |
-| AI       | remove_memory    | ✅           |
-| Birthday | add_birthday     | ✅           |
-| Misc     | simon_says       | ✅           |
+| AI       | remove-memory    | ✅           |
+| Birthday | add-birthday     | ✅           |
+| Misc     | simon-says       | ✅           |
 | Misc     | magic8ball       | ✅           |
-| Misc     | random_nicknames | ✅           |
-| Misc     | add_nickname     | ✅           |
-| Misc     | remove_nickname  | ✅           |
-| Misc     | shuffle_nickname | ✅           |
-| Movie    | unwatched_movies | ✅           |
-| Movie    | watched_movies   | ✅           |
-| Movie    | add_movie        | ✅           |
-| Movie    | remove_movie     | ✅           |
-| Movie    | mark_watched     | ✅           |
-| Movie    | search_movie     | ✅           |
-| Movie    | random_movie     | ✅           |
-| TTS      | toggle_tts       | ❌           |
-| TTS      | tts_language     | ❌           |
+| Misc     | random-nicknames | ✅           |
+| Misc     | add-nickname     | ✅           |
+| Misc     | remove-nickname  | ✅           |
+| Misc     | shuffle-nickname | ✅           |
+| Movie    | unwatched-movies | ✅           |
+| Movie    | watched-movies   | ✅           |
+| Movie    | add-movie        | ✅           |
+| Movie    | remove-movie     | ✅           |
+| Movie    | mark-watched     | ✅           |
+| Movie    | search-movie     | ✅           |
+| Movie    | random-movie     | ✅           |
+| TTS      | toggle-tts       | ❌           |
+| TTS      | tts-language     | ❌           |
 | TTS      | vckick           | ❌           |
 | TTS      | vcskip           | ❌           |
-| TTS      | announce_name    | ❌           |
+| TTS      | announce-name    | ❌           |
 
 
 ## Operation

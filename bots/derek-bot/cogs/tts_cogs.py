@@ -15,7 +15,7 @@ class TTSGroupCog(commands.Cog):
 
     group = app_commands.Group(name="tts", description="Commands for managing TTS features")
 
-    @group.command(name="enable_tts", description="Enable/Disable TTS")
+    @group.command(name="enable-tts", description="Enable/Disable TTS")
     @app_commands.describe(tts_enabled="Whether TTS should be enabled or not")
     async def enable_tts(self, interaction: Interaction, tts_enabled: bool):
         """
@@ -51,7 +51,7 @@ class TTSGroupCog(commands.Cog):
                 ephemeral=True
             )
 
-    @group.command(name="tts_language", description="Set the TTS language")
+    @group.command(name="tts-language", description="Set the TTS language")
     @app_commands.describe(language="Language choice")
     @app_commands.choices(
         language=[
@@ -100,7 +100,7 @@ class TTSGroupCog(commands.Cog):
             logging.error(f"User {interaction.user.name} failed to skip current VC audio")
             await interaction.response.send_message("`Failed to skip current VC audio`", ephemeral=True)
 
-    @group.command(name="announce_name", description="Announce the name of the user when they use vc-text")
+    @group.command(name="announce-name", description="Announce the name of the user when they use vc-text")
     @app_commands.describe(announce="Do you want your name to be announced when using vc-text?")
     async def announce_name(self, interaction: Interaction, announce: bool):
         """
