@@ -121,7 +121,7 @@ class MiscGroupCog(commands.Cog):
                 await interaction.response.send_message(f"`Failed to remove random nickname`", ephemeral=True)
 
         except ListIndexOutOfBounds as error:
-            logging.warning(f"User {interaction.user.name} tried to remove nickname at invalid index {nickname_index}", ephemeral=True)
+            logging.warning(f"User {interaction.user.name} tried to remove nickname at invalid index {nickname_index}")
             await error.handle_index_error(interaction)
 
     @group.command(name="shuffle_nickname", description="Set whether to shuffle your nickname daily")
