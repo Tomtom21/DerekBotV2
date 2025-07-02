@@ -2,7 +2,7 @@
 import os
 import logging
 
-# from cogs.bot_management_cog import BotManagementGroupCog
+from cogs.bot_management_cog import BotManagementGroupCog
 
 # Discord imports
 import discord
@@ -15,9 +15,18 @@ LUCA_TOKEN = os.environ.get("LUCA_DISCORD_TOKEN")
 # Setting up intents for permissions
 intents = discord.Intents.default()
 
+# List of bot images to keep track of
+bot_image_names = [
+    "derek-bot-image",
+    "luca-image"
+]
+
 class Luca(commands.bot):
-    def __init__(self):
+    def __init__(self, bot_image_names):
         super().__init__(command_prefix=None, intents=intents, case_insensitive=True)
+        
+        self.bot_image_names = bot_image_names
+
         logging.info("Luca instance initialized.")
 
     async def setup_hook(self):
@@ -52,5 +61,5 @@ class Luca(commands.bot):
 
 # Starting the bot
 if __name__ == '__main__':
-    bot = Luca()
+    bot = Luca(bot_image_names)
     bot.run(LUCA_TOKEN, log_handler=None, root_logger=True)
