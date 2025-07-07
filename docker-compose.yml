@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  luca:
+    build: 
+      context: .
+      dockerfile: bots/luca/Dockerfile
+    container_name: luca-bot
+    restart: "no"
+    environment:
+      - PYTHONBUFFERED=1
+    env_file:
+      - ../DerekBotV2Creds/.env
+
+  derek-bot:
+    build: 
+      context: .
+      dockerfile: bots/derek-bot/Dockerfile
+    container_name: derek-bot
+    restart: "no"
+    environment:
+      - PYTHONBUFFERED=1
+    env_file:
+      - ../DerekBotV2Creds/.env
+    
