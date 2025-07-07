@@ -1,4 +1,4 @@
-BOTS := derek-bot luca
+BOTS := derek-bot
 
 define build_template
 build-$(1):
