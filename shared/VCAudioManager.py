@@ -140,7 +140,7 @@ class VCAudioManager:
                         logging.error(f"Failed to move to voice channel: {e}")
                         continue  # Skip to next item
 
-                # Play the audio. Make sure nothing else it playing first
+                # Play the audio. Make sure nothing else is playing first
                 if self._current_voice_channel.is_playing():
                     logging.warning("Audio is already playing, stopping current playback before playing new audio.")
                     self._current_voice_channel.stop()
