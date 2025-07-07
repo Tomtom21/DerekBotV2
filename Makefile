@@ -3,7 +3,7 @@ BOTS := derek-bot luca
 define build_template
 build-$(1):
 	@echo "Building $(1)"
-	docker build -t $(1)-image -f bots/$(1)/Dockerfile .
+	docker compose build $*
 endef
 
 # Generating custom build targets
@@ -11,10 +11,15 @@ $(foreach bot,$(BOTS),$(eval $(call build_template,$(bot))))
 
 run-%:
 	@echo "Running $*"
-	docker run -e PYTHONUNBUFFERED=1 --env-file ../DerekBotV2Creds/.env $*-image
+	docker compose up -d $*
 
-test-%: build-% run-%
-	@:
+stop-%:
+	@echo "Stopping $*"
+	docker compose stop $*
+
+test-%: build-%
+	@echo "Testing $*"
+	docker compose up $*
 
 cleanContainers:
 	docker rm -vf $$(docker ps -aq)
