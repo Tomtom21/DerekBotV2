@@ -140,13 +140,23 @@ class VCAudioManager:
                         logging.error(f"Failed to move to voice channel: {e}")
                         continue  # Skip to next item
 
-                # Play the audio
-                self._current_voice_channel.play(
-                    discord.FFmpegPCMAudio(
-                        self.current_audio_item.audio_file_path,
-                        options="-loglevel quiet"
+                # Play the audio. Make sure nothing else it playing first
+                if self._current_voice_channel.is_playing():
+                    logging.warning("Audio is already playing, stopping current playback before playing new audio.")
+                    self._current_voice_channel.stop()
+                    await asyncio.sleep(0.2)  # Small delay to ensure stop completes
+
+                try:
+                    self._current_voice_channel.play(
+                        discord.FFmpegPCMAudio(
+                            self.current_audio_item.audio_file_path,
+                            options="-loglevel quiet"
+                        )
                     )
-                )
+                except Exception as e:
+                    logging.error(f"Error while trying to play audio: {e}")
+                    continue  # Skip to next item
+
                 self.current_state = AudioState.PLAYING
                 logging.info(f"Playing audio: {self.current_audio_item.audio_name}")
 
