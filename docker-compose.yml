@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  derek-bot:
+    build: 
+      context: .
+      dockerfile: bots/derek-bot/Dockerfile
+    container_name: derek-bot
+    restart: "no"
+    environment:
+      - PYTHONBUFFERED=1
+    env_file:
+      - ../DerekBotV2Creds/.env
+    
