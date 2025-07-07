@@ -15,4 +15,3 @@ requests
 isodate
 pillow
 matplotlib
-docker
