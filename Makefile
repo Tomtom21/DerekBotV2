@@ -3,7 +3,7 @@ BOTS := derek-bot luca
 define build_template
 build-$(1):
 	@echo "Building $(1)"
-	docker compose build $*
+	docker compose build $(1)
 endef
 
 # Generating custom build targets
