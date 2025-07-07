@@ -10,6 +10,7 @@ from cogs.movie_cog import MovieGroupCog
 from cogs.misc_cog import MiscGroupCog
 from cogs.birthday_cog import BirthdayGroupCog
 from cogs.ai_cog import AICog
+from cogs.tts_cog import TTSGroupCog
 import random
 import datetime
 import pytz
@@ -184,6 +185,7 @@ class DerekBot(commands.Bot):
         await self.add_cog(MiscGroupCog(self, self.data_manager))
         await self.add_cog(BirthdayGroupCog(self, self.data_manager))
         await self.add_cog(AICog(self, self.data_manager))
+        await self.add_cog(TTSGroupCog(self, self.data_manager, self.tts_manager, self.audio_manager))
         await self.tree.sync()
         logging.info("Synced commands and added all cogs")
 
