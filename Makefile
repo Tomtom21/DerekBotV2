@@ -1,7 +1,10 @@
 BOTS := derek-bot
 
+build-base:
+	docker build -f base.Dockerfile -t base:latest .
+
 define build_template
-build-$(1):
+build-$(1): build-base
 	@echo "Building $(1)"
 	docker compose build $(1)
 endef
