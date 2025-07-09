@@ -77,13 +77,16 @@ class TTSGroupCog(commands.Cog):
 
         :param interaction: The Discord interaction object
         """
+        # Deferring so that we can wait for any audios to finish without the command timing out
+        await interaction.response.defer()
+
         successfully_kicked = await self.audio_manager.disconnect_from_vc()
         if successfully_kicked:
             logging.info(f"User {interaction.user.name} kicked bot from voice channel")
-            await interaction.response.send_message("Bot kicked from voice channel.")
+            await interaction.followup.send("Bot kicked from voice channel.")
         else:
             logging.warning(f"User {interaction.user.name} tried to kick bot, but bot was not in a voice channel")
-            await interaction.response.send_message("`Bot is not in a voice channel.`", ephemeral=True)
+            await interaction.followup.send("`Bot is not in a voice channel.`", ephemeral=True)
 
     @group.command(name="vcskip", description="Skip the current TTS or audio in the voice channel")
     async def vcskip(self, interaction: Interaction):
