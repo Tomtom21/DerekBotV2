@@ -476,7 +476,11 @@ class DerekBot(commands.Bot):
             logging.warning("Prevented the bot from talking to itself")
             return
         
-        # Chat processing
+        # Chat processing. First ignoring DMs, then continuing processing
+        if not hasattr(message.channel, "name"):
+            logging.warning(f"Received a dm from user {message.author.name}. Ignoring.")
+            return
+
         if self.user.mentioned_in(message):
             logging.info(f"AI chat triggered by {message.author.name} in channel {message.channel.name}")
             # Letting the user know we're processing things
