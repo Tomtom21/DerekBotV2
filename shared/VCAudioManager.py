@@ -165,9 +165,9 @@ class VCAudioManager:
                     await asyncio.sleep(0.5)
 
                 # After audio finishes, update state
+                logging.info(f"Finished playing audio: {self.current_audio_item.audio_name}")
                 self.current_state = AudioState.STOPPED
                 self.current_audio_item = None
-                logging.info(f"Finished playing audio: {self.current_audio_item.audio_name}")
 
                 # Add a delay between audios
                 await asyncio.sleep(1)

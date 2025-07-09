@@ -478,7 +478,7 @@ class DerekBot(commands.Bot):
                     value=message.author.id
                 )
                 if db_user and db_user.get("vc_text_announce_name") and self.last_tts_user_id != message.author.id:
-                    final_tts_message = f"{message.author.name} says: {message.content}"
+                    final_tts_message = f"{message.author.display_name} says: {message.content}"
                     self.last_tts_user_id = message.author.id
                 else:
                     final_tts_message = message.content
