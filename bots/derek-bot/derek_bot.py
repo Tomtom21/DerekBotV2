@@ -450,6 +450,11 @@ class DerekBot(commands.Bot):
         else:
             logging.warning("Joins/leaves channel not found, cannot announce member leave.")
 
+    @staticmethod
+    def replace_emoji_tags(text):
+        emoji_tag_pattern = re.compile(r"<a?:([a-zA-Z0-9_]+):\d+>")
+        return emoji_tag_pattern.sub(lambda m: f"{m.group(1)}", text)
+
     async def on_message(self, message):
         """
         Handles message events for reactions, TTS, and AI chat.
@@ -466,38 +471,13 @@ class DerekBot(commands.Bot):
                 except Exception as e:
                     logging.error(f"Failed to add reaction to message '{message.content[:25]}' by {message.author.name}: {e}")
 
-        # TTS processing. Checking if messages are in the tts channel, are not from the bot, and tts is enabled
-        if self.tts_enabled and message.channel.id == self.vc_text_channel_id and message.author != self.user:
-
-            # Making sure that they are in a voice channel
-            if message.author.voice and message.author.voice.channel:
-                # Getting the user and checking if they have announce name enabled
-                db_user = self.data_manager.get_item_by_key(
-                    table_name="users",
-                    key="user_id",
-                    value=message.author.id
-                )
-                if db_user and db_user.get("vc_text_announce_name") and self.last_tts_user_id != message.author.id:
-                    final_tts_message = f"{message.author.display_name} says: {message.content}"
-                    self.last_tts_user_id = message.author.id
-                else:
-                    final_tts_message = message.content
-
-                # Generating the audio file and adding it to the queue for VC
-                file_path = self.tts_manager.process(final_tts_message)
-                if file_path:
-                    await self.audio_manager.add_to_queue(file_path, message.author.voice.channel)
-                else:
-                    logging.error(f"TTS processing failed for message by {message.author.name}")
-            else:
-                # If Derek hasn't warned a user of not being in the VC within the past 3 minutes, warn them
-                if time.time() - self.last_vc_text_warning_time >= 180:
-                    logging.info(f"Warning user {message.author.name} that they aren't in a voice channel")
-                    await message.reply("No voice channel detected")
-                    self.last_vc_text_warning_time = time.time()
+        # Returning if we are responding/speaking the bot's message
+        if message.author == self.user:
+            logging.warning("Prevented the bot from talking to itself")
+            return
         
         # Chat processing
-        if self.user.mentioned_in(message) and message.author != self.user:
+        if self.user.mentioned_in(message):
             logging.info(f"AI chat triggered by {message.author.name} in channel {message.channel.name}")
             # Letting the user know we're processing things
             async with message.channel.typing():
@@ -527,6 +507,46 @@ class DerekBot(commands.Bot):
                 logging.info(f"AI response sent to {message.author.name} in channel {message.channel.name}")
                 await self.conversation_cache.add_message(reply_message)
 
+        # Beginning TTS processing. Check for messages containing URLs, return so we don't say them
+        if "https://" in message.content:
+            logging.warning("Skipping TTS for message that contained an HTTPS url")
+            return
+
+        # Checking if tts is enabled and that messages are in the tts channel
+        if self.tts_enabled and message.channel.id == self.vc_text_channel_id:
+            # Making sure that they are in a voice channel
+            if message.author.voice and message.author.voice.channel:
+                # Getting the user and checking if they have announce name enabled
+                db_user = self.data_manager.get_item_by_key(
+                    table_name="users",
+                    key="user_id",
+                    value=message.author.id
+                )
+                if db_user and db_user.get("vc_text_announce_name") and self.last_tts_user_id != message.author.id:
+                    final_tts_message = f"{message.author.display_name} says: {message.content}"
+                    self.last_tts_user_id = message.author.id
+                else:
+                    final_tts_message = message.content
+
+                # Removing emoji ids from TTS messages
+                final_tts_message = self.replace_emoji_tags(final_tts_message)
+
+                # Replacing mentions with user display name 
+                for user in message.mentions:
+                    final_tts_message = re.sub(f"<@!?{user.id}>", f"@ {user.display_name}", final_tts_message)
+
+                # Generating the audio file and adding it to the queue for VC
+                file_path = self.tts_manager.process(final_tts_message)
+                if file_path:
+                    await self.audio_manager.add_to_queue(file_path, message.author.voice.channel)
+                else:
+                    logging.error(f"TTS processing failed for message by {message.author.name}")
+            else:
+                # If Derek hasn't warned a user of not being in the VC within the past 3 minutes, warn them
+                if time.time() - self.last_vc_text_warning_time >= 180:
+                    logging.info(f"Warning user {message.author.name} that they aren't in a voice channel")
+                    await message.reply("No voice channel detected")
+                    self.last_vc_text_warning_time = time.time()
 
 # Starting the bot
 if __name__ == '__main__':
