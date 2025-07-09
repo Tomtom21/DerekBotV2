@@ -10,3 +10,13 @@ services:
     env_file:
       - ../DerekBotV2Creds/.env
     
+  placeholder-bot:
+    build: 
+      context: .
+      dockerfile: bots/placeholder-bot/Dockerfile
+    container_name: placeholder-bot
+    restart: "no"
+    environment:
+      - PYTHONBUFFERED=1
+    env_file:
+      - ../DerekBotV2Creds/.env
