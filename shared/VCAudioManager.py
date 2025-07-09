@@ -199,7 +199,7 @@ class VCAudioManager:
 
         :return: True if the bot is in a voice channel and the bot has been disconnected, False otherwise
         """
-        if self._current_voice_channel:
+        if self._current_voice_channel and not self._current_voice_channel.is_playing():
             # Calling the async disconnect
             await self._disconnect()
             return True

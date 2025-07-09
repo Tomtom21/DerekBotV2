@@ -86,7 +86,7 @@ class TTSGroupCog(commands.Cog):
             await interaction.followup.send("Bot kicked from voice channel.")
         else:
             logging.warning(f"User {interaction.user.name} tried to kick bot, but bot was not in a voice channel")
-            await interaction.followup.send("`Bot is not in a voice channel.`", ephemeral=True)
+            await interaction.followup.send("`Bot is not in a voice channel OR audio is still playing.`", ephemeral=True)
 
     @group.command(name="vcskip", description="Skip the current TTS or audio in the voice channel")
     async def vcskip(self, interaction: Interaction):
