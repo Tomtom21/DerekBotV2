@@ -66,7 +66,7 @@ class TTSGroupCog(commands.Cog):
         :param interaction: The Discord interaction object
         :param language: The language choice for TTS
         """
-        self.tts_manager.set_voice(language)
+        self.tts_manager.set_voice(language.value)
         logging.info(f"User {interaction.user.name} set TTS language to {language.value}")
         await interaction.response.send_message(f"TTS language set to {language.value}.", ephemeral=True)
 
