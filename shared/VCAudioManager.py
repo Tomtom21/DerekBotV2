@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import random
+import os
 from enum import Enum
 from typing import List, Optional
 import discord
@@ -167,6 +168,14 @@ class VCAudioManager:
                 # After audio finishes, update state
                 logging.info(f"Finished playing audio: {self.current_audio_item.audio_name}")
                 self.current_state = AudioState.STOPPED
+                
+                # Delete audio file after playback
+                try:
+                    os.remove(self.current_audio_item.audio_file_path)
+                    logging.info(f"Deleted TTS audio file: {self.current_audio_item.audio_file_path}")
+                except Exception as e:
+                    logging.error(f"Failed to delete TTS audio file: {e}")                    
+
                 self.current_audio_item = None
 
                 # Add a delay between audios
