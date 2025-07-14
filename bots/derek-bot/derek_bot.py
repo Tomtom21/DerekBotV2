@@ -4,6 +4,7 @@ import logging
 import re
 import time
 import io
+from distutils.util import strtobool
 
 from shared.data_manager import DataManager
 from cogs.movie_cog import MovieGroupCog
@@ -203,20 +204,24 @@ class DerekBot(commands.Bot):
             return
 
         # Helper functions to make things cleaner
-        def get_config_int(config_name):
-            return next((item["config_value_int"] for item in config_data if item["config_name"] == config_name), None)
+        def get_config_value(config_name, config_type):
+            # Defaulting to environment variable values if they're available. Used for testing
+            if (value := os.environ.get(config_name)):
+                if (config_type == "int"):
+                    return int(value)
+                elif (config_type == "bool"):
+                    return bool(strtobool(value))
+                else:
+                    return value
+                
+            full_column_name = f"config_value_{config_type}"
+            return next((item[full_column_name] for item in config_data if item["config_name"] == config_name), None)
 
-        def get_config_str(config_name):
-            return next((item["config_value_text"] for item in config_data if item["config_name"] == config_name), None)
-
-        def get_config_bool(config_name):
-            return next((item["config_value_bool"] for item in config_data if item["config_name"] == config_name), None)
-
-        self.main_channel_id = get_config_int("main_channel_id")
-        self.vc_activity_channel_id = get_config_int("vc_activity_channel_id")
-        self.joins_leaves_channel_id = get_config_int("joins_leaves_channel_id")
-        self.vc_text_channel_id = get_config_int("vc_text_channel_id")
-        self.guild_id = get_config_int("guild_id")
+        self.main_channel_id = get_config_value("main_channel_id", "int")
+        self.vc_activity_channel_id = get_config_value("vc_activity_channel_id", "int")
+        self.joins_leaves_channel_id = get_config_value("joins_leaves_channel_id", "int")
+        self.vc_text_channel_id = get_config_value("vc_text_channel_id", "int")
+        self.guild_id = get_config_value("guild_id", "int")
         logging.info("Config data from DB set")
 
         # Updating our list of reactions
@@ -228,12 +233,12 @@ class DerekBot(commands.Bot):
         self.audio_manager.set_bot_leave_messages(vc_leave_phrases)
 
         # Set TTS enabled/disabled from system_config
-        tts_enabled_config = get_config_bool("tts_enabled")
+        tts_enabled_config = get_config_value("tts_enabled", "bool")
         if tts_enabled_config:
             self.tts_enabled = tts_enabled_config
 
         # Setting the GPT system prompt
-        gpt_system_prompt = get_config_str("derek_gpt_system_prompt")
+        gpt_system_prompt = get_config_value("derek_gpt_system_prompt", "text")
         self.llm_manager.set_system_prompt(gpt_system_prompt)
 
     async def on_ready(self):
