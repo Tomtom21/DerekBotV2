@@ -207,6 +207,7 @@ class DerekBot(commands.Bot):
         def get_config_value(config_name, config_type):
             # Defaulting to environment variable values if they're available. Used for testing
             if (value := os.environ.get(config_name)):
+                logging.info("TEST VAR USAGE: Using an environment variable in place of a DB config value")
                 if (config_type == "int"):
                     return int(value)
                 elif (config_type == "bool"):
