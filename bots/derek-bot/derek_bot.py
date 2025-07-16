@@ -81,6 +81,10 @@ db_manager = DataManager(
         },
         "leave_phrases": {
             "select": "*"
+        },
+        "nickname_shuffle_tracks": {
+            "select": "*",
+            "order_by": {"column": "created_at", "ascending": False}
         }
     }
 )
@@ -389,9 +393,29 @@ class DerekBot(commands.Bot):
     @tasks.loop(hours=24)
     async def cycle_nicknames(self):
         """
-        Sets a random nickname for participating users on a daily basis.
+        Sets a random nickname for participating users on a daily basis,
+        but only if nicknames haven't been shuffled in the last 72 hours.
+        Assumes all timestamps are in Eastern Time.
         """
-        logging.info("Cycling nicknames for users who opted in")
+        logging.info("Checking cycle nicknames tracks")
+
+        eastern = pytz.timezone("US/Eastern")
+        now = datetime.datetime.now(eastern)
+
+        recent_shuffle = False
+        for track in self.data_manager.data.get("nickname_shuffle_tracks"):
+            created_at = track.get("created_at")
+            if created_at:
+                # Directly parse as Eastern Time
+                created_at_dt = eastern.localize(datetime.datetime.fromisoformat(created_at.replace('Z', '')))
+                if (now - created_at_dt).total_seconds() < 72 * 3600:
+                    recent_shuffle = True
+                    break
+
+        if recent_shuffle:
+            logging.info("Nicknames were shuffled within the last 72 hours. Skipping shuffle.")
+            return
+
         # Getting participating users
         user_ids_to_update = [
             user["user_id"]
@@ -402,6 +426,12 @@ class DerekBot(commands.Bot):
         # Looping through users and giving them a random nickname
         for user_id in user_ids_to_update:
             await self.give_user_random_nickname(user_id)
+
+        # Add a new shuffle track entry to the DB (let DB set created_at in Eastern Time)
+        self.data_manager.add_table_data(
+            table_name="nickname_shuffle_tracks",
+            json_data={}
+        )
 
     async def on_voice_state_update(self, member, before, after):
         """
