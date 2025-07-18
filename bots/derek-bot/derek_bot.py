@@ -13,7 +13,7 @@ from cogs.birthday_cog import BirthdayGroupCog
 from cogs.ai_cog import AICog
 from cogs.tts_cog import TTSGroupCog
 import random
-import datetime
+from datetime import datetime, timezone
 import pytz
 from shared.numeric_helpers import get_suffix
 from shared.TTSManager import TTSManager
@@ -288,7 +288,7 @@ class DerekBot(commands.Bot):
         """
         Checks if it is any user's birthday and sends a birthday message if so.
         """
-        date = datetime.datetime.now()
+        date = datetime.now()
         logging.info("Running birthday check loop")
 
         # Making sure that we have a channel id to send to
@@ -395,19 +395,19 @@ class DerekBot(commands.Bot):
         """
         Sets a random nickname for participating users on a daily basis,
         but only if nicknames haven't been shuffled in the last 72 hours.
-        Assumes all timestamps are in Eastern Time.
+        Assumes all timestamps are in UTC.
         """
         logging.info("Checking cycle nicknames tracks")
 
-        eastern = pytz.timezone("US/Eastern")
-        now = datetime.datetime.now(eastern)
+        now = datetime.now(timezone.utc)
 
         recent_shuffle = False
         for track in self.data_manager.data.get("nickname_shuffle_tracks"):
             created_at = track.get("created_at")
             if created_at:
                 # Directly parse as Eastern Time
-                created_at_dt = eastern.localize(datetime.datetime.fromisoformat(created_at.replace('Z', '')))
+                created_at_dt = datetime.fromisoformat(created_at)
+
                 if (now - created_at_dt).total_seconds() < 72 * 3600:
                     recent_shuffle = True
                     break
