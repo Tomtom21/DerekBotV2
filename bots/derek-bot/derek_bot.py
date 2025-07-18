@@ -426,7 +426,7 @@ class DerekBot(commands.Bot):
         for user_id in user_ids_to_update:
             await self.give_user_random_nickname(user_id)
 
-        # Add a new shuffle track entry to the DB (let DB set created_at in Eastern Time)
+        # Add a new shuffle track entry to the DB (let DB set created_at to default)
         self.data_manager.add_table_data(
             table_name="nickname_shuffle_tracks",
             json_data={}
