@@ -13,7 +13,7 @@ from cogs.birthday_cog import BirthdayGroupCog
 from cogs.ai_cog import AICog
 from cogs.tts_cog import TTSGroupCog
 import random
-import datetime
+from datetime import datetime, timezone
 import pytz
 from shared.numeric_helpers import get_suffix
 from shared.TTSManager import TTSManager
@@ -81,6 +81,10 @@ db_manager = DataManager(
         },
         "leave_phrases": {
             "select": "*"
+        },
+        "nickname_shuffle_tracks": {
+            "select": "*",
+            "order_by": {"column": "created_at", "ascending": False}
         }
     }
 )
@@ -284,7 +288,7 @@ class DerekBot(commands.Bot):
         """
         Checks if it is any user's birthday and sends a birthday message if so.
         """
-        date = datetime.datetime.now()
+        date = datetime.now()
         logging.info("Running birthday check loop")
 
         # Making sure that we have a channel id to send to
@@ -389,9 +393,28 @@ class DerekBot(commands.Bot):
     @tasks.loop(hours=24)
     async def cycle_nicknames(self):
         """
-        Sets a random nickname for participating users on a daily basis.
+        Sets a random nickname for participating users on a daily basis,
+        but only if nicknames haven't been shuffled in the last 72 hours.
+        Assumes all timestamps are in UTC.
         """
-        logging.info("Cycling nicknames for users who opted in")
+        logging.info("Checking cycle nicknames tracks")
+
+        now = datetime.now(timezone.utc)
+
+        recent_shuffle = False
+        for track in self.data_manager.data.get("nickname_shuffle_tracks"):
+            created_at = track.get("created_at")
+            if created_at:
+                created_at_dt = datetime.fromisoformat(created_at)
+
+                if (now - created_at_dt).total_seconds() < 72 * 3600:
+                    recent_shuffle = True
+                    break
+
+        if recent_shuffle:
+            logging.info("Nicknames were shuffled within the last 72 hours. Skipping shuffle.")
+            return
+
         # Getting participating users
         user_ids_to_update = [
             user["user_id"]
@@ -402,6 +425,12 @@ class DerekBot(commands.Bot):
         # Looping through users and giving them a random nickname
         for user_id in user_ids_to_update:
             await self.give_user_random_nickname(user_id)
+
+        # Add a new shuffle track entry to the DB (let DB set created_at to default)
+        self.data_manager.add_table_data(
+            table_name="nickname_shuffle_tracks",
+            json_data={}
+        )
 
     async def on_voice_state_update(self, member, before, after):
         """
