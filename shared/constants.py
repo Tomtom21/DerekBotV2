@@ -3,12 +3,12 @@ GOOGLE_TTS_VOICE_INFO = {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Leda"
     },
-    "english-US-Sadachbia": {
-        "language_code": "en-US",
-        "voice_name": "en-US-Chirp3-HD-Sadachbia"
-    },
     "english-US-Puck": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Puck"
+    },
+    "english-US-Sadachbia": {
+        "language_code": "en-US",
+        "voice_name": "en-US-Chirp3-HD-Sadachbia"
     }
 }
