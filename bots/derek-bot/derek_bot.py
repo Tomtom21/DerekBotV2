@@ -405,7 +405,6 @@ class DerekBot(commands.Bot):
         for track in self.data_manager.data.get("nickname_shuffle_tracks"):
             created_at = track.get("created_at")
             if created_at:
-                # Directly parse as Eastern Time
                 created_at_dt = datetime.fromisoformat(created_at)
 
                 if (now - created_at_dt).total_seconds() < 72 * 3600:
