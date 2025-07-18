@@ -68,7 +68,7 @@ class TTSGroupCog(commands.Cog):
         """
         self.tts_manager.set_voice(language.value)
         logging.info(f"User {interaction.user.name} set TTS language to {language.value}")
-        await interaction.response.send_message(f"TTS language set to {language.value}.", ephemeral=True)
+        await interaction.response.send_message(f"TTS language set to {language.value}.")
 
     @group.command(name="vckick", description="Kick the bot from the current voice channel")
     async def vckick(self, interaction: Interaction):
