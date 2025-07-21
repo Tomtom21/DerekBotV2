@@ -508,7 +508,6 @@ class DerekBot(commands.Bot):
 
         # Returning if we are responding/speaking the bot's message
         if message.author == self.user:
-            logging.warning("Prevented the bot from talking to itself")
             return
         
         # Chat processing. First ignoring DMs, then continuing processing
