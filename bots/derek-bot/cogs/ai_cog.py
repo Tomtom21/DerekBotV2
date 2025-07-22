@@ -27,10 +27,7 @@ class AICog(commands.Cog):
         await interaction.response.defer()
         if len(memory) > 100:
             logging.warning(f"{interaction.user.name} tried to save a memory with more than 100 characters: {memory}")
-            await interaction.followup.send(
-                "`Memory is too long. Must be at most 100 characters`",
-                ephemeral=True
-            )
+            await interaction.followup.send("`Memory is too long. Must be at most 100 characters`")
         else:
             self.data_manager.ensure_user_exists(interaction.user)
             successfully_added = self.data_manager.add_table_data(
