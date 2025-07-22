@@ -24,7 +24,7 @@ class AICog(commands.Cog):
         :param interaction: The interaction for the command
         :param memory: The memory string to save
         """
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer()
         if len(memory) > 100:
             logging.warning(f"{interaction.user.name} tried to save a memory with more than 100 characters: {memory}")
             await interaction.followup.send(
@@ -43,7 +43,7 @@ class AICog(commands.Cog):
                 await interaction.followup.send("Memory successfully saved")
             else:
                 logging.error(f"Failed to save memory for user {interaction.user.name}: {memory}")
-                await interaction.followup.send("`Failed to save memory`", ephemeral=True)
+                await interaction.followup.send("`Failed to save memory`")
 
     @group.command(name="memories", description="Shows a list of Derek's memories")
     async def memories(self, interaction: Interaction):
@@ -80,7 +80,7 @@ class AICog(commands.Cog):
         :param interaction: The interaction for the command
         :param memory_index: The index of the memory in the user-facing list (local db index + 1)
         """
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer()
         logging.info(f"User {interaction.user.name} is removing movie at index: {memory_index}")
         try:
             memory = self.data_manager.get_db_item_with_index(
@@ -102,7 +102,7 @@ class AICog(commands.Cog):
                 await interaction.followup.send("Removed **" + memory_text + "** from Derek's memory")
             else:
                 logging.error(f"Failed to remove memory for user {interaction.user.name}: {memory_text}")
-                await interaction.followup.send("`Failed to remove memory`", ephemeral=True)
+                await interaction.followup.send("`Failed to remove memory`")
 
         except ListIndexOutOfBounds as error:
             logging.warning(f"User {interaction.user.name} tried to remove memory at invalid index {memory_index}")
