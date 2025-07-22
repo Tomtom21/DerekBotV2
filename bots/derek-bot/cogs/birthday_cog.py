@@ -68,6 +68,8 @@ class BirthdayGroupCog(commands.Cog):
         :param year: The year of the birthday (optional, 1985-2010)
         :param timezone: The user's timezone (optional, defaults to EST)
         """
+        await interaction.response.defer(ephemeral=True)
+
         self.data_manager.ensure_user_exists(interaction.user)
 
         # Setting a default timezone
@@ -90,10 +92,10 @@ class BirthdayGroupCog(commands.Cog):
             )
             if successfully_updated:
                 logging.info(f"Updated birthday for user {interaction.user.name}")
-                await interaction.response.send_message("Your birthday has been updated!")
+                await interaction.followup.send("Your birthday has been updated!")
             else:
                 logging.warning(f"Failed to update birthday for user {interaction.user.name}")
-                await interaction.response.send_message("`Failed to update birthday`", ephemeral=True)
+                await interaction.followup.send("`Failed to update birthday`", ephemeral=True)
         else:
             # If the user doesn't have a birthday
             successfully_added = self.data_manager.add_table_data(
@@ -109,7 +111,7 @@ class BirthdayGroupCog(commands.Cog):
             )
             if successfully_added:
                 logging.info(f"Added birthday for user {interaction.user.name}")
-                await interaction.response.send_message("Your birthday is saved!")
+                await interaction.followup.send("Your birthday is saved!")
             else:
                 logging.error(f"Failed to save birthday for user {interaction.user.name}")
-                await interaction.response.send_message("`Failed to save birthday`", ephemeral=True)
+                await interaction.followup.send("`Failed to save birthday`", ephemeral=True)
