@@ -103,4 +103,4 @@ class AICog(commands.Cog):
 
         except ListIndexOutOfBounds as error:
             logging.warning(f"User {interaction.user.name} tried to remove memory at invalid index {memory_index}")
-            await error.handle_index_error(interaction)
+            await error.handle_index_error(interaction, requires_followup=True)

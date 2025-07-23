@@ -15,16 +15,17 @@ class ListIndexOutOfBounds(Exception):
         """
         self.item_count = item_count
 
-    async def handle_index_error(self, interaction: Interaction):
+    async def handle_index_error(self, interaction: Interaction, requires_followup=False):
         """
         Sends an error message to the user when an index is out of bounds.
 
         :param interaction: The Discord interaction object
         """
-        await interaction.response.send_message(
-            "`Item index is outside of the valid range (1-" + str(self.item_count) + ")`",
-            ephemeral=True
-        )
+        response_string = f"`Item index is outside of the valid range (1-{self.item_count})`"
+        if requires_followup:
+            await interaction.followup.send(response_string)
+        else:
+            await interaction.response.send_message(response_string, ephemeral=True)
 
 
 class DataManager:
