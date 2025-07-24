@@ -84,7 +84,7 @@ db_manager = DataManager(
         },
         "nickname_shuffle_tracks": {
             "select": "*",
-            "order_by": {"column": "created_at", "ascending": False}
+            "order_by": {"column": "created", "ascending": False}
         }
     }
 )
@@ -403,7 +403,7 @@ class DerekBot(commands.Bot):
 
         recent_shuffle = False
         for track in self.data_manager.data.get("nickname_shuffle_tracks"):
-            created_at = track.get("created_at")
+            created_at = track.get("created")
             if created_at:
                 created_at_dt = datetime.fromisoformat(created_at)
 
