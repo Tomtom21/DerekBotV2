@@ -1,10 +1,9 @@
 from datetime import datetime
 import pytz
 
-
-# NOTE: This should be depreciated in the future in favor of using the default system time rather than set EST
 def get_est_iso_date():
     """
+    DEPRECIATED: Use DB time. This is only being preserved incase future time functions are needed
     Gets the current date and time for EST in iso format
     
     :return: ISO formatted date and time in EST

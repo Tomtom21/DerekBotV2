@@ -1,5 +1,4 @@
 from shared.data_manager import DataManager
-from shared.time_utils import get_est_iso_date
 import logging
 from discord import Member
 
@@ -19,7 +18,6 @@ class MemoryTools:
             table_name="chat_memories",
             json_data={
                 "memory": memory_string,
-                "created": get_est_iso_date(),
                 "added_by": None
             }
         )

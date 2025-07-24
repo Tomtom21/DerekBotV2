@@ -4,7 +4,6 @@ import logging
 
 from shared.data_manager import DataManager, ListIndexOutOfBounds
 from shared.DiscordList import DiscordList
-from shared.time_utils import get_est_iso_date
 import random
 
 
@@ -91,7 +90,7 @@ class MiscGroupCog(commands.Cog):
 
         successfully_added = self.data_manager.add_table_data(
             table_name="random_user_nicknames",
-            json_data={"nickname": nickname, "created": get_est_iso_date(), "added_by": interaction.user.id}
+            json_data={"nickname": nickname, "added_by": interaction.user.id}
         )
 
         if successfully_added:

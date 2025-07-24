@@ -2,7 +2,6 @@ from discord.ext import commands
 from discord import app_commands, Interaction
 import random
 import logging
-from shared.time_utils import get_est_iso_date
 
 from shared.data_manager import DataManager, ListIndexOutOfBounds
 from shared.DiscordList import DiscordList
@@ -34,7 +33,7 @@ class AICog(commands.Cog):
             self.data_manager.ensure_user_exists(interaction.user)
             successfully_added = self.data_manager.add_table_data(
                 table_name="chat_memories",
-                json_data={"memory": memory, "created": get_est_iso_date(), "added_by": interaction.user.id}
+                json_data={"memory": memory, "added_by": interaction.user.id}
             )
 
             if successfully_added:
