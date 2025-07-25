@@ -24,6 +24,7 @@ class TTSGroupCog(commands.Cog):
         :param interaction: The Discord interaction object
         :param tts_enabled: Boolean to enable or disable TTS
         """
+        await interaction.response.defer(ephemeral=True)
         db_user = self.data_manager.get_item_by_key(
             table_name="users",
             key="user_id",
@@ -37,19 +38,13 @@ class TTSGroupCog(commands.Cog):
             )
             if successfully_updated:
                 logging.info(f"User {interaction.user.name} set TTS enabled to {tts_enabled}")
-                await interaction.response.send_message(
-                    f"{'Enabled' if tts_enabled else 'Disabled'} TTS for server.", 
-                    ephemeral=True
-                )
+                await interaction.followup.send(f"{'Enabled' if tts_enabled else 'Disabled'} TTS for server.")
             else:
                 logging.error(f"Failed to update TTS enabled state for user {interaction.user.name}")
-                await interaction.response.send_message("`Failed to update TTS state.`", ephemeral=True)
+                await interaction.followup.send("`Failed to update TTS state.`")
         else:
             logging.warning(f"User {interaction.user.name} attempted to change TTS enabled state without admin rights")
-            await interaction.response.send_message(
-                "`You must be an administrator to update this value.`", 
-                ephemeral=True
-            )
+            await interaction.followup.send("`You must be an administrator to update this value.`")
 
     @group.command(name="tts-language", description="Set the TTS language")
     @app_commands.describe(language="Language choice")
@@ -86,7 +81,7 @@ class TTSGroupCog(commands.Cog):
             await interaction.followup.send("Bot kicked from voice channel.")
         else:
             logging.warning(f"User {interaction.user.name} tried to kick bot, but bot was not in a voice channel")
-            await interaction.followup.send("`Bot is not in a voice channel OR audio is still playing.`", ephemeral=True)
+            await interaction.followup.send("`Bot is not in a voice channel OR audio is still playing.`")
 
     @group.command(name="vcskip", description="Skip the current TTS or audio in the voice channel")
     async def vcskip(self, interaction: Interaction):
@@ -112,6 +107,7 @@ class TTSGroupCog(commands.Cog):
         :param interaction: The Discord interaction object
         :param announce: Boolean to enable or disable name announcement
         """
+        await interaction.response.defer(ephemeral=True)
         self.data_manager.ensure_user_exists(interaction.user)    
         successfully_updated = self.data_manager.update_table_data(
             table_name="users",
@@ -121,12 +117,9 @@ class TTSGroupCog(commands.Cog):
         
         if successfully_updated:
             logging.info(f"User {interaction.user.name} set announce_name to {announce}")
-            await interaction.response.send_message(
-                f"{'Enabled' if announce else 'Disabled'} name announcement for you when using vc-text.", ephemeral=True
+            await interaction.followup.send(
+                f"{'Enabled' if announce else 'Disabled'} name announcement for you when using vc-text."
             )
         else:
             logging.error(f"Failed to update announce_name for user {interaction.user.name}")
-            await interaction.response.send_message(
-                "`Failed to update name announcement setting.`", 
-                ephemeral=True
-            )
+            await interaction.followup.send("`Failed to update name announcement setting.`")

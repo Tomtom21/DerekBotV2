@@ -78,12 +78,10 @@ class MiscGroupCog(commands.Cog):
         :param interaction: The Discord interaction object
         :param nickname: The nickname string to save
         """
+        await interaction.response.defer()
         if len(nickname) > 32:
             logging.warning(f"{interaction.user.name} attempted to submit a nickname that was too long")
-            await interaction.response.send_message(
-                "Nickname is too long. Please use 32 characters or fewer.",
-                ephemeral=True
-            )
+            await interaction.followup.send("`Nickname is too long. Please use 32 characters or fewer.`")
             return
 
         self.data_manager.ensure_user_exists(interaction.user)
@@ -95,10 +93,10 @@ class MiscGroupCog(commands.Cog):
 
         if successfully_added:
             logging.info(f"User {interaction.user.name} saved new random nickname: {nickname}")
-            await interaction.response.send_message(f"Saved random nickname **{nickname}**")
+            await interaction.followup.send(f"Saved random nickname **{nickname}**")
         else:
             logging.error(f"Failed to save random nickname for user {interaction.user.name}: {nickname}")
-            await interaction.response.send_message("`Failed to save random nickname`", ephemeral=True)
+            await interaction.followup.send("`Failed to save random nickname`")
 
     @group.command(name="remove-nickname", description="Remove a random nickname by index.")
     @app_commands.describe(nickname_index="The index of the nickname in the random nicknames list.")
@@ -109,6 +107,7 @@ class MiscGroupCog(commands.Cog):
         :param interaction: The Discord interaction object
         :param nickname_index: The index of the nickname in the user-facing list (local db index + 1)
         """
+        await interaction.response.defer()
         try:
             nickname_item = self.data_manager.get_db_item_with_index(
                 table_name="random_user_nicknames",
@@ -126,14 +125,14 @@ class MiscGroupCog(commands.Cog):
 
             if successfully_removed:
                 logging.info(f"User {interaction.user.name} removed random nickname: {nickname_string}")
-                await interaction.response.send_message(f"Removed random nickname **{nickname_string}**")
+                await interaction.followup.send(f"Removed random nickname **{nickname_string}**")
             else:
                 logging.error(f"Failed to remove random nickname for user {interaction.user.name}: {nickname_string}")
-                await interaction.response.send_message(f"`Failed to remove random nickname`", ephemeral=True)
+                await interaction.followup.send(f"`Failed to remove random nickname`")
 
         except ListIndexOutOfBounds as error:
             logging.warning(f"User {interaction.user.name} tried to remove nickname at invalid index {nickname_index}")
-            await error.handle_index_error(interaction)
+            await error.handle_index_error(interaction, requires_followup=True)
 
     @group.command(name="shuffle-nickname", description="Set whether to shuffle your nickname daily")
     @app_commands.describe(shuffle_nickname="Do you want to shuffle your nickname daily?")

@@ -97,6 +97,7 @@ class MovieGroupCog(commands.Cog):
         :param interaction: The Discord interaction object
         :param movie_name: The name of the movie to add
         """
+        await interaction.response.defer()
         self.data_manager.ensure_user_exists(interaction.user)
 
         logging.info(f"User {interaction.user.name} is adding movie: {movie_name}")
@@ -107,10 +108,10 @@ class MovieGroupCog(commands.Cog):
 
         if successfully_added:
             logging.info(f"Successfully added movie '{movie_name}' to unwatched list.")
-            await interaction.response.send_message("Added **" + movie_name + "** to unwatched list")
+            await interaction.followup.send("Added **" + movie_name + "** to unwatched list")
         else:
             logging.error(f"Failed to add movie '{movie_name}' to unwatched list.")
-            await interaction.response.send_message("`Failed to add movie to unwatched list`", ephemeral=True)
+            await interaction.followup.send("`Failed to add movie to unwatched list`")
 
     @group.command(name="remove-movie", description="Remove a movie from the unwatched list")
     @app_commands.describe(movie_index="The item number associated with each movie in the movie list")
@@ -121,6 +122,7 @@ class MovieGroupCog(commands.Cog):
         :param interaction: The Discord interaction object
         :param movie_index: The index of the movie in the user-facing list (local db index + 1)
         """
+        await interaction.response.defer()
         logging.info(f"User {interaction.user.name} is removing movie at index: {movie_index}")
         try:
             movie_item = self.data_manager.get_db_item_with_index(
@@ -139,14 +141,14 @@ class MovieGroupCog(commands.Cog):
 
             if successfully_removed:
                 logging.info(f"Successfully removed movie '{movie_name}' from unwatched list.")
-                await interaction.response.send_message("Removed **" + movie_name + "** from unwatched list")
+                await interaction.followup.send("Removed **" + movie_name + "** from unwatched list")
             else:
                 logging.error(f"Failed to remove movie '{movie_name}' from unwatched list.")
-                await interaction.response.send_message("`Failed to remove movie from unwatched list`", ephemeral=True)
+                await interaction.followup.send("`Failed to remove movie from unwatched list`")
 
         except ListIndexOutOfBounds as error:
             logging.warning(f"ListIndexOutOfBounds error for user {interaction.user.name} at index {movie_index}: {error}")
-            await error.handle_index_error(interaction)
+            await error.handle_index_error(interaction, requires_followup=True)
 
     @group.command(name="mark-watched", description="Marks a movie in the unwatched list as watched")
     @app_commands.describe(movie_index="Index number associated with each movie in the movie list")
@@ -157,6 +159,7 @@ class MovieGroupCog(commands.Cog):
         :param interaction: The Discord interaction object
         :param movie_index: The index of the movie in the user-facing list (local db index + 1)
         """
+        await interaction.response.defer()
         logging.info(f"User {interaction.user.name} is marking movie at index {movie_index} as watched.")
         try:
             unwatched_item = self.data_manager.get_db_item_with_index(
@@ -173,7 +176,7 @@ class MovieGroupCog(commands.Cog):
             )
             if not successfully_removed:
                 logging.error(f"Failed to remove movie '{unwatched_name}' from unwatched list during marking.")
-                await interaction.response.send_message("`Failed to remove movie from unwatched list during marking`", ephemeral=True)
+                await interaction.followup.send("`Failed to remove movie from unwatched list during marking`")
                 return
 
             # Adding it to the watched list
@@ -183,13 +186,13 @@ class MovieGroupCog(commands.Cog):
             )
             if successfully_added:
                 logging.info(f"Marked movie '{unwatched_name}' as watched.")
-                await interaction.response.send_message("Marked **" + unwatched_name + "** as watched")
+                await interaction.followup.send("Marked **" + unwatched_name + "** as watched")
             else:
                 logging.error(f"Failed to add movie '{unwatched_name}' to the watched list.")
-                await interaction.response.send_message("`Failed to add movie to the watched list`", ephemeral=True)
+                await interaction.followup.send("`Failed to add movie to the watched list`")
         except ListIndexOutOfBounds as error:
             logging.warning(f"ListIndexOutOfBounds error for user {interaction.user.name} at index {movie_index}: {error}")
-            await error.handle_index_error(interaction)
+            await error.handle_index_error(interaction, requires_followup=True)
 
     @group.command(name="search-movie",
                    description="List all unwatched movies that contain the keyword")
