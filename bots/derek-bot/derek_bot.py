@@ -12,6 +12,7 @@ from cogs.misc_cog import MiscGroupCog
 from cogs.birthday_cog import BirthdayGroupCog
 from cogs.ai_cog import AICog
 from cogs.tts_cog import TTSGroupCog
+from cogs.management_cog import ManagementGroupCog
 import random
 from datetime import datetime, timezone
 import pytz
@@ -191,6 +192,7 @@ class DerekBot(commands.Bot):
         await self.add_cog(BirthdayGroupCog(self, self.data_manager))
         await self.add_cog(AICog(self, self.data_manager))
         await self.add_cog(TTSGroupCog(self, self.data_manager, self.tts_manager, self.audio_manager))
+        await self.add_cog(ManagementGroupCog(self))
         await self.tree.sync()
         logging.info("Synced commands and added all cogs")
 
