@@ -522,10 +522,9 @@ class DerekBot(commands.Bot):
                 # Keeping track of things in the cache
                 await self.conversation_cache.add_message(message)
                 message_chain = self.conversation_cache.get_message_chain(message)
-                gpt_message_list = self.llm_manager.generate_gpt_messages_list(message_chain)
 
-                # Getting the AI response
-                gpt_message, images = await self.llm_manager.run_model_with_funcs(gpt_message_list)
+                # Executing the model
+                gpt_message, images = await self.llm_manager.process_with_history(message_chain)
 
                 # Converting images to discord files
                 discord_file_images = []
