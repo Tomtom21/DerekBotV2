@@ -192,7 +192,7 @@ class DerekBot(commands.Bot):
         await self.add_cog(BirthdayGroupCog(self, self.data_manager))
         await self.add_cog(AICog(self, self.data_manager))
         await self.add_cog(TTSGroupCog(self, self.data_manager, self.tts_manager, self.audio_manager))
-        await self.add_cog(ManagementGroupCog(self))
+        await self.add_cog(ManagementGroupCog(self, self.data_manager))
         await self.tree.sync()
         logging.info("Synced commands and added all cogs")
 

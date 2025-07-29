@@ -1,10 +1,12 @@
 from discord.ext import commands
 from discord import app_commands, Interaction
+from shared.data_manager import DataManager
 import logging
 
 class ManagementGroupCog(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot, data_manager: DataManager):
         self.bot = bot
+        self.data_manager = data_manager
     
     group = app_commands.Group(name="management", description="Commands for managing the state of the bot")
 
@@ -23,7 +25,7 @@ class ManagementGroupCog(commands.Cog):
         if db_user and db_user.get("is_creator"):
             logging.warning(f"Shutdown initiated by user {interaction.user.id} ({interaction.user.name})")
             await interaction.response.send_message("Shutting down..", ephemeral=True)
-            exit(0)
+            await self.bot.close()
         else:
             logging.warning(f"Shutdown attempt denied for user {interaction.user.id} ({interaction.user.name})")
             await interaction.response.send_message("`You do not have permission to shut down the bot.`", ephemeral=True)
