@@ -1,121 +1,32 @@
+from concurrent.futures import ProcessPoolExecutor
+from shared.SpotifyAPI import SpotifyAPI
+import os
+from googleapiclient.discovery import build
+from errors import (
+    YoutubeAPIError,
+    MediaTypeMismatchError,
+    MediaSourceMismatchError,
+    YouTubeSearchError,
+    AudioProcessingError,
+    DownloadError
+)
+from difflib import SequenceMatcher
+from .models import SongRequest, PlaylistItem, PlaylistRequest
+from .utils import extract_yt_playlist_id
+from isodate import parse_duration
+from datetime import datetime, timedelta, timezone
 import urllib.parse
 import urllib.request
-from difflib import SequenceMatcher
 import re
-import os
-import random
-import logging
-from typing import List
-
-from bs4 import BeautifulSoup
-import json
-from concurrent.futures import ProcessPoolExecutor
-from googleapiclient.discovery import build
-import yt_dlp
-from shared.SpotifyAPI import SpotifyAPI
-from shared.file_utils import get_random_file_id
-from datetime import datetime, timedelta, timezone
-from isodate import parse_duration
 from pathlib import Path
 from pydub import AudioSegment
+import logging
 import asyncio
-
-
-class YoutubeAPIError(Exception):
-    pass
-
-
-class URLValidationError(Exception):
-    pass
-
-
-class URLSanitizationError(Exception):
-    pass
-
-
-class SongRouterError(Exception):
-    pass
-
-
-class DownloadError(Exception):
-    pass
-
-
-class YouTubeSearchError(Exception):
-    pass
-
-
-class AudioProcessingError(Exception):
-    pass
-
-
-class SongRequest:
-    def __init__(self, song_url):
-        self.url = song_url
-        self.title = None
-        self.source = None
-
-        # These are for scoring of the request when necessary
-        self.relevance_score = None
-        self.source_publish_date = None
-        self.content_duration = None
-
-        self.VALID_DOMAINS = {"youtube.com": "youtube",
-                              "youtu.be": "youtube",
-                              "open.spotify.com": "spotify"}
-        self.SANITIZATION_MAX_LENGTH = 120
-
-        # Verifying the link, updating the source
-        self._validate_url()
-
-        # Sanitizing the link
-        self._sanitize_url()
-
-    def _validate_url(self):
-        """
-        Checks to ensure that the user-provided URL is real and valid
-
-        :raise URLValidationError: If the URL is not valid
-        """
-        def normalize_domain(domain):
-            domain = domain.lower()
-            if domain.startswith("www."):
-                return domain[4:]
-            return domain
-
-        parsed = urllib.parse.urlparse(self.url)
-
-        # Checking if we have a https link. No http here
-        if parsed.scheme not in {"https"}:
-            raise URLValidationError("The provided URL does not use HTTPS")
-
-        # Normalizing and checking the url domains
-        normalized_domain = normalize_domain(parsed.netloc)
-        if normalized_domain not in self.VALID_DOMAINS.keys():
-            raise URLValidationError("The URL domain is not valid")
-
-        # It seems we have a valid domain, mark it
-        self.source = self.VALID_DOMAINS[normalized_domain]
-
-    def _sanitize_url(self):
-        """
-        Sanitizes the URL
-
-        :raise URLValidationError: If the URL is too long
-        """
-        if len(self.url) > self.SANITIZATION_MAX_LENGTH:
-            raise URLValidationError("The URl seems to be too long")
+from ..file_utils import get_random_file_id
+import yt_dlp
 
 
 class SongDownloader:
-    """
-    General gameplan can be:
-    For regular youtube videos, just download it without checking as long as its youtube
-    For youtube playlists, up to 50 items per request but only 1 quota unit per request
-    For spotify songs, search with regular request and then videos.list get all url info for 1 quota per 50 videos
-    For spotify playlists, search with regular request, then videos.list for each song. 25 quota per playlist add sequence (or as many songs as added)
-    """
-
     def __init__(self, output_path=".", max_workers=5):
         self.output_path = output_path
         self.executor = ProcessPoolExecutor(max_workers=max_workers)
@@ -186,6 +97,191 @@ class SongDownloader:
         # do an initial playlist download of info
         # Call multiprocessing router here
         pass
+
+    def _fetch_spotify_album_data(self, album_id, max_length, offset):
+        """
+        Fetches Spotify album information
+
+        :param album_id: The id of the album
+        :param max_length: The maximum number of items to return
+        :param offset: The item number to start fetching information at
+        :return: A tuple of json objects
+            - The album information
+            - The information on the individual album tracks
+        """
+        # Getting album info
+        album_info = self.spotify_api.api_call(
+            endpoint_template="albums/{album_id}",
+            placeholder_values={"album_id": album_id}
+        )
+
+        # Separate api call for using offset/limit
+        album_tracks = self.spotify_api.api_call(
+            endpoint_template="albums/{album_id}/tracks",
+            placeholder_values={"album_id": album_id},
+            limit=max_length,
+            offset=offset
+        )
+        return album_info, album_tracks
+
+    def _fetch_spotify_playlist_data(self, playlist_id, max_length, offset):
+        """
+        Fetches Spotify playlist information
+
+        :param playlist_id: The id of the playlist
+        :param max_length: The maximum number of items to return
+        :param offset: The item number to start fetching information at
+        :return: A tuple of json objects
+            - The playlist information
+            - The information on the individual playlist tracks
+        """
+        # Getting playlist info
+        playlist_info = self.spotify_api.api_call(
+            endpoint_template="playlists/{playlist_id}",
+            placeholder_values={"playlist_id": playlist_id}
+        )
+
+        # Separate api call for using offset/limit
+        playlist_tracks = self.spotify_api.api_call(
+            endpoint_template="playlists/{playlist_id}/tracks",
+            placeholder_values={"playlist_id": playlist_id},
+            limit=max_length,
+            offset=offset
+        )
+        return playlist_info, playlist_tracks
+
+    def _fetch_and_process_youtube_playlist_data(self, playlist_id, max_length, offset):
+        """
+        Fetches YouTube playlist information and processes it into a title and a list of PlaylistItems
+
+        :param playlist_id: The id of the playlist
+        :param max_length: The maximum number of items to return
+        :param offset: The item number to start fetching information at
+        :return: A tuple of information about the playlist
+            - The playlist's title
+            - A list of PlaylistItems
+        """
+        # Getting playlist title
+        yt_playlist_info_call = self.youtube_api.playlist().list(
+            part="snippet",
+            id=playlist_id
+        )
+        yt_playlist_info_response = yt_playlist_info_call.execute()
+        playlist_title = yt_playlist_info_response["items"][0]["snippet"]["title"]
+
+        # Getting the videos in the playlist
+        next_page_token = None
+        videos_retrieved = 0
+        return_tracks = []
+
+        while True:
+            # Either getting the max results for the YouTube API, or the max we need
+            yt_playlist_videos_call = self.youtube_api.playlist().list(
+                part="snippet",
+                playlistId=playlist_id,
+                maxResults=min(50, max_length + offset - videos_retrieved),
+                pageToken=next_page_token
+            )
+            yt_playlist_videos_response = yt_playlist_videos_call.execute()
+
+            # Processing the tracks and appending them if we are handling the desired set of videos from the playlist
+            for item in yt_playlist_videos_response["items"]:
+                if videos_retrieved >= offset:
+                    video_title = item["snippet"]["title"]
+                    video_id = item["snippet"]["resourceId"]["videoId"]
+                    video_url = f"https://www.youtube.com/watch?v={video_id}"
+                    playlist_item = PlaylistItem(
+                        url=video_url,
+                        title=video_title
+                    )
+                    return_tracks.append(playlist_item)
+
+                    if len(return_tracks) >= max_length:
+                        return playlist_title, return_tracks
+
+            # Keeping track of the next token, or stopping if we don't get one
+            next_page_token = yt_playlist_videos_response.get("nextPageToken")
+            if not next_page_token:
+                break
+        return playlist_title, return_tracks
+
+    @staticmethod
+    def _process_spotify_list_data(list_info, list_tracks):
+        """
+        Processes Spotify list info and list tracks into a title and a list of PlaylistItems
+
+        :param list_info: A JSON object with information about the Spotify playlist. Directly from Spotify API.
+        :param list_tracks: A JSON object with a list of tracks. Directly from Spotify API.
+        :return: A tuple of information about the playlist
+            - The playlist's title
+            - A list of PlaylistItems
+        """
+        # Parsing the title of the list
+        playlist_title = list_info["name"]
+
+        # Generating a list of PlaylistItems for all desired tracks
+        return_tracks = []
+        for track in list_tracks["items"]:
+            # Attempting to get the internal 'track' for any playlist items. Use original if handling an album item
+            track = track.get("track", track)
+
+            # Generating a new playlist item
+            playlist_item_name = track["name"]
+            playlist_item_artist = track["artists"][0]["name"] if track.get("artists") else track["show"]["name"]
+            playlist_item = PlaylistItem(
+                title=playlist_item_name,
+                artist=playlist_item_artist
+            )
+
+            # Adding our new item to the return_tracks list
+            return_tracks.append(playlist_item)
+
+        return playlist_title, return_tracks
+
+    async def get_playlist_request(self, playlist_url, max_length=25, offset=0) -> PlaylistRequest:
+        """
+        Gets a playlist request with information about the playlist. This is provided to download_playlist function
+        This is a separate function to download_playlist so the user can view the songs in the playlist first
+
+        :param playlist_url: The URL to get information for
+        :return: A PlaylistRequest with information on the playlist and what songs are in the playlist
+        """
+        # Generating our playlist request to work out of
+        playlist_request = PlaylistRequest(playlist_url)
+
+        # Getting info on the playlist
+        if playlist_request.source == "spotify":
+            # Getting the Spotify playlist id for either an album or playlist
+            item_id = self.spotify_api.get_spotify_item_id(playlist_request.url)
+
+            # Getting information on either a playlist or an album
+            if playlist_request.media_type == "album":
+                list_info, list_tracks = self._fetch_spotify_album_data(item_id, max_length, offset)
+            elif playlist_request.media_type == "playlist":
+                list_info, list_tracks = self._fetch_spotify_playlist_data(item_id, max_length, offset)
+            else:
+                raise MediaTypeMismatchError("Unsupported media type found when getting PlaylistRequest")
+
+            # Process the lists into usable data, set the values in the playlist_request
+            playlist_title, return_tracks = self._process_spotify_list_data(list_info, list_tracks)
+
+        elif playlist_request.source == "youtube":
+            # Getting the url info again for the list
+            playlist_id = extract_yt_playlist_id(playlist_request.url)
+
+            # Fetching and processing the YouTube playlist data
+            playlist_title, return_tracks = self._fetch_and_process_youtube_playlist_data(
+                playlist_id,
+                max_length=max_length,
+                offset=offset
+            )
+        else:
+            raise MediaSourceMismatchError("Unsupported source found when creating PlaylistRequest")
+
+        # Setting the values for the playlist request
+        playlist_request.title = playlist_title
+        playlist_request.items = return_tracks
+        return playlist_request
 
     async def _download_song_from_query(self, search_query):
         """
@@ -279,7 +375,7 @@ class SongDownloader:
     @staticmethod
     async def _get_yt_video_ids_from_query(search_query) -> list:
         """
-        Searches YouTube for videos and provides their urls
+        Searches YouTube for videos and provides all discovered videos
 
         :param search_query: The search query for YouTube
         :return: A list of YouTube video ids
@@ -329,8 +425,10 @@ class SongDownloader:
         :param song_request: The song request to route
         :return: The file path to the downloaded song
         """
-        # if
-        pass
+        if song_request.source == "youtube":
+            return await self._download_youtube_song(song_request)
+        elif song_request.source == "spotify":
+            return await self._download_spotify_song(song_request)
 
     async def _download_youtube_song(self, song_request):
         """
@@ -386,7 +484,11 @@ class SongDownloader:
         :return: The file path to the downloaded song
         """
         # Getting info about the song
-        song_info = self.spotify_api.get_song_info(song_request.url)
+        song_id = self.spotify_api.get_spotify_item_id(song_request.url)
+        song_info = self.spotify_api.api_call(
+            endpoint_template="tracks/{track_id}",
+            placeholder_values={"track_id": song_id}
+        )
         song_name = song_info['name']
         song_artists = ", ".join(artist['name'] for artist in song_info['artists'])
 
@@ -429,6 +531,3 @@ class SongDownloader:
         :return:
         """
         pass
-
-
-
