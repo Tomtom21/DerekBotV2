@@ -20,35 +20,6 @@ from pathlib import Path
 from pydub import AudioSegment
 import asyncio
 
-
-class YoutubeAPIError(Exception):
-    pass
-
-
-class URLValidationError(Exception):
-    pass
-
-
-class URLSanitizationError(Exception):
-    pass
-
-
-class SongRouterError(Exception):
-    pass
-
-
-class DownloadError(Exception):
-    pass
-
-
-class YouTubeSearchError(Exception):
-    pass
-
-
-class AudioProcessingError(Exception):
-    pass
-
-
 class SongRequest:
     def __init__(self, song_url):
         self.url = song_url
