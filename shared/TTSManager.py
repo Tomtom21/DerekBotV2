@@ -29,41 +29,41 @@ class TTSManager:
             speaking_rate=speaking_rate
         )
 
-        # Setting the first option as our default voice config
-        self.set_voice(None)
-
-    def set_voice(self, language):
-        """
-        Sets the voice configuration for synthesis. Uses the keys found in constants.py for voice info
-
-        :param language: A language key from 'GOOGLE_TTS_VOICE_INFO'
-        """
-        # Making sure we definitely have a valid value
+        # Set default voice config from the first option
         default = self.voice_info[next(iter(self.voice_info))]
-        voice = self.voice_info.get(language, default)
-
-        # Updating the voice configuration
-        self.voice_config = texttospeech.VoiceSelectionParams(
-            language_code=voice['language_code'],
-            name=voice['voice_name']
+        self.default_voice_config = texttospeech.VoiceSelectionParams(
+            language_code=default['language_code'],
+            name=default['voice_name']
         )
 
-    def process(self, text):
+    def process(self, text, voice_key=None):
         """
-        Synthesize speech based on the input text. Saves the file in the output path location with a random file id
+        Synthesize speech based on the input text and optional voice key.
+        Saves the file in the output path location with a random file id.
 
         :param text: The text to synthesize
+        :param voice_key: The key from GOOGLE_TTS_VOICE_INFO for the desired voice (optional)
         :return: The file path of the synthesized text
         """
         # Generating a random filename
         new_file_id = get_random_file_id(self.output_path)
         new_file_path = os.path.join(self.output_path, f"{new_file_id}.mp3")
 
+        # If a voice key is provided and it's valid
+        voice = self.voice_info.get(voice_key)
+        if voice_key and voice:
+            voice_config = texttospeech.VoiceSelectionParams(
+                language_code=voice['language_code'],
+                name=voice['voice_name']
+            )
+        else:
+            voice_config = self.default_voice_config
+
         try:
             # Making the synthesis request
             synthesis_input = texttospeech.SynthesisInput(text=text)
             response = self.client.synthesize_speech(
-                input=synthesis_input, voice=self.voice_config, audio_config=self.audio_config
+                input=synthesis_input, voice=voice_config, audio_config=self.audio_config
             )
 
             # Saving the audio content
