@@ -574,8 +574,11 @@ class DerekBot(commands.Bot):
                 for user in message.mentions:
                     final_tts_message = re.sub(f"<@!?{user.id}>", f"@ {user.display_name}", final_tts_message)
 
+                # Get tts_language from db_user if available
+                tts_language = db_user.get("tts_language") if db_user else None
+
                 # Generating the audio file and adding it to the queue for VC
-                file_path = self.tts_manager.process(final_tts_message)
+                file_path = self.tts_manager.process(final_tts_message, tts_language)
                 if file_path:
                     await self.audio_manager.add_to_queue(file_path, message.author.voice.channel)
                 else:

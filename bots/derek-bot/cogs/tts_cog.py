@@ -61,9 +61,21 @@ class TTSGroupCog(commands.Cog):
         :param interaction: The Discord interaction object
         :param language: The language choice for TTS
         """
-        self.tts_manager.set_voice(language.value)
-        logging.info(f"User {interaction.user.name} set TTS language to {language.value}")
-        await interaction.response.send_message(f"TTS language set to {language.value}.")
+        await interaction.response.defer(ephemeral=True)
+
+        self.data_manager.ensure_user_exists(interaction.user)
+
+        successfully_updated = self.data_manager.update_table_data(
+            table_name="users",
+            match_json={"user_id": interaction.user.id},
+            update_json={"tts_language": language.value}
+        )
+        if successfully_updated:
+            logging.info(f"User {interaction.user.name} set TTS language to {language.value}")
+            await interaction.followup.send(f"TTS language set to **{language.value}**")
+        else:
+            logging.warning(f"Failed to update TTS language for user {interaction.user.name}")
+            await interaction.followup.send("`Failed to update TTS language`")
 
     @group.command(name="vckick", description="Kick the bot from the current voice channel")
     async def vckick(self, interaction: Interaction):
