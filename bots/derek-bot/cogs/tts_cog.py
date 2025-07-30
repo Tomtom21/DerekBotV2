@@ -72,7 +72,7 @@ class TTSGroupCog(commands.Cog):
         )
         if successfully_updated:
             logging.info(f"User {interaction.user.name} set TTS language to {language.value}")
-            await interaction.followup.send(f"TTS language set to {language.value}")
+            await interaction.followup.send(f"TTS language set to **{language.value}**")
         else:
             logging.warning(f"Failed to update TTS language for user {interaction.user.name}")
             await interaction.followup.send("`Failed to update TTS language`")
