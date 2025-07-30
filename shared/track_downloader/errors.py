@@ -13,8 +13,8 @@ class URLSanitizationError(Exception):
     pass
 
 
-class SongRouterError(Exception):
-    pass
+# class SongRouterError(Exception):
+#     pass
 
 
 class DownloadError(Exception):
