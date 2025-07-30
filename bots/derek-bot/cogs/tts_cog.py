@@ -46,7 +46,7 @@ class TTSGroupCog(commands.Cog):
             logging.warning(f"User {interaction.user.name} attempted to change TTS enabled state without admin rights")
             await interaction.followup.send("`You must be an administrator to update this value.`")
 
-    @group.command(name="tts-language", description="Set the TTS language")
+    @group.command(name="tts-language", description="Set the TTS language (Only for you)")
     @app_commands.describe(language="Language choice")
     @app_commands.choices(
         language=[
