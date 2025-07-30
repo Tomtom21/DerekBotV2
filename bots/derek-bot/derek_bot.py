@@ -179,6 +179,11 @@ class DerekBot(commands.Bot):
 
         self.tts_enabled = True  # Default to enabled, will be set from DB
         self.last_tts_user_id = None # For not repeating the "___ says:" phrase
+        
+        # Setting a disconnect function when leaving vc
+        def disconnect_func():
+            self.last_tts_user_id = None
+        self.audio_manager.disconnect_func = disconnect_func
 
         logging.info("DerekBot instance initialized")
 
@@ -555,17 +560,24 @@ class DerekBot(commands.Bot):
         if self.tts_enabled and message.channel.id == self.vc_text_channel_id:
             # Making sure that they are in a voice channel
             if message.author.voice and message.author.voice.channel:
-                # Getting the user and checking if they have announce name enabled
+                # Getting the user
                 db_user = self.data_manager.get_item_by_key(
                     table_name="users",
                     key="user_id",
                     value=message.author.id
                 )
-                if db_user and db_user.get("vc_text_announce_name") and self.last_tts_user_id != message.author.id:
+
+                # Announce name if speaker changed and user has announce enabled
+                announce_name = (
+                    self.last_tts_user_id != message.author.id
+                    and (db_user and db_user.get("vc_text_announce_name"))
+                )
+                if announce_name:
                     final_tts_message = f"{message.author.display_name} says: {message.content}"
-                    self.last_tts_user_id = message.author.id
                 else:
                     final_tts_message = message.content
+                
+                self.last_tts_user_id = message.author.id
 
                 # Removing emoji ids from TTS messages
                 final_tts_message = self.replace_emoji_tags(final_tts_message)
