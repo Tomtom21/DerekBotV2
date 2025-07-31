@@ -1,5 +1,5 @@
 from concurrent.futures import ProcessPoolExecutor
-from shared.SpotifyAPI import SpotifyAPI
+from shared.spotify_api import SpotifyAPI
 import os
 from googleapiclient.discovery import build
 from errors import (
