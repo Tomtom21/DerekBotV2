@@ -20,3 +20,14 @@ services:
       - PYTHONBUFFERED=1
     env_file:
       - ../DerekBotV2Creds/.env
+  
+  derpods:
+    build: 
+      context: .
+      dockerfile: bots/derpods/Dockerfile
+    container_name: derpods
+    restart: "no"
+    environment:
+      - PYTHONBUFFERED=1
+    env_file:
+      - ../DerekBotV2Creds/.env
