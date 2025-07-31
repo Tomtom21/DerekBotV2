@@ -1,53 +1,28 @@
+from concurrent.futures import ProcessPoolExecutor
+from shared.SpotifyAPI import SpotifyAPI
+import os
+from googleapiclient.discovery import build
+from errors import (
+    YoutubeAPIError,
+    MediaTypeMismatchError,
+    MediaSourceMismatchError,
+    YouTubeSearchError,
+    AudioProcessingError,
+    DownloadError,
+    URLValidationError
+)
+from difflib import SequenceMatcher
+from isodate import parse_duration
+from datetime import datetime, timedelta, timezone
 import urllib.parse
 import urllib.request
-from difflib import SequenceMatcher
 import re
-import os
-import random
-import logging
-from typing import List
-
-from bs4 import BeautifulSoup
-import json
-from concurrent.futures import ProcessPoolExecutor
-from googleapiclient.discovery import build
-import yt_dlp
-from shared.SpotifyAPI import SpotifyAPI
 from shared.file_utils import get_random_file_id
-from datetime import datetime, timedelta, timezone
-from isodate import parse_duration
 from pathlib import Path
 from pydub import AudioSegment
+import yt_dlp
+import logging
 import asyncio
-
-
-class YoutubeAPIError(Exception):
-    pass
-
-
-class URLValidationError(Exception):
-    pass
-
-
-class URLSanitizationError(Exception):
-    pass
-
-
-class SongRouterError(Exception):
-    pass
-
-
-class DownloadError(Exception):
-    pass
-
-
-class YouTubeSearchError(Exception):
-    pass
-
-
-class AudioProcessingError(Exception):
-    pass
-
 
 class SongRequest:
     def __init__(self, song_url):
