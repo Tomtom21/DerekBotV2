@@ -24,73 +24,8 @@ import yt_dlp
 import logging
 import asyncio
 
-class SongRequest:
-    def __init__(self, song_url):
-        self.url = song_url
-        self.title = None
-        self.source = None
-
-        # These are for scoring of the request when necessary
-        self.relevance_score = None
-        self.source_publish_date = None
-        self.content_duration = None
-
-        self.VALID_DOMAINS = {"youtube.com": "youtube",
-                              "youtu.be": "youtube",
-                              "open.spotify.com": "spotify"}
-        self.SANITIZATION_MAX_LENGTH = 120
-
-        # Verifying the link, updating the source
-        self._validate_url()
-
-        # Sanitizing the link
-        self._sanitize_url()
-
-    def _validate_url(self):
-        """
-        Checks to ensure that the user-provided URL is real and valid
-
-        :raise URLValidationError: If the URL is not valid
-        """
-        def normalize_domain(domain):
-            domain = domain.lower()
-            if domain.startswith("www."):
-                return domain[4:]
-            return domain
-
-        parsed = urllib.parse.urlparse(self.url)
-
-        # Checking if we have a https link. No http here
-        if parsed.scheme not in {"https"}:
-            raise URLValidationError("The provided URL does not use HTTPS")
-
-        # Normalizing and checking the url domains
-        normalized_domain = normalize_domain(parsed.netloc)
-        if normalized_domain not in self.VALID_DOMAINS.keys():
-            raise URLValidationError("The URL domain is not valid")
-
-        # It seems we have a valid domain, mark it
-        self.source = self.VALID_DOMAINS[normalized_domain]
-
-    def _sanitize_url(self):
-        """
-        Sanitizes the URL
-
-        :raise URLValidationError: If the URL is too long
-        """
-        if len(self.url) > self.SANITIZATION_MAX_LENGTH:
-            raise URLValidationError("The URl seems to be too long")
-
 
 class SongDownloader:
-    """
-    General gameplan can be:
-    For regular youtube videos, just download it without checking as long as its youtube
-    For youtube playlists, up to 50 items per request but only 1 quota unit per request
-    For spotify songs, search with regular request and then videos.list get all url info for 1 quota per 50 videos
-    For spotify playlists, search with regular request, then videos.list for each song. 25 quota per playlist add sequence (or as many songs as added)
-    """
-
     def __init__(self, output_path=".", max_workers=5):
         self.output_path = output_path
         self.executor = ProcessPoolExecutor(max_workers=max_workers)
