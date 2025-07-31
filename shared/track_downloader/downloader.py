@@ -8,7 +8,8 @@ from errors import (
     MediaSourceMismatchError,
     YouTubeSearchError,
     AudioProcessingError,
-    DownloadError
+    DownloadError,
+    URLValidationError
 )
 from difflib import SequenceMatcher
 from isodate import parse_duration
@@ -16,8 +17,10 @@ from datetime import datetime, timedelta, timezone
 import urllib.parse
 import urllib.request
 import re
+from shared.file_utils import get_random_file_id
 from pathlib import Path
 from pydub import AudioSegment
+import yt_dlp
 import logging
 import asyncio
 
