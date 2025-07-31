@@ -44,7 +44,7 @@ class LinkValidator:
         :raise URLValidationError: If the URL is too long
         """
         if len(url) > cls.SANITIZATION_MAX_LENGTH:
-            raise URLValidationError("The URl seems to be too long")
+            raise URLValidationError("The URL seems to be too long")
 
     @staticmethod
     def classify_link_type(source: str, url: str):
