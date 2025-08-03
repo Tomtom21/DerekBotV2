@@ -10,7 +10,6 @@ from errors import (
     DownloadError,
     URLValidationError
 )
-from difflib import SequenceMatcher
 from isodate import parse_duration
 from datetime import datetime, timedelta, timezone
 import urllib.parse
@@ -42,16 +41,7 @@ class SongDownloader:
                                    "cover": -0.2,
                                    "#shorts": -0.2}
 
-    @staticmethod
-    def get_text_similarity(a, b):
-        """
-        Determines the percentage similarity between two strings
-
-        :param a: The first string
-        :param b: The second string
-        :return: The percentage similarity of the two strings
-        """
-        return SequenceMatcher(None, a, b).ratio()
+    
 
     async def download_song_by_url(self, song_url):
         """
@@ -74,19 +64,6 @@ class SongDownloader:
         :return: The file path to the downloaded song
         """
         return await self._download_song_from_query(search_query)
-
-    async def download_playlist_by_url(self, playlist_url, callback=None):
-        """
-        User-callable function to download a playlist using a URL
-
-        :param playlist_url: The playlist url
-        :param callback: The callback function to call when each song is downloaded successfully
-        :return:
-        """
-        # This might have to be where we pass the list to this function after we
-        # do an initial playlist download of info
-        # Call multiprocessing router here
-        pass
 
     async def _download_song_from_query(self, search_query):
         """
@@ -191,37 +168,6 @@ class SongDownloader:
         video_ids = re.findall(r"watch\?v=(\S{11})", response.read().decode())
 
         return video_ids
-
-    @staticmethod
-    def match_target_amplitude(sound, target_dbfs):
-        """
-        Change's a sound's dbfs to match the target_dbfs value
-
-        :param sound: The sound to apply to this to
-        :param target_dbfs: The target dbfs value
-        :return: The new sound with the gain applied
-        """
-        change_in_dbfs = target_dbfs - sound.dBFS
-        return sound.apply_gain(change_in_dbfs)
-
-    def normalize_audio_track(self, audio_path):
-        """
-        Normalizes the audio track so that it isn't too loud or quiet
-
-        :param audio_path: The audio path to normalize
-        :return: The new path of the normalized audio file
-        """
-        try:
-            new_path = Path(audio_path).with_suffix(".wav")
-            sound = AudioSegment.from_file(audio_path)
-            normalized_sound = self.match_target_amplitude(sound, -15.0)
-            normalized_sound.export(new_path, format="wav")
-            os.remove(audio_path)
-            logging.info(f"Deleted {audio_path} after normalization, new filename is {new_path}")
-            return new_path
-        except Exception as e:
-            logging.warning(e)
-            raise AudioProcessingError("Failed to normalize audio") from e
 
     async def _route_song_download(self, song_request: SongRequest):
         """

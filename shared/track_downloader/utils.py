@@ -2,7 +2,7 @@
 For some of the assorted utils we might need
 """
 from urllib.parse import urlparse, parse_qs
-
+from difflib import SequenceMatcher
 
 def parse_url_info(url):
     """
@@ -38,3 +38,13 @@ def extract_yt_video_id(url):
     :returns: The video ID if present, otherwise None.
     """
     return parse_url_info(url)["query"].get("v", [None])[0]
+
+def get_text_similarity(a, b):
+    """
+    Determines the percentage similarity between two strings
+
+    :param a: The first string
+    :param b: The second string
+    :return: The percentage similarity of the two strings
+    """
+    return SequenceMatcher(None, a, b).ratio()
