@@ -1,7 +1,6 @@
 from concurrent.futures import ProcessPoolExecutor
 from shared.spotify_api import SpotifyAPI
 import os
-from googleapiclient.discovery import build
 from errors import (
     YoutubeAPIError,
     MediaTypeMismatchError,
@@ -42,14 +41,6 @@ class SongDownloader:
                                    "vocals only": -0.5,
                                    "cover": -0.2,
                                    "#shorts": -0.2}
-
-        # Logging into the YouTube api
-        if (youtube_api_key := os.getenv("YOUTUBE_API_KEY")) is not None:
-            self.youtube_api = build("youtube", "v3", developerKey=youtube_api_key)
-        else:
-            raise YoutubeAPIError("Failed to load/build youtube api")
-
-        # Need to set up the spotify api here
 
     @staticmethod
     def get_text_similarity(a, b):
