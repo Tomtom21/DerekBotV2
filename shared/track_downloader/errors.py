@@ -1,9 +1,6 @@
 """
 A collection of potential errors that we can pass back to bot so it is aware of an issues and what to report to the user
 """
-class YoutubeAPIError(Exception):
-    pass
-
 
 class URLValidationError(Exception):
     pass
