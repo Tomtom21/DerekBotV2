@@ -29,20 +29,6 @@ class SongDownloader:
         self.executor = ProcessPoolExecutor(max_workers=max_workers)
         self.spotify_api = SpotifyAPI()
 
-        self.TITLE_SCORE_TWEAKS = {"live": -0.15,
-                                   "concert": -0.1,
-                                   "official": 0.1,
-                                   "karaoke": -0.1,
-                                   "react": -0.15,
-                                   "lyric": 0.35,
-                                   "Behind the scenes": -0.1,
-                                   "Clean": -0.1,
-                                   "vocals only": -0.5,
-                                   "cover": -0.2,
-                                   "#shorts": -0.2}
-
-    
-
     async def download_song_by_url(self, song_url):
         """
         User-callable function to download a song using a URL
@@ -124,35 +110,6 @@ class SongDownloader:
 
         # Downloading the best option from YouTube
         return await self._download_youtube_song(potential_song_requests[0])
-
-    def _tweak_relevance_score(self, song_request: SongRequest):
-        """
-        Generates a new relevance score for song request base on title contents
-
-        :param song_request: The song request whos relevance score we want to tweak
-        :return: The new relevance score
-        """
-        score = song_request.relevance_score
-
-        # Checking the title for good or bad keywords
-        for phrase, score_change in self.TITLE_SCORE_TWEAKS.items():
-            if phrase.lower() in song_request.title.lower():
-                score += score_change
-
-        # Penalizing very new songs
-        upload_date = datetime.fromisoformat(
-            song_request.source_publish_date.replace("Z", "+00:00")
-        )
-        if upload_date > (datetime.now(timezone.utc) - timedelta(weeks=5)):
-            score += -0.2
-
-        # Penalizing short videos
-        if song_request.content_duration < 40:
-            score += -0.4
-        elif song_request.content_duration < 80:
-            score += -0.2
-
-        return score
 
     @staticmethod
     async def _get_yt_video_ids_from_query(search_query) -> list:
