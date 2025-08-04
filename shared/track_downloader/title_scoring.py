@@ -3,6 +3,8 @@ from models import SongRequest
 
 class TitleScore:
     def __init__(self):
+        # Keywords and their associated values within a title.
+        # For instance, a result with "lyric" adds significant value, while "vocals only" removes a lot of value.
         self.TITLE_SCORE_TWEAKS = {
             "live": -0.15,
             "concert": -0.1,
