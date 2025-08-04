@@ -1,5 +1,9 @@
+from shared.spotify_api import SpotifyAPI
+from shared.youtube_api import YoutubeAPI
+from song_downloader import SongDownloader
+
 class PlaylistDownloader:
-    def __init__(self, spotify_api, youtube_api, song_downloader):
+    def __init__(self, spotify_api: SpotifyAPI, youtube_api: YoutubeAPI, song_downloader: SongDownloader):
         self.song_downloader = song_downloader
 
     def _route_playlist_download(self, playlist_url, callback):
