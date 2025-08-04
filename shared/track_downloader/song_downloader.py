@@ -131,8 +131,10 @@ class SongDownloader:
         :param song_request: The song request to route
         :return: The file path to the downloaded song
         """
-        # if
-        pass
+        if song_request.source == "youtube":
+            return await self._download_youtube_song(song_request)
+        elif song_request.source == "spotify":
+            return await self._download_spotify_song(song_request)
 
     async def _download_youtube_song(self, song_request):
         """
