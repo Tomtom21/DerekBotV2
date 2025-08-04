@@ -190,7 +190,11 @@ class SongDownloader:
         :return: The file path to the downloaded song
         """
         # Getting info about the song
-        song_info = self.spotify_api.get_song_info(song_request.url)
+        song_id = self.spotify_api.get_spotify_item_id(song_request.url)
+        song_info = self.spotify_api.api_call(
+            endpoint_template="tracks/{track_id}",
+            placeholder_values={"track_id": song_id}
+        )
         song_name = song_info['name']
         song_artists = ", ".join(artist['name'] for artist in song_info['artists'])
 
