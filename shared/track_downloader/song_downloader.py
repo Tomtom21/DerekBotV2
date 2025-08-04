@@ -27,21 +27,6 @@ class SongDownloader:
         self.spotify_api = spotify_api
         self.youtube_api = youtube_api
 
-    @staticmethod
-    async def _get_yt_video_ids_from_query(search_query) -> list:
-        """
-        Searches YouTube for videos and provides their urls
-
-        :param search_query: The search query for YouTube
-        :return: A list of YouTube video ids
-        """
-        search_input = urllib.parse.urlencode({'search_query': search_query})
-        search_url = "https://www.youtube.com/results?" + search_input
-        response = urllib.request.urlopen(search_url)
-        video_ids = re.findall(r"watch\?v=(\S{11})", response.read().decode())
-
-        return video_ids
-
     async def download_song_by_url(self, song_url):
         """
         User-callable function to download a song using a URL
@@ -123,6 +108,21 @@ class SongDownloader:
 
         # Downloading the best option from YouTube
         return await self._download_youtube_song(potential_song_requests[0])
+    
+    @staticmethod
+    async def _get_yt_video_ids_from_query(search_query) -> list:
+        """
+        Searches YouTube for videos and provides their urls
+
+        :param search_query: The search query for YouTube
+        :return: A list of YouTube video ids
+        """
+        search_input = urllib.parse.urlencode({'search_query': search_query})
+        search_url = "https://www.youtube.com/results?" + search_input
+        response = urllib.request.urlopen(search_url)
+        video_ids = re.findall(r"watch\?v=(\S{11})", response.read().decode())
+
+        return video_ids
 
     async def _route_song_download(self, song_request: SongRequest):
         """
