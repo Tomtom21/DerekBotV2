@@ -99,7 +99,7 @@ class SongDownloader:
                     (potential_song_requests[idx].relevance_score + reverse_score) / 2
                 )
 
-        # Tweaking the relevance scores to better match each video
+        # Getting the relevance scores to better match each video
         for song_request in potential_song_requests:
             song_request.relevance_score = self._tweak_relevance_score(song_request)
 
