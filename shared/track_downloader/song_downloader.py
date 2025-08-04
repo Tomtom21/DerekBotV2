@@ -24,10 +24,11 @@ import asyncio
 
 
 class SongDownloader:
-    def __init__(self, output_path=".", max_workers=5):
+    def __init__(self, spotify_api, youtube_api, output_path=".", max_workers=5):
         self.output_path = output_path
         self.executor = ProcessPoolExecutor(max_workers=max_workers)
-        self.spotify_api = SpotifyAPI()
+        self.spotify_api = spotify_api
+        self.youtube_api = youtube_api
 
     async def download_song_by_url(self, song_url):
         """
@@ -198,41 +199,3 @@ class SongDownloader:
 
         # Searching for the song
         return self._download_song_from_query(search_string)
-
-    def _route_playlist_download(self, playlist_url, callback):
-        """
-        Routes a playlist url to one of the playlist downloading methods, calls callback for each download
-
-        :param playlist_url: The playlist url
-        :param callback: The callback function to call when each song is downloaded successfully
-        :return:
-        """
-        pass
-
-    def _download_spotify_playlist(self, spotify_playlist_url, callback):
-        """
-        Downloads a Spotify playlist, calls callback
-
-        :param spotify_playlist_url: The Spotify playlist url
-        :param callback: The callback function to call when each song is downloaded successfully
-        :return:
-        """
-        # Ensuring we're authed. We auth each call to
-
-        # This needs to accept a list of song requests??
-        # essentially we need the list of songs to be pulled first
-
-        pass
-
-    def _download_youtube_playlist(self, youtube_playlist_url, callback):
-        """
-        Downloads a YouTube playlist, calls callback
-
-        :param youtube_playlist_url: The YouTube playlist url
-        :param callback: The callback function to call when the song is downloaded
-        :return:
-        """
-        pass
-
-
-
