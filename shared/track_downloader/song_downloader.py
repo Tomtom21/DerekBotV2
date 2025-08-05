@@ -117,12 +117,15 @@ class SongDownloader:
         :param search_query: The search query for YouTube
         :return: A list of YouTube video ids
         """
-        search_input = urllib.parse.urlencode({'search_query': search_query})
-        search_url = "https://www.youtube.com/results?" + search_input
-        response = urllib.request.urlopen(search_url)
-        video_ids = re.findall(r"watch\?v=(\S{11})", response.read().decode())
-
-        return video_ids
+        try:
+            search_input = urllib.parse.urlencode({'search_query': search_query})
+            search_url = "https://www.youtube.com/results?" + search_input
+            response = urllib.request.urlopen(search_url)
+            video_ids = re.findall(r"watch\?v=(\S{11})", response.read().decode())
+            return video_ids
+        except Exception as e:
+            logging.error(f"Failed to search YouTube: {e}")
+            return []
 
     async def _route_song_download(self, song_request: SongRequest):
         """
