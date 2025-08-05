@@ -128,7 +128,7 @@ class PlaylistRequest:
         self.media_type = None
 
         # Playlist info
-        self.items: [PlaylistItem] = []
+        self.items: list[PlaylistItem] = []
 
         # Verifying/Sanitizing the link, updating the source
         self.source = LinkValidator.validate_url(playlist_url)
