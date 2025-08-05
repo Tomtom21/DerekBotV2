@@ -16,6 +16,7 @@ from models import SongRequest
 from audio_processing import normalize_audio_track
 from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
+from title_scoring import TitleScore
 
 
 class SongDownloader:
@@ -102,7 +103,7 @@ class SongDownloader:
 
         # Getting the relevance scores to better match each video
         for song_request in potential_song_requests:
-            song_request.relevance_score = self._tweak_relevance_score(song_request)
+            song_request.relevance_score = TitleScore.get_relevance_score(song_request)
 
         # Sorting the list
         potential_song_requests.sort(key=lambda obj: obj.relevance_score, reverse=True)

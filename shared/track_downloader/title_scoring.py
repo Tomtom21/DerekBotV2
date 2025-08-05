@@ -1,5 +1,6 @@
 from datetime import datetime, timezone, timedelta
 from models import SongRequest
+from constants import TITLE_SCORE_TWEAKS
 
 class TitleScore:
     """
@@ -18,7 +19,7 @@ class TitleScore:
         score = song_request.relevance_score
 
         # Checking the title for good or bad keywords
-        for phrase, score_change in self.TITLE_SCORE_TWEAKS.items():
+        for phrase, score_change in TITLE_SCORE_TWEAKS.items():
             if phrase.lower() in song_request.title.lower():
                 score += score_change
 
