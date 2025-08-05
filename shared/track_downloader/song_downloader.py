@@ -1,13 +1,8 @@
 from concurrent.futures import ProcessPoolExecutor
-from shared.spotify_api import SpotifyAPI
 import os
 from errors import (
-    MediaTypeMismatchError,
-    MediaSourceMismatchError,
     YouTubeSearchError,
-    AudioProcessingError,
     DownloadError,
-    URLValidationError
 )
 from isodate import parse_duration
 import urllib.parse
