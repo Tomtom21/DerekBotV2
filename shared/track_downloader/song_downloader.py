@@ -180,7 +180,7 @@ class SongDownloader:
             logging.warning(e)
             raise DownloadError("Failed to download Youtube video") from e
 
-    def _download_spotify_song(self, song_request):
+    async def _download_spotify_song(self, song_request):
         """
         Downloads a Spotify song
 
@@ -199,4 +199,4 @@ class SongDownloader:
         search_string = f"{song_name} - {song_artists}"
 
         # Searching for the song
-        return self._download_song_from_query(search_string)
+        return await self._download_song_from_query(search_string)
