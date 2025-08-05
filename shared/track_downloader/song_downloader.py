@@ -58,7 +58,7 @@ class SongDownloader:
         :return: The file path to the downloaded song
         """
         # Searching, checking if we found anything
-        youtube_video_ids = await self._search_youtube(search_query)
+        youtube_video_ids = await self._search_youtube_videos(search_query)
         if not youtube_video_ids:
             raise YouTubeSearchError("Failed to find results for the YouTube query.")
         youtube_video_ids = youtube_video_ids[:50]
@@ -111,7 +111,7 @@ class SongDownloader:
         return await self._download_youtube_song(potential_song_requests[0])
     
     @staticmethod
-    async def _search_youtube(search_query) -> list:
+    async def _search_youtube_videos(search_query) -> list:
         """
         Searches YouTube for videos and provides their urls
 
