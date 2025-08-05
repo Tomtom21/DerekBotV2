@@ -13,14 +13,20 @@ import yt_dlp
 import logging
 import asyncio
 from models import SongRequest
+from audio_processing import normalize_audio_track
+from shared.spotify_api import SpotifyAPI
+from shared.youtube_api import YoutubeAPI
 
 
 class SongDownloader:
-    def __init__(self, spotify_api, youtube_api, output_path=".", max_workers=5):
+    def __init__(self, spotify_api: SpotifyAPI, youtube_api: YoutubeAPI, output_path=".", max_workers=5):
         self.output_path = output_path
         self.executor = ProcessPoolExecutor(max_workers=max_workers)
         self.spotify_api = spotify_api
         self.youtube_api = youtube_api
+
+        # The length a video must be under (in seconds) before it is no longer normalized (To save on processing)
+        self.NORMALIZE_DURATION_THRESHOLD = 900
 
     async def download_song_by_url(self, song_url):
         """
@@ -172,8 +178,8 @@ class SongDownloader:
                 ydl.download([song_request.url])
 
             # Normalizing the audio
-            if song_request.content_duration <= 900:
-                new_file_path = self.normalize_audio_track(new_file_path)
+            if song_request.content_duration <= self.NORMALIZE_DURATION_THRESHOLD:
+                new_file_path = normalize_audio_track(new_file_path)
 
             return new_file_path
         except Exception as e:
