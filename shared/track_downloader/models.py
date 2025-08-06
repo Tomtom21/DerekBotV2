@@ -95,7 +95,7 @@ class LinkValidator:
 
 class PlaylistItem:
     """
-    Represents an item in a playlist, typically a track.
+    Represents an item in a playlist, but not specifically a read-to-download track yet.
     """
     def __init__(self, url=None, title=None, artist=None):
         """
