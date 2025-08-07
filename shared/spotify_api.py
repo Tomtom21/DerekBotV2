@@ -5,10 +5,6 @@ import logging
 import urllib.parse
 
 
-class SpotifyAPIError(Exception):
-    pass
-
-
 class SpotifyAPI:
     def __init__(self, retry_count=2):
         self.access_token = None

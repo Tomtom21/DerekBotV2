@@ -36,3 +36,6 @@ class MediaTypeMismatchError(Exception):
 
 class MediaSourceMismatchError(Exception):
     pass
+
+class SpotifyAPIError(Exception):
+    pass

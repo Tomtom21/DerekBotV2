@@ -146,13 +146,14 @@ class SongDownloader:
         Runs the YouTube video download task in another process
 
         :param song_request: The song request to process
-        :return: The file path to the downloaded song
+        :return: The song request with the file path set
+        :raise DownloadError: If the download fails
         """
         loop = asyncio.get_event_loop()
         future = loop.run_in_executor(self.executor, self._download_youtube_song_process, song_request)
 
-        song_file_path = await future
-        return song_file_path
+        song_request = await future
+        return song_request
 
     def _download_youtube_song_process(self, song_request):
         """
@@ -182,7 +183,10 @@ class SongDownloader:
             if song_request.content_duration <= self.NORMALIZE_DURATION_THRESHOLD:
                 new_file_path = normalize_audio_track(new_file_path)
 
-            return new_file_path
+            # Setting the file path in the song request
+            song_request.file_path = new_file_path
+
+            return song_request
         except Exception as e:
             logging.warning(e)
             raise DownloadError("Failed to download Youtube video") from e

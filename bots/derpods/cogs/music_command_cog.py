@@ -3,6 +3,9 @@ from discord import app_commands, Interaction
 
 from shared.track_downloader.playlist_downloader import PlaylistDownloader
 from shared.track_downloader.song_downloader import SongDownloader
+from shared.track_downloader.errors import (
+    SpotifyAPIError,
+)
 
 import logging
 
@@ -24,9 +27,21 @@ class MusicCommandCog(commands.Cog):
         :param track_url: The URL of the track to add
         """
         await interaction.response.defer()
-        # TODO: Implement logic to add the track to the queue
-        logging.info(f"User {interaction.user.name} requested to add song: {track_url}")
-        await interaction.followup.send(f"Added track: {track_url}")
+
+        # Attempt to download the song using the song downloader
+        try:
+            song_request = await self.song_downloader.download_song_by_url(track_url)
+            logging.info(f"User {interaction.user.name} requested to add song: {track_url}")
+            await interaction.followup.send(f"Added **{song_request.title}** to the queue.")
+        except SpotifyAPIError as e:
+            logging.error(f"Spotify API error while downloading song: {e}")
+            await interaction.followup.send("`Failed to download song from Spotify.`")
+            return
+        except Exception as e:
+            logging.error(f"Error while downloading song: {e}")
+            await interaction.followup.send("`Failed to download song.`")
+            return
+        
 
     @group.command(name="addplaylist", description="Youtube or Spotify playlist URL")
     @app_commands.describe(

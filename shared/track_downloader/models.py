@@ -154,7 +154,7 @@ class SongRequest:
         :param song_url: The URL of the song
         :raise MediaTypeMismatchError: If the media type is not a track
         """
-        # Url info
+        # Content info
         self.url = song_url
         self.title = None
         self.source = None
@@ -164,6 +164,9 @@ class SongRequest:
         self.relevance_score = None
         self.source_publish_date = None
         self.content_duration = None
+
+        # The file path to the downloaded song, if downloaded
+        self.file_path = None
 
         # Verifying/Sanitizing the link, updating the source
         self.source = LinkValidator.validate_url(song_url)
