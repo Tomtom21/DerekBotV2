@@ -57,6 +57,7 @@ class SongDownloader:
 
         :param search_query: The search query
         :return: The file path to the downloaded song
+        :raise YouTubeSearchError: If no results are found for the search query
         """
         # Searching, checking if we found anything
         youtube_video_ids = await self._search_youtube_videos(search_query)
@@ -161,6 +162,7 @@ class SongDownloader:
 
         :param song_request: The song request to process
         :return: The file path to the downloaded song
+        :raise DownloadError: If the download fails
         """
         try:
             # Generating a new filename
