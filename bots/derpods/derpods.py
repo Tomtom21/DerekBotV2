@@ -25,19 +25,19 @@ OPEN_AI_KEY = os.environ.get('OPEN_AI_KEY')
 class Derpods(BaseBot, commands.Bot):
     def __init__(self, 
                  db_manager_config, 
-                 audio_file_directory, 
                  OPEN_AI_KEY,
+                 audio_file_directory="music_files", 
                  gpt_prompt_config_column_name="derek_gpt_system_prompt"):
         BaseBot.__init__(
             self,
             db_manager_config=db_manager_config,
-            audio_file_directory=audio_file_directory,
             OPEN_AI_KEY=OPEN_AI_KEY,
+            audio_file_directory=audio_file_directory,
             gpt_prompt_config_column_name=gpt_prompt_config_column_name
         )
         commands.Bot.__init__(command_prefix=None, intents=self.intents, case_insensitive=True)
 
 # Starting the bot
 if __name__ == "__main__":
-    bot = Derpods(db_manager_config, "music_files", OPEN_AI_KEY)
+    bot = Derpods(db_manager_config, OPEN_AI_KEY)
     bot.run(DISCORD_TOKEN, log_handler=None, root_logger=True)

@@ -10,8 +10,8 @@ from discord import Intents
 class BaseBot:
     def __init__(self, 
                  db_manager_config: dict, 
-                 audio_file_directory: str, 
                  OPEN_AI_KEY: str,
+                 audio_file_directory: str, 
                  gpt_prompt_config_column_name: str,
                  gpt_function_references=None, 
                  gpt_tool_definitions=None, 
