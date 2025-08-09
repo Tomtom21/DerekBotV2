@@ -1,6 +1,6 @@
 from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
-from song_downloader import SongDownloader
+from shared.track_downloader.song_downloader import SongDownloader
 
 class PlaylistDownloader:
     def __init__(self, spotify_api: SpotifyAPI, youtube_api: YoutubeAPI, song_downloader: SongDownloader):

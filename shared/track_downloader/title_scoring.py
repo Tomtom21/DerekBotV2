@@ -1,6 +1,6 @@
 from datetime import datetime, timezone, timedelta
-from models import SongRequest
-from constants import TITLE_SCORE_TWEAKS
+from .models import SongRequest
+from shared.constants import TITLE_SCORE_TWEAKS
 
 class TitleScore:
     """

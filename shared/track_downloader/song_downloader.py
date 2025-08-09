@@ -1,6 +1,6 @@
 from concurrent.futures import ProcessPoolExecutor
 import os
-from errors import (
+from .errors import (
     YouTubeSearchError,
     DownloadError,
 )
@@ -12,11 +12,11 @@ from shared.file_utils import get_random_file_id
 import yt_dlp
 import logging
 import asyncio
-from models import SongRequest
-from audio_processing import normalize_audio_track
+from .models import SongRequest
+from .audio_processing import normalize_audio_track
 from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
-from title_scoring import TitleScore
+from .title_scoring import TitleScore
 
 
 class SongDownloader:

@@ -28,6 +28,16 @@ class Derpods(BaseBot, commands.Bot):
                  OPEN_AI_KEY,
                  audio_file_directory="music_files", 
                  gpt_prompt_config_column_name="derek_gpt_system_prompt"):
+        # Setup intents
+        intents = discord.Intents.default()
+        intents.guilds = True
+        intents.guild_messages = True
+        intents.reactions = True
+        intents.members = True
+        intents.voice_states = True
+        intents.message_content = True
+
+        # Initializing our BaseBot and commands.Bot
         BaseBot.__init__(
             self,
             db_manager_config=db_manager_config,
@@ -35,7 +45,7 @@ class Derpods(BaseBot, commands.Bot):
             audio_file_directory=audio_file_directory,
             gpt_prompt_config_column_name=gpt_prompt_config_column_name
         )
-        commands.Bot.__init__(command_prefix=None, intents=self.intents, case_insensitive=True)
+        commands.Bot.__init__(command_prefix=None, intents=intents, case_insensitive=True)
 
 # Starting the bot
 if __name__ == "__main__":

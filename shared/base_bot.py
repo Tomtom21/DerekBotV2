@@ -57,13 +57,3 @@ class BaseBot:
             tool_definitions=gpt_tool_definitions,
             get_memories=gpt_get_memories
         )
-
-        # Setting up intents for permissions
-        self.intents = Intents.default()
-        self.intents.guilds = True
-        self.intents.guild_messages = True
-        self.intents.reactions = True
-        self.intents.members = True
-        self.intents.voice_states = True
-        self.intents.message_content = True
-
