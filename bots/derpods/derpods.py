@@ -37,15 +37,16 @@ class Derpods(BaseBot, commands.Bot):
         intents.voice_states = True
         intents.message_content = True
 
-        # Initializing our BaseBot and commands.Bot
-        BaseBot.__init__(
-            self,
+        # Use super().__init__ for proper multiple inheritance
+        super().__init__(
             db_manager_config=db_manager_config,
             OPEN_AI_KEY=OPEN_AI_KEY,
             audio_file_directory=audio_file_directory,
-            gpt_prompt_config_column_name=gpt_prompt_config_column_name
+            gpt_prompt_config_column_name=gpt_prompt_config_column_name,
+            command_prefix=None,
+            intents=intents,
+            case_insensitive=True
         )
-        commands.Bot.__init__(command_prefix=None, intents=intents, case_insensitive=True)
 
 # Starting the bot
 if __name__ == "__main__":

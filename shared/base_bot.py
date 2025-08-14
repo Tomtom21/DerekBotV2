@@ -15,7 +15,9 @@ class BaseBot:
                  gpt_prompt_config_column_name: str,
                  gpt_function_references=None, 
                  gpt_tool_definitions=None, 
-                 gpt_get_memories=None):
+                 gpt_get_memories=None,
+                 **kwargs):
+        super().__init__(**kwargs)
         
         # Setting up the database manager
         self.db_manager = DataManager(db_manager_config)
