@@ -23,11 +23,13 @@ DISCORD_TOKEN = os.environ.get('MUSIC_DISCORD_TOKEN')
 OPEN_AI_KEY = os.environ.get('OPEN_AI_KEY')
 
 class Derpods(BaseBot, commands.Bot):
-    def __init__(self, 
-                 db_manager_config, 
-                 OPEN_AI_KEY,
-                 audio_file_directory="music_files", 
-                 gpt_prompt_config_column_name="derek_gpt_system_prompt"):
+    def __init__(
+            self, 
+            db_manager_config, 
+            OPEN_AI_KEY,
+            audio_file_directory="music_files", 
+            gpt_prompt_config_column_name="derek_gpt_system_prompt"
+    ):
         # Setup intents
         intents = discord.Intents.default()
         intents.guilds = True
