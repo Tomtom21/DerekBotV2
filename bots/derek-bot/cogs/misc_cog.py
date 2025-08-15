@@ -78,7 +78,7 @@ class MiscGroupCog(commands.Cog):
         :param interaction: The Discord interaction object
         :param nickname: The nickname string to save
         """
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
         if len(nickname) > 32:
             logging.warning(f"{interaction.user.name} attempted to submit a nickname that was too long")
             await interaction.followup.send("`Nickname is too long. Please use 32 characters or fewer.`")
@@ -107,7 +107,7 @@ class MiscGroupCog(commands.Cog):
         :param interaction: The Discord interaction object
         :param nickname_index: The index of the nickname in the user-facing list (local db index + 1)
         """
-        await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True)
         try:
             nickname_item = self.data_manager.get_db_item_with_index(
                 table_name="random_user_nicknames",
