@@ -12,7 +12,7 @@ from shared.VCAudioManager import VCAudioManager
 class BaseBot:
     def __init__(self, 
                  db_manager_config: dict, 
-                 OPEN_AI_KEY: str,
+                 open_ai_key: str,
                  audio_file_directory: str, 
                  gpt_prompt_config_column_name: str,
                  gpt_function_references=None, 
@@ -55,7 +55,7 @@ class BaseBot:
 
         # Setting up the GPT model
         self.llm_manager = ChatLLMManager(
-            api_key=OPEN_AI_KEY,
+            api_key=open_ai_key,
             system_prompt=gpt_system_prompt,
             tool_function_references=gpt_function_references,
             tool_definitions=gpt_tool_definitions,

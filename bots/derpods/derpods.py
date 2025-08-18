@@ -41,10 +41,10 @@ class Derpods(BaseBot, commands.Bot):
     Initialization sets up APIs, downloaders, and Discord intents.
     """
     def __init__(
-            self, 
-            db_manager_config, 
-            OPEN_AI_KEY,
-            audio_file_directory="music_files", 
+            self,
+            db_config,
+            open_ai_key,
+            audio_file_directory="music_files",
             gpt_prompt_config_column_name="derek_gpt_system_prompt"
     ):
         # Setup intents
@@ -58,8 +58,8 @@ class Derpods(BaseBot, commands.Bot):
 
         # Use super().__init__ for proper multiple inheritance
         super().__init__(
-            db_manager_config=db_manager_config,
-            OPEN_AI_KEY=OPEN_AI_KEY,
+            db_manager_config=db_config,
+            open_ai_key=open_ai_key,
             audio_file_directory=audio_file_directory,
             gpt_prompt_config_column_name=gpt_prompt_config_column_name,
             command_prefix=None,
