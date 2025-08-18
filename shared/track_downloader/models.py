@@ -61,7 +61,7 @@ class LinkValidator:
     @staticmethod
     def classify_link_type(source: str, url: str):
         """
-        Determines whether a link is a track, playlist, or album. Provides a list of all detected types in the URL
+        Determines whether a link is a song, playlist, or album. Provides a list of all detected types in the URL
 
         :param source: The source of the link, e.g. 'spotify' or 'youtube'
         :param url: The URL to classify
@@ -78,12 +78,12 @@ class LinkValidator:
                 detected_types.add("playlist")
 
             if "v" in parsed_url["query"]:
-                detected_types.add("track")
+                detected_types.add("song")
         elif source == "spotify":
             url_path = parsed_url["path"].strip("/").split("/")
             if len(url_path) >= 2:
                 resource_type = url_path[0]
-                if resource_type in {"track", "playlist", "album"}:
+                if resource_type in {"song", "playlist", "album"}:
                     detected_types.add(resource_type)
 
         # Catching if we got a basic link with no information
@@ -95,7 +95,7 @@ class LinkValidator:
 
 class PlaylistItem:
     """
-    Represents an item in a playlist, but not specifically a read-to-download track yet.
+    Represents an item in a playlist, but not specifically a ready-to-download song yet.
     """
     def __init__(self, url=None, title=None, artist=None):
         """
@@ -145,14 +145,14 @@ class PlaylistRequest:
 
 class SongRequest:
     """
-    Represents a request for a song/track, including its URL and metadata.
+    Represents a request for a song, including its URL and metadata.
     """
     def __init__(self, song_url):
         """
         Initializes a SongRequest.
 
         :param song_url: The URL of the song
-        :raise MediaTypeMismatchError: If the media type is not a track
+        :raise MediaTypeMismatchError: If the media type is not a song
         """
         # Content info
         self.url = song_url
@@ -177,4 +177,6 @@ class SongRequest:
         if "song" in media_type_list:
             self.media_type = next(iter(media_type_list))
         else:
-            raise MediaTypeMismatchError("The provided media type does not match what is required for the a track")
+            raise MediaTypeMismatchError(
+                "The provided media type does not match what is required for a song"
+            )
