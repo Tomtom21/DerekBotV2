@@ -1,8 +1,6 @@
 import os
 import logging
 
-from discord import Intents
-
 from shared.ChatLLMManager import ConversationCache, ChatLLMManager
 from shared.data_manager import DataManager
 from shared.cred_utils import save_google_service_file
