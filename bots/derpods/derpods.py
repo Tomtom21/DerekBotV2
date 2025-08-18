@@ -100,7 +100,7 @@ class Derpods(BaseBot, commands.Bot):
         """
         Called when the bot is ready and connected to Discord.
         """
-        logging.info(f"Bot ready event triggered. Logged in as {self.user}")
+        logging.info("Bot ready event triggered. Logged in as %s", self.user)
 
 # Starting the bot
 if __name__ == "__main__":
