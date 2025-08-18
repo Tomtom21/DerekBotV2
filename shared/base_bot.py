@@ -18,15 +18,15 @@ class BaseBot:
                  gpt_get_memories=None,
                  **kwargs):
         super().__init__(**kwargs)
-        
-        # Setting up the database manager
-        self.db_manager = DataManager(db_manager_config)
 
         # Setting up logging
         logging.basicConfig(
             level=logging.INFO,
             format='%(asctime)s [%(levelname)s]: %(message)s'
         )
+        
+        # Setting up the database manager
+        self.db_manager = DataManager(db_manager_config)
 
         # Setting up the google credentials file
         save_google_service_file()
