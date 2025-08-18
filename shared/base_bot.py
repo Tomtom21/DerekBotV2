@@ -1,3 +1,8 @@
+"""
+The BaseBot module provides a foundational class for Discord bots with
+database management, TTS, audio management, and GPT integration already set up.
+"""
+
 import os
 import logging
 
@@ -8,13 +13,22 @@ from shared.TTSManager import TTSManager
 from shared.VCAudioManager import VCAudioManager
 
 class BaseBot:
-    def __init__(self, 
-                 db_manager_config: dict, 
+    """
+    Base class for Discord bots. Sets up support for:
+    - Database management via DataManager
+    - Text-to-Speech (TTS) and voice channel audio management
+    - Conversation caching
+    - GPT-based chat and tool integration
+
+    Initialization sets up all required managers and services.
+    """
+    def __init__(self,
+                 db_manager_config: dict,
                  open_ai_key: str,
-                 audio_file_directory: str, 
+                 audio_file_directory: str,
                  gpt_prompt_config_column_name: str,
-                 gpt_function_references=None, 
-                 gpt_tool_definitions=None, 
+                 gpt_function_references=None,
+                 gpt_tool_definitions=None,
                  gpt_get_memories=None,
                  **kwargs):
         super().__init__(**kwargs)
@@ -24,7 +38,7 @@ class BaseBot:
             level=logging.INFO,
             format='%(asctime)s [%(levelname)s]: %(message)s'
         )
-        
+
         # Setting up the database manager
         self.db_manager = DataManager(db_manager_config)
 
