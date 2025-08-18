@@ -23,6 +23,7 @@ class BaseBot:
     Initialization sets up all required managers and services.
     """
     def __init__(self,
+                 *,
                  db_manager_config: dict,
                  open_ai_key: str,
                  audio_file_directory: str,
