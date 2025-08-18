@@ -1,3 +1,7 @@
+"""
+This is the Derpods Discord bot, which provides music playback for Discord servers.
+"""
+
 import os
 import logging
 
@@ -25,6 +29,17 @@ DISCORD_TOKEN = os.environ.get('MUSIC_DISCORD_TOKEN')
 OPEN_AI_KEY = os.environ.get('OPEN_AI_KEY')
 
 class Derpods(BaseBot, commands.Bot):
+    """
+    Discord bot for music playback and management in Discord servers.
+
+    Derpods extends BaseBot and commands.Bot, providing:
+    - Music playback via Spotify and YouTube integration
+    - Downloading individual songs and playlists
+    - Custom GPT-based chat interactions
+    - Command handling through Discord's app commands and cogs
+
+    Initialization sets up APIs, downloaders, and Discord intents.
+    """
     def __init__(
             self, 
             db_manager_config, 
