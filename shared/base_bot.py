@@ -1,11 +1,13 @@
+import os
+import logging
+
+from discord import Intents
+
 from shared.ChatLLMManager import ConversationCache, ChatLLMManager
 from shared.data_manager import DataManager
-import logging
 from shared.cred_utils import save_google_service_file
-import os
 from shared.TTSManager import TTSManager
 from shared.VCAudioManager import VCAudioManager
-from discord import Intents
 
 class BaseBot:
     def __init__(self, 

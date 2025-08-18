@@ -1,19 +1,17 @@
 import os
 import logging
+
+import discord
+from discord.ext import commands, tasks
+from discord import app_commands
+
+from cogs.music_command_cog import MusicCommandCog
 from shared.base_bot import BaseBot
 from shared.ChatLLMManager import ChatLLMManager
 from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
 from shared.track_downloader.song_downloader import SongDownloader
 from shared.track_downloader.playlist_downloader import PlaylistDownloader
-
-# Discord imports
-import discord
-from discord.ext import commands, tasks
-from discord import app_commands
-
-# Cogs
-from cogs.music_command_cog import MusicCommandCog
 
 # DB manager config
 db_manager_config = {
