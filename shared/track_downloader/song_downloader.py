@@ -151,12 +151,19 @@ class SongDownloader:
         :raise DownloadError: If the download fails
         """
         loop = asyncio.get_event_loop()
-        future = loop.run_in_executor(self.executor, self._download_youtube_song_process, song_request)
+        future = loop.run_in_executor(
+            self.executor, 
+            self._download_youtube_song_process,
+            self.output_path,
+            self.NORMALIZE_DURATION_THRESHOLD,
+            song_request
+        )
 
         song_request = await future
         return song_request
 
-    def _download_youtube_song_process(self, song_request):
+    @staticmethod
+    def _download_youtube_song_process(output_path, normalize_duration_threshold, song_request):
         """
         Downloads a YouTube video provided url. This is our separate process
 
@@ -166,8 +173,8 @@ class SongDownloader:
         """
         try:
             # Generating a new filename
-            new_file_id = get_random_file_id(self.output_path)
-            new_file_path = os.path.join(self.output_path, new_file_id + ".m4a")
+            new_file_id = get_random_file_id(output_path)
+            new_file_path = os.path.join(output_path, f"{new_file_id}.m4a")
 
             # Downloading the song
             ydl_opts = {
@@ -182,8 +189,8 @@ class SongDownloader:
                 ydl.download([song_request.url])
 
             # Normalizing the audio
-            if song_request.content_duration <= self.NORMALIZE_DURATION_THRESHOLD:
-                new_file_path = normalize_audio_track(new_file_path)
+            # if song_request.content_duration <= normalize_duration_threshold:
+            #     new_file_path = normalize_audio_track(new_file_path)
 
             # Setting the file path in the song request
             song_request.file_path = new_file_path
