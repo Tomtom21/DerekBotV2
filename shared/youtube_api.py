@@ -1,6 +1,4 @@
 """
-youtube_api.py
-
 This module provides a basic wrapper for initializing the YoutubeAPI.
 Though this isn't necessary at the moment, it provides consistency and room for growth.
 """
