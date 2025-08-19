@@ -17,7 +17,7 @@ from .audio_processing import normalize_audio_track
 from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
 from .title_scoring import TitleScore
-from .utils import extract_yt_video_id
+from .utils import extract_yt_video_id, get_text_similarity
 
 
 class SongDownloader:
@@ -86,7 +86,7 @@ class SongDownloader:
                 item['contentDetails']['duration']).total_seconds()
 
             # Determining the relevance score
-            potential_song_requests[idx].relevance_score = self.get_text_similarity(
+            potential_song_requests[idx].relevance_score = get_text_similarity(
                 potential_song_requests[idx].title,
                 search_query
             )
@@ -95,7 +95,7 @@ class SongDownloader:
             if " - " in search_query:
                 split_query = search_query.split(" - ")
                 reversed_query = f"{split_query[1]} - {split_query[0]}"
-                reverse_score = self.get_text_similarity(
+                reverse_score = get_text_similarity(
                     potential_song_requests[idx].title,
                     reversed_query
                 )
