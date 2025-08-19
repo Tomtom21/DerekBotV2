@@ -1,8 +1,10 @@
-from pydub.audio_segment import AudioSegment
-from pathlib import Path
-import logging
 import os
-from .errors import AudioProcessingError
+import logging
+from pathlib import Path
+
+from pydub.audio_segment import AudioSegment
+from shared.track_downloader.errors import AudioProcessingError
+
 
 def match_target_amplitude(sound: AudioSegment, target_dbfs):
         """
