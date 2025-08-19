@@ -7,15 +7,15 @@ from shared.track_downloader.errors import AudioProcessingError
 
 
 def match_target_amplitude(sound: AudioSegment, target_dbfs):
-        """
-        Changes a sound's dbfs to match the target_dbfs value
+    """
+    Changes a sound's dbfs to match the target_dbfs value
 
-        :param sound: The sound to apply to this to
-        :param target_dbfs: The target dbfs value
-        :return: The new sound with the gain applied
-        """
-        change_in_dbfs = target_dbfs - sound.dBFS
-        return sound.apply_gain(change_in_dbfs)
+    :param sound: The sound to apply to this to
+    :param target_dbfs: The target dbfs value
+    :return: The new sound with the gain applied
+    """
+    change_in_dbfs = target_dbfs - sound.dBFS
+    return sound.apply_gain(change_in_dbfs)
 
 def normalize_audio_track(audio_path):
     """
