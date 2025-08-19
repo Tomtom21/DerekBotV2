@@ -17,6 +17,7 @@ from .audio_processing import normalize_audio_track
 from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
 from .title_scoring import TitleScore
+from .utils import extract_yt_video_id
 
 
 class SongDownloader:
@@ -138,6 +139,22 @@ class SongDownloader:
         :return: The file path to the downloaded song
         """
         if song_request.source == "youtube":
+            # We aren't going to be running the query download, so we need to get the video info here
+            try:
+                with yt_dlp.YoutubeDL({"quiet": True}) as ydl:
+                    video_info = ydl.extract_info(song_request.url, download = False)
+
+                # Checking if our video is live. We can't play those
+                if video_info.get("is_live", False):
+                    raise DownloadError("Cannot download live videos.")
+                
+                # Setting the song request info
+                song_request.title = video_info.get('title', 'Unknown Title')
+                song_request.content_duration = video_info.get('duration')
+            except Exception as e:
+                logging.warning(e)
+                raise DownloadError("Failed to get video information") from e
+
             return await self._download_youtube_song(song_request)
         elif song_request.source == "spotify":
             return await self._download_spotify_song(song_request)
@@ -189,8 +206,8 @@ class SongDownloader:
                 ydl.download([song_request.url])
 
             # Normalizing the audio
-            # if song_request.content_duration <= normalize_duration_threshold:
-            #     new_file_path = normalize_audio_track(new_file_path)
+            if song_request.content_duration <= normalize_duration_threshold:
+                new_file_path = normalize_audio_track(new_file_path)
 
             # Setting the file path in the song request
             song_request.file_path = new_file_path
