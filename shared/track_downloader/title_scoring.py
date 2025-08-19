@@ -1,5 +1,6 @@
 from datetime import datetime, timezone, timedelta
-from .models import SongRequest
+
+from shared.track_downloader.models import SongRequest
 from shared.constants import TITLE_SCORE_TWEAKS
 
 class TitleScore:

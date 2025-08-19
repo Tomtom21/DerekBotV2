@@ -1,5 +1,5 @@
-from .errors import URLValidationError, URLClassificationError, MediaTypeMismatchError
-from .utils import parse_url_info
+from shared.track_downloader.errors import URLValidationError, URLClassificationError, MediaTypeMismatchError
+from shared.track_downloader.utils import parse_url_info
 
 class LinkValidator:
     """
