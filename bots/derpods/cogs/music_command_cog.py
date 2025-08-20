@@ -1,3 +1,5 @@
+import logging
+
 from discord.ext import commands
 from discord import app_commands, Interaction
 
@@ -6,8 +8,6 @@ from shared.track_downloader.song_downloader import SongDownloader
 from shared.track_downloader.errors import (
     SpotifyAPIError,
 )
-
-import logging
 
 class MusicCommandCog(commands.Cog):
     def __init__(self, bot: commands.Bot, song_downloader: SongDownloader, playlist_downloader: PlaylistDownloader):
