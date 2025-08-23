@@ -10,12 +10,20 @@ from shared.track_downloader.errors import (
 )
 
 class MusicCommandCog(commands.Cog):
-    def __init__(self, bot: commands.Bot, song_downloader: SongDownloader, playlist_downloader: PlaylistDownloader):
+    def __init__(
+            self,
+            bot: commands.Bot, 
+            song_downloader: SongDownloader, 
+            playlist_downloader: PlaylistDownloader
+    ):
         self.bot = bot
         self.song_downloader = song_downloader
         self.playlist_downloader = playlist_downloader
 
-    group = app_commands.Group(name="music", description="Commands for managing tracks, playlists, and the queue")
+    group = app_commands.Group(
+        name="music", 
+        description="Commands for managing tracks, playlists, and the queue"
+    )
 
     @group.command(name="addsong", description="Add a song to the queue by URL (HIGH PRIORITY)")
     @app_commands.describe(track_url="Youtube or Spotify track URL")
