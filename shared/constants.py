@@ -114,3 +114,7 @@ TITLE_SCORE_TWEAKS = {
     "cover": -0.2,
     "#shorts": -0.2
 }
+
+# The length a video must be under (in seconds) before it is no longer normalized
+# This saves on processing for very long tracks
+NORMALIZE_DURATION_THRESHOLD = 900

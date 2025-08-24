@@ -20,6 +20,7 @@ from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
 from shared.track_downloader.title_scoring import TitleScore
 from shared.track_downloader.utils import get_text_similarity
+from shared.constants import NORMALIZE_DURATION_THRESHOLD
 
 
 class SongDownloader:
@@ -28,9 +29,6 @@ class SongDownloader:
         self.executor = ProcessPoolExecutor(max_workers=max_workers)
         self.spotify_api = spotify_api
         self.youtube_api = youtube_api
-
-        # The length a video must be under (in seconds) before it is no longer normalized (To save on processing)
-        self.NORMALIZE_DURATION_THRESHOLD = 900
 
     async def download_song_by_url(self, song_url):
         """
@@ -174,7 +172,6 @@ class SongDownloader:
             self.executor, 
             self._download_youtube_song_process,
             self.output_path,
-            self.NORMALIZE_DURATION_THRESHOLD,
             song_request
         )
 
@@ -182,7 +179,7 @@ class SongDownloader:
         return song_request
 
     @staticmethod
-    def _download_youtube_song_process(output_path, normalize_duration_threshold, song_request):
+    def _download_youtube_song_process(output_path, song_request):
         """
         Downloads a YouTube video provided url. This is our separate process
 
@@ -208,7 +205,7 @@ class SongDownloader:
                 ydl.download([song_request.url])
 
             # Normalizing the audio
-            if song_request.content_duration <= normalize_duration_threshold:
+            if song_request.content_duration <= NORMALIZE_DURATION_THRESHOLD:
                 new_file_path = normalize_audio_track(new_file_path)
 
             # Setting the file path in the song request
