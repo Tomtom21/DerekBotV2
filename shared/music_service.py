@@ -1,6 +1,7 @@
 import logging
+from typing import Optional
 
-from shared.track_downloader.song_downloader import SongDownloader
+from shared.track_downloader.song_downloader import SongDownloader, SongRequest
 from shared.VCAudioManager import VCAudioManager
 
 class MusicService:
@@ -13,7 +14,7 @@ class MusicService:
             song_url: str,
             voice_channel,
             high_priority: bool = None
-    ):
+    ) -> Optional[SongRequest]:
         """
         Downloads a song using the SongDownloader and adds it to the VCAudioManager's queue.
 
