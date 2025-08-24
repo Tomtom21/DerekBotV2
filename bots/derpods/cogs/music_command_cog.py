@@ -27,7 +27,7 @@ class MusicCommandCog(commands.Cog):
 
     @group.command(name="addsong", description="Add a song to the queue by URL (HIGH PRIORITY)")
     @app_commands.describe(track_url="Youtube or Spotify track URL")
-    async def add_song(self, interaction: Interaction, track_url: str):
+    async def add_song(self, interaction: Interaction, track_url: str): #TODO: Change this to song_url
         """
         Adds a song to the queue using the provided track URL.
 
