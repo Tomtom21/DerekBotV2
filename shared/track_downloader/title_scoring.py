@@ -9,7 +9,8 @@ class TitleScore:
     For instance, a result with "lyric" adds significant value, while "vocals only" removes a lot of value.
     """
 
-    def get_relevance_score(self, song_request: SongRequest):
+    @staticmethod
+    def get_relevance_score(song_request: SongRequest):
         """
         Generates a new relevance score for a song request base on title contents
 
