@@ -26,20 +26,20 @@ class MusicCommandCog(commands.Cog):
     )
 
     @group.command(name="addsong", description="Add a song to the queue by URL (HIGH PRIORITY)")
-    @app_commands.describe(track_url="Youtube or Spotify track URL")
-    async def add_song(self, interaction: Interaction, track_url: str): #TODO: Change this to song_url
+    @app_commands.describe(song_url="Youtube or Spotify track URL")
+    async def add_song(self, interaction: Interaction, song_url: str):
         """
         Adds a song to the queue using the provided track URL.
 
         :param interaction: The Discord interaction object
-        :param track_url: The URL of the track to add
+        :param song_url: The URL of the track to add
         """
         await interaction.response.defer()
 
         # Attempt to download the song using the song downloader
         try:
-            song_request = await self.song_downloader.download_song_by_url(track_url)
-            logging.info(f"User {interaction.user.name} requested to add song: {track_url}")
+            song_request = await self.song_downloader.download_song_by_url(song_url)
+            logging.info(f"User {interaction.user.name} requested to add song: {song_url}")
             await interaction.followup.send(f"Added **{song_request.title}** to the queue.")
         except SpotifyAPIError as e:
             logging.error(f"Spotify API error while downloading song: {e}")
