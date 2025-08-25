@@ -8,17 +8,16 @@ from shared.track_downloader.song_downloader import SongDownloader
 from shared.track_downloader.errors import (
     SpotifyAPIError,
 )
+from shared.music_service import MusicService, NotInVoiceChannelError
 
 class MusicCommandCog(commands.Cog):
     def __init__(
             self,
             bot: commands.Bot,
-            song_downloader: SongDownloader,
-            playlist_downloader: PlaylistDownloader
+            music_service: MusicService
     ):
         self.bot = bot
-        self.song_downloader = song_downloader
-        self.playlist_downloader = playlist_downloader
+        self.music_service = music_service
 
     group = app_commands.Group(
         name="music",
@@ -36,9 +35,19 @@ class MusicCommandCog(commands.Cog):
         """
         await interaction.response.defer()
 
+        # Checking if the user is in a voice channel
+        if not interaction.user.voice or not interaction.user.voice.channel:
+            logging.warning(f"User {interaction.user.name} tried to add a song without being in a voice channel.")
+            await interaction.followup.send("`You must be in a voice channel to use this command.`")
+            return
+
         # Attempt to download the song using the song downloader
         try:
-            song_request = await self.song_downloader.download_song_by_url(song_url)
+            song_request = await self.music_service.download_and_queue_song(
+                song_url,
+                interaction.user.voice.channel,
+                high_priority=True
+            )
             logging.info(f"User {interaction.user.name} requested to add song: {song_url}")
             await interaction.followup.send(f"Added **{song_request.title}** to the queue.")
         except SpotifyAPIError as e:

@@ -16,6 +16,7 @@ from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
 from shared.track_downloader.song_downloader import SongDownloader
 from shared.track_downloader.playlist_downloader import PlaylistDownloader
+from shared.music_service import MusicService
 
 # DB manager config
 db_manager_config = {
@@ -80,6 +81,10 @@ class Derpods(BaseBot, commands.Bot):
             youtube_api=self.youtube_api,
             song_downloader=self.song_downloader
         )
+        self.music_service = MusicService(
+            song_downloader=self.song_downloader,
+            audio_manager=self.audio_manager
+        )
 
         logging.info("Derpods instance initialized")
 
@@ -90,8 +95,7 @@ class Derpods(BaseBot, commands.Bot):
         logging.info("Adding cogs...")
         await self.add_cog(MusicCommandCog(
             self,
-            song_downloader=self.song_downloader,
-            playlist_downloader=self.playlist_downloader
+            music_service=self.music_service
         ))
         await self.tree.sync()
         logging.info("Synced commands and added all cogs")

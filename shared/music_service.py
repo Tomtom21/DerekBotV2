@@ -4,6 +4,11 @@ from typing import Optional
 from shared.track_downloader.song_downloader import SongDownloader, SongRequest
 from shared.VCAudioManager import VCAudioManager
 
+class NotInVoiceChannelError(Exception):
+    """Raised when a user is not in a voice channel but tries to issue a music command."""
+    pass
+
+
 class MusicService:
     def __init__(self, song_downloader: SongDownloader, audio_manager: VCAudioManager):
         self.song_downloader = song_downloader
