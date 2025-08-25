@@ -29,7 +29,7 @@ from ai_tools.weather_tools import get_spc_outlook_text, get_spc_outlook_image, 
 # Discord imports
 import discord
 from discord.ext import commands, tasks
-from discord import app_commands
+from discord import app_commands, Member
 
 # Setting up logging
 logging.basicConfig(
@@ -169,8 +169,8 @@ class DerekBot(commands.Bot):
         self.guild = None
         self.guild_id = None
         self.main_channel_id = None
-        self.vc_activity_channel_id = None
-        self.joins_leaves_channel_id = None
+        self.vc_activity_channel_name = None
+        self.joins_leaves_channel_name = None
         self.vc_text_channel_id = None
         self.reactions_list = []
 
@@ -230,8 +230,8 @@ class DerekBot(commands.Bot):
             return next((item[full_column_name] for item in config_data if item["config_name"] == config_name), None)
 
         self.main_channel_id = get_config_value("main_channel_id", "int")
-        self.vc_activity_channel_id = get_config_value("vc_activity_channel_id", "int")
-        self.joins_leaves_channel_id = get_config_value("joins_leaves_channel_id", "int")
+        self.vc_activity_channel_name = get_config_value("vc_activity_channel_name", "text")
+        self.joins_leaves_channel_name = get_config_value("joins_leaves_channel_name", "text")
         self.vc_text_channel_id = get_config_value("vc_text_channel_id", "int")
         self.guild_id = get_config_value("guild_id", "int")
         logging.info("Config data from DB set")
@@ -439,7 +439,7 @@ class DerekBot(commands.Bot):
             json_data={}
         )
 
-    async def on_voice_state_update(self, member, before, after):
+    async def on_voice_state_update(self, member: Member, before, after):
         """
         Sends a message in the voice activity channel when a member joins, leaves, or moves voice channels.
 
@@ -447,31 +447,31 @@ class DerekBot(commands.Bot):
         :param before: The channel they were in before, None if they were not
         :param after: The channel they are in after, None if they are not
         """
-        vc_activity_channel = self.get_channel(self.vc_activity_channel_id)
+        vc_activity_channel = discord.utils.get(member.guild.text_channels, name=self.vc_activity_channel_name)
 
-        # If we have found the vc-activity channel
+        # If we have found the vc-activity channel in the guild
         if vc_activity_channel:
             # Determining whether someone joined, left, or moved voice channels
             if not before.channel and after.channel:
-                logging.info(f"{member.display_name} joined {after.channel.name}")
+                logging.info(f"VC: {member.display_name} joined {after.channel.name}")
                 await vc_activity_channel.send(
                     f"🟩 ***{member.display_name}** joined {after.channel.name}.*"
                 )
             elif before.channel and not after.channel:
-                logging.info(f"{member.display_name} left {before.channel.name}")
+                logging.info(f"VC: {member.display_name} left {before.channel.name}")
                 await vc_activity_channel.send(
                     f"🟥 ***{member.display_name}** left {before.channel.name}.*"
                 )
             elif before.channel and after.channel:
                 if before.channel.id != after.channel.id:
-                    logging.info(f"{member.display_name} moved from {before.channel.name} to {after.channel.name}")
+                    logging.info(f"VC: {member.display_name} moved from {before.channel.name} to {after.channel.name}")
                     await vc_activity_channel.send(
                         f"🔀 ***{member.display_name}** joined {after.channel.name} from {before.channel.name}.*"
                     )
         else:
-            logging.warning("Unable to find vc-activity channel. Not sending voice activity.")
+            logging.warning(f"Unable to find vc-activity channel '{self.vc_activity_channel_name}' in guild '{member.guild.name}'. Not sending voice activity.")
 
-    async def on_member_join(self, member):
+    async def on_member_join(self, member: Member):
         """
         Called when a user joins the server, logs the occurrence.
 
@@ -479,18 +479,18 @@ class DerekBot(commands.Bot):
         """
         logging.info(f"{member.name} has joined the server (ID: {member.id})")
 
-    async def on_member_remove(self, member):
+    async def on_member_remove(self, member: Member):
         """
         Called when a member leaves the server, sends a message announcing who left.
 
         :param member: The user who left
         """
         logging.info(f"{member.name} has left the server (ID: {member.id})")
-        joins_leaves_channel = self.get_channel(self.joins_leaves_channel_id)
+        joins_leaves_channel = discord.utils.get(member.guild.text_channels, name=self.joins_leaves_channel_name)
         if joins_leaves_channel:
             await joins_leaves_channel.send(f"<@{member.id}> has left the server")
         else:
-            logging.warning("Joins/leaves channel not found, cannot announce member leave.")
+            logging.warning(f"Joins/leaves channel '{self.joins_leaves_channel_name}' not found in guild '{member.guild.name}', cannot announce member leave.")
 
     @staticmethod
     def replace_emoji_tags(text):
