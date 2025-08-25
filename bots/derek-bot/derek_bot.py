@@ -453,18 +453,18 @@ class DerekBot(commands.Bot):
         if vc_activity_channel:
             # Determining whether someone joined, left, or moved voice channels
             if not before.channel and after.channel:
-                logging.info(f"{member.display_name} joined {after.channel.name}")
+                logging.info(f"VC: {member.display_name} joined {after.channel.name}")
                 await vc_activity_channel.send(
                     f"🟩 ***{member.display_name}** joined {after.channel.name}.*"
                 )
             elif before.channel and not after.channel:
-                logging.info(f"{member.display_name} left {before.channel.name}")
+                logging.info(f"VC: {member.display_name} left {before.channel.name}")
                 await vc_activity_channel.send(
                     f"🟥 ***{member.display_name}** left {before.channel.name}.*"
                 )
             elif before.channel and after.channel:
                 if before.channel.id != after.channel.id:
-                    logging.info(f"{member.display_name} moved from {before.channel.name} to {after.channel.name}")
+                    logging.info(f"VC: {member.display_name} moved from {before.channel.name} to {after.channel.name}")
                     await vc_activity_channel.send(
                         f"🔀 ***{member.display_name}** joined {after.channel.name} from {before.channel.name}.*"
                     )
