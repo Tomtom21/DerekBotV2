@@ -24,6 +24,15 @@ class MusicCommandCog(commands.Cog):
         description="Commands for managing tracks, playlists, and the queue"
     )
 
+    async def ensure_in_voice_channel(self, interaction: Interaction):
+        """
+        Ensures that the user is in a voice channel before proceeding with a music command.
+        :param interaction: The Discord interaction object
+        :raises NotInVoiceChannelError: If the user is not in a voice channel
+        """
+        if not interaction.user.voice or not interaction.user.voice.channel:
+            raise NotInVoiceChannelError
+
     @group.command(name="addsong", description="Add a song to the queue by URL (HIGH PRIORITY)")
     @app_commands.describe(song_url="Youtube or Spotify track URL")
     async def add_song(self, interaction: Interaction, song_url: str):
@@ -35,10 +44,11 @@ class MusicCommandCog(commands.Cog):
         """
         await interaction.response.defer()
 
-        # Checking if the user is in a voice channel
-        if not interaction.user.voice or not interaction.user.voice.channel:
-            logging.warning(f"User {interaction.user.name} tried to add a song without being in a voice channel.")
-            await interaction.followup.send("`You must be in a voice channel to use this command.`")
+        # Ensure the user is in a voice channel
+        try:
+            await self.ensure_in_voice_channel(interaction)
+        except NotInVoiceChannelError as error:
+            await error.handle_error(interaction, requires_followup=True)
             return
 
         # Attempt to download the song using the song downloader
