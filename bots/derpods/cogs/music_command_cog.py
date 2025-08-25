@@ -12,8 +12,8 @@ from shared.track_downloader.errors import (
 class MusicCommandCog(commands.Cog):
     def __init__(
             self,
-            bot: commands.Bot, 
-            song_downloader: SongDownloader, 
+            bot: commands.Bot,
+            song_downloader: SongDownloader,
             playlist_downloader: PlaylistDownloader
     ):
         self.bot = bot
@@ -21,7 +21,7 @@ class MusicCommandCog(commands.Cog):
         self.playlist_downloader = playlist_downloader
 
     group = app_commands.Group(
-        name="music", 
+        name="music",
         description="Commands for managing tracks, playlists, and the queue"
     )
 
@@ -49,7 +49,7 @@ class MusicCommandCog(commands.Cog):
             logging.error(f"Error while downloading song: {e}")
             await interaction.followup.send("`Failed to download song.`")
             return
-        
+
 
     @group.command(name="addplaylist", description="Youtube or Spotify playlist URL")
     @app_commands.describe(
