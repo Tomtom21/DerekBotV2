@@ -172,9 +172,9 @@ class VCAudioManager:
                 # Delete audio file after playback
                 try:
                     os.remove(self.current_audio_item.audio_file_path)
-                    logging.info(f"Deleted TTS audio file: {self.current_audio_item.audio_file_path}")
+                    logging.info(f"Deleted audio file: {self.current_audio_item.audio_file_path}")
                 except Exception as e:
-                    logging.error(f"Failed to delete TTS audio file: {e}")                    
+                    logging.error(f"Failed to delete audio file: {e}")                    
 
                 self.current_audio_item = None
 

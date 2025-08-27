@@ -61,12 +61,16 @@ class SongDownloader:
         :raise YouTubeSearchError: If no results are found for the search query
         """
         # Searching, checking if we found anything
+        logging.info(f"Searching YouTube for: {search_query}")
         youtube_video_ids = await self._search_youtube_videos(search_query)
         if not youtube_video_ids:
             raise YouTubeSearchError("Failed to find results for the YouTube query.")
+        
+        logging.info(f"Found {len(youtube_video_ids)} results on YouTube for query: {search_query}")
         youtube_video_ids = youtube_video_ids[:50]
 
         # doing YouTube search to get info on video ids
+        logging.info(f"Retrieving YouTube video details for {len(youtube_video_ids)} videos")
         youtube_search_results = self.youtube_api.youtube_api.videos().list(
             part="snippet,contentDetails",
             id=",".join(youtube_video_ids)
@@ -79,6 +83,7 @@ class SongDownloader:
         ]
 
         # Setting song request info generating an similarity score, avg if possible
+        logging.info(f"Scoring {len(potential_song_requests)} potential song matches")
         for (idx, item) in enumerate(youtube_search_results["items"]):
             potential_song_requests[idx].title = item["snippet"]["title"]
             potential_song_requests[idx].source_publish_date = item["snippet"]["publishedAt"]
@@ -105,7 +110,7 @@ class SongDownloader:
 
         # Getting the relevance scores to better match each video
         for song_request in potential_song_requests:
-            song_request.relevance_score = TitleScore.get_relevance_score(song_request)
+            song_request.relevance_score = TitleScore.get_relevance_score(song_request) #TODO: Make this update relevance score
 
         # Sorting the list
         potential_song_requests.sort(key=lambda obj: obj.relevance_score, reverse=True)
@@ -167,6 +172,7 @@ class SongDownloader:
         :return: The song request with the file path set
         :raise DownloadError: If the download fails
         """
+        logging.info(f"Starting download attempt for URL: {song_request.url}")
         loop = asyncio.get_event_loop()
         future = loop.run_in_executor(
             self.executor, 
@@ -193,6 +199,7 @@ class SongDownloader:
             new_file_path = os.path.join(output_path, f"{new_file_id}.m4a")
 
             # Downloading the song
+            logging.info(f"Starting audio download for url: {song_request.url}")
             ydl_opts = {
                 'quiet': True,
                 'format': 'bestaudio/best',
@@ -206,6 +213,7 @@ class SongDownloader:
 
             # Normalizing the audio
             if song_request.content_duration <= NORMALIZE_DURATION_THRESHOLD:
+                logging.info(f"Normalizing audio for track: {song_request.title}")
                 new_file_path = normalize_audio_track(new_file_path)
 
             # Setting the file path in the song request
@@ -224,6 +232,7 @@ class SongDownloader:
         :return: The file path to the downloaded song
         """
         # Getting info about the song
+        logging.info(f"Retrieving Spotify track information for URL: {song_request.url}")
         song_id = self.spotify_api.get_spotify_item_id(song_request.url)
         song_info = self.spotify_api.api_call(
             endpoint_template="tracks/{track_id}",
