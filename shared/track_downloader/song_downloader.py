@@ -67,7 +67,7 @@ class SongDownloader:
         youtube_video_ids = youtube_video_ids[:50]
 
         # doing YouTube search to get info on video ids
-        youtube_search_results = self.youtube_api.videos().list(
+        youtube_search_results = self.youtube_api.youtube_api.videos().list(
             part="snippet,contentDetails",
             id=",".join(youtube_video_ids)
         ).execute()
