@@ -42,21 +42,17 @@ class MusicService:
         :param song_url: The URL of the song to download and queue
         :return: The SongRequest object if successful, None otherwise
         """
-        try:
-            # Download the song
-            song_request: SongRequest = await self.song_downloader.download_song_by_url(song_url)
-            logging.info(f"Downloaded song: {song_request.title}")
+        # Download the song
+        song_request: SongRequest = await self.song_downloader.download_song_by_url(song_url)
+        logging.info(f"Downloaded song: {song_request.title}")
 
-            # Add the downloaded song to the audio manager's queue
-            if high_priority is not None:
-                await self.audio_manager.add_to_queue(
-                    song_request.file_path, voice_channel, high_priority=high_priority
-                )
-            else:
-                await self.audio_manager.add_to_queue(song_request, voice_channel)
-            logging.info(f"Added song to queue: {song_request.title}")
+        # Add the downloaded song to the audio manager's queue
+        if high_priority is not None:
+            await self.audio_manager.add_to_queue(
+                song_request.file_path, voice_channel, high_priority=high_priority
+            )
+        else:
+            await self.audio_manager.add_to_queue(song_request, voice_channel)
+        logging.info(f"Added song to queue: {song_request.title}")
 
-            return song_request
-        except Exception as e:
-            logging.error(f"Error downloading and queuing song from URL {song_url}: {e}")
-            return None
+        return song_request
