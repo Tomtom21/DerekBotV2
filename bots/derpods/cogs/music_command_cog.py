@@ -7,6 +7,8 @@ from shared.track_downloader.playlist_downloader import PlaylistDownloader
 from shared.track_downloader.song_downloader import SongDownloader
 from shared.track_downloader.errors import (
     SpotifyAPIError,
+    URLClassificationError,
+    MediaTypeMismatchError,
 )
 from shared.music_service import MusicService, NotInVoiceChannelError
 
@@ -63,6 +65,10 @@ class MusicCommandCog(commands.Cog):
         except SpotifyAPIError as e:
             logging.error(f"Spotify API error while downloading song: {e}")
             await interaction.followup.send("`Failed to download song from Spotify.`")
+            return
+        except (URLClassificationError, MediaTypeMismatchError) as e:
+            logging.error(f"URL classification error while downloading song: {e}")
+            await interaction.followup.send("`Invalid or unsupported song URL.`")
             return
         except Exception as e:
             logging.error(f"Error while downloading song: {e}")

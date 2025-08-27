@@ -83,7 +83,10 @@ class LinkValidator:
             url_path = parsed_url["path"].strip("/").split("/")
             if len(url_path) >= 2:
                 resource_type = url_path[0]
-                if resource_type in {"song", "playlist", "album"}:
+                # Accept "track" as "song" for Spotify
+                if resource_type == "track":
+                    detected_types.add("song")
+                elif resource_type in {"song", "playlist", "album"}:
                     detected_types.add(resource_type)
 
         # Catching if we got a basic link with no information
