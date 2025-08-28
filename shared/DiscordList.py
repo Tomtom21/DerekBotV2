@@ -129,7 +129,7 @@ class DiscordList:
         """
         self.hints.append(text)
 
-    def add_custom_button(self, label, callback, style=ButtonStyle.secondary, refresh_on_click=False):
+    def add_custom_button(self, label, callback, style=ButtonStyle.secondary, refresh_on_click=True):
         """
         Adds a custom button with a callback to the list of items to show in the list.
 
