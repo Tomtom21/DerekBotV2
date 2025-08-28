@@ -35,7 +35,7 @@ class SongDownloader:
         User-callable function to download a song using a URL
 
         :param song_url: The song url
-        :return: The file path to the downloaded song
+        :return: The song request of the downloaded song
         """
         # New song request
         song_request = SongRequest(song_url)
@@ -48,7 +48,7 @@ class SongDownloader:
         User-callable function to download a song using a URL
 
         :param search_query: The search query
-        :return: The file path to the downloaded song
+        :return: The song request of the downloaded song
         """
         return await self._download_song_from_query(search_query)
 
@@ -57,7 +57,7 @@ class SongDownloader:
         Searches and downloads a video that matches the search query
 
         :param search_query: The search query
-        :return: The file path to the downloaded song
+        :return: The song request of the downloaded song
         :raise YouTubeSearchError: If no results are found for the search query
         """
         # Searching, checking if we found anything
@@ -190,7 +190,7 @@ class SongDownloader:
         Downloads a YouTube video provided url. This is our separate process
 
         :param song_request: The song request to process
-        :return: The file path to the downloaded song
+        :return: The song request with the file path set
         :raise DownloadError: If the download fails
         """
         try:
