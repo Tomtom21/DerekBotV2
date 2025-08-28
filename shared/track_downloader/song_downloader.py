@@ -158,7 +158,7 @@ class SongDownloader:
                 song_request.content_duration = video_info.get('duration')
             except Exception as e:
                 logging.warning(e)
-                raise DownloadError("Failed to get video information") from e
+                raise DownloadError("Failed to get video information") from e #TODO: Consider removing this try to ensure errors are passed correctly
 
             return await self._download_youtube_song(song_request)
         elif song_request.source == "spotify":
