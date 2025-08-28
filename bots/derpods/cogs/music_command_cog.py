@@ -1,7 +1,7 @@
 import logging
 
 from discord.ext import commands
-from discord import app_commands, Interaction
+from discord import app_commands, Interaction, ButtonStyle
 
 from shared.track_downloader.playlist_downloader import PlaylistDownloader
 from shared.track_downloader.song_downloader import SongDownloader
@@ -167,7 +167,8 @@ class MusicCommandCog(commands.Cog):
         # Adding custom buttons for controlling playback
         discord_list.add_custom_button(
             "Skip", 
-            skip_button
+            skip_button,
+            ButtonStyle.red
         )
 
         await interaction.followup.send(
