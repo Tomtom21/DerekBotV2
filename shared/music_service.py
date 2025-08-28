@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from discord import Interaction
 
@@ -33,14 +32,14 @@ class MusicService:
             song_url: str,
             voice_channel,
             high_priority: bool = None
-    ) -> Optional[SongRequest]:
+    ) -> SongRequest:
         """
         Downloads a song using the SongDownloader and adds it to the VCAudioManager's queue.
 
         :param song_downloader: Instance of SongDownloader to handle the download
         :param audio_manager: Instance of VCAudioManager to manage the playback queue
         :param song_url: The URL of the song to download and queue
-        :return: The SongRequest object if successful, None otherwise
+        :return: The SongRequest object if successful
         """
         # Download the song
         song_request: SongRequest = await self.song_downloader.download_song_by_url(song_url)
