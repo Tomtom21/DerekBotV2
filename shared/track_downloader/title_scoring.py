@@ -5,7 +5,7 @@ from shared.constants import TITLE_SCORE_TWEAKS
 
 class TitleScore:
     """
-    Keywords and their associated values within a title.
+    Scoring a song request based on the title contents.
     For instance, a result with "lyric" adds significant value, while "vocals only" removes a lot of value.
     """
 
