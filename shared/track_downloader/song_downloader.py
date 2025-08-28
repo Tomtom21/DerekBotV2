@@ -229,7 +229,7 @@ class SongDownloader:
         Downloads a Spotify song
 
         :param song_request: The song request to process
-        :return: The file path to the downloaded song
+        :return: The song request of the downloaded song
         """
         # Getting info about the song
         logging.info(f"Retrieving Spotify track information for URL: {song_request.url}")
