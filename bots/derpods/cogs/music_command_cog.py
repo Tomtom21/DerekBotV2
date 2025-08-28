@@ -124,16 +124,16 @@ class MusicCommandCog(commands.Cog):
                 for audio_item in self.music_service.audio_manager.queue
             ]
 
-        def get_current_audio():
+        def get_current_audio_name():
             """
             Returns the currently playing audio item.
             """
             current_audio_item = self.music_service.audio_manager.current_audio_item
             return f"{current_audio_item.audio_name}" if current_audio_item else "N/A"
 
-        def get_current_audio_requested_by():
+        def get_current_audio_added_by():
             """
-            Returns who requested the currently playing audio item.
+            Returns who added the currently playing audio item.
             """
             current_audio_item = self.music_service.audio_manager.current_audio_item
             return f"{current_audio_item.added_by}" if current_audio_item else "N/A"
@@ -154,8 +154,8 @@ class MusicCommandCog(commands.Cog):
         )
 
         # Adding current metadata
-        discord_list.add_metadata("🎶 **Cᴜʀʀᴇɴᴛ Sᴏɴɢ**", get_current_audio)
-        discord_list.add_metadata("🔎 **Rᴇᴏ̨ᴜᴇsᴛᴇᴅ ʙʏ**", get_current_audio_requested_by)
+        discord_list.add_metadata("🎶 **Cᴜʀʀᴇɴᴛ Sᴏɴɢ**", get_current_audio_name)
+        discord_list.add_metadata("🔎 **Rᴇᴏ̨ᴜᴇsᴛᴇᴅ ʙʏ**", get_current_audio_added_by)
         discord_list.add_metadata("⏯️ **Sᴛᴀᴛᴜs**", get_current_audio_state)
 
         # Adding hints at the bottom of the queue
