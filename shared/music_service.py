@@ -36,9 +36,9 @@ class MusicService:
         """
         Downloads a song using the SongDownloader and adds it to the VCAudioManager's queue.
 
-        :param song_downloader: Instance of SongDownloader to handle the download
-        :param audio_manager: Instance of VCAudioManager to manage the playback queue
         :param song_url: The URL of the song to download and queue
+        :param voice_channel: The voice channel to join for playback
+        :param high_priority: Whether to add the song to the front of the queue
         :return: The SongRequest object if successful
         """
         # Download the song
