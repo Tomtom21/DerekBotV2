@@ -170,7 +170,6 @@ class SongDownloader:
 
         :param song_request: The song request to process
         :return: The song request with the file path set
-        :raise DownloadError: If the download fails
         """
         logging.info(f"Starting download attempt for URL: {song_request.url}")
         loop = asyncio.get_event_loop()
