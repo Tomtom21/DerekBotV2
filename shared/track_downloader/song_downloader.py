@@ -134,7 +134,7 @@ class SongDownloader:
             return video_ids
         except Exception as e:
             logging.error(f"Failed to search YouTube: {e}")
-            return []
+            return [] #TODO: Raise error?
 
     async def _route_song_download(self, song_request: SongRequest):
         """
