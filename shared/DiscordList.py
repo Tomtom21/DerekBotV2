@@ -129,16 +129,25 @@ class DiscordList:
         """
         self.hints.append(text)
 
-    def add_custom_button(self, label, callback, style=ButtonStyle.secondary):
+    def add_custom_button(self, label, callback, style=ButtonStyle.secondary, refresh_on_click=False):
         """
         Adds a custom button with a callback to the list of items to show in the list.
 
         :param label: The text for the button
         :param callback: The function to call when the button is pressed
         :param style: The style of the button
+        :param refresh_on_click: Whether to refresh the message after the callback
         """
         button = Button(label=label, style=style)
-        button.callback = callback
+
+        # Wrapping the callback if a refresh is needed
+        if refresh_on_click:
+            async def wrapped_callback(interaction):
+                await callback(interaction)
+                await self.refresh_message(interaction)
+            button.callback = wrapped_callback
+        else:
+            button.callback = callback
         self.custom_buttons.append(button)
 
     def get_max_page(self):
@@ -194,10 +203,7 @@ class DiscordList:
         if self.add_refresh_button:
             refresh_button = Button(label="Refresh", style=ButtonStyle.gray)
 
-            async def refresh_callback(interaction):
-                await self.refresh_message(interaction)
-
-            refresh_button.callback = refresh_callback
+            refresh_button.callback = self.refresh_message
             view.add_item(refresh_button)
 
         # Adding the next and last buttons if needed
