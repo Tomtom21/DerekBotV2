@@ -188,7 +188,7 @@ class SongDownloader:
         """
         Downloads a YouTube video provided url. This is our separate process
 
-        :param output_path: The path to save the downloaded file
+        :param output_path: The directory to save the downloaded file
         :param song_request: The song request to process
         :return: The song request with the file path set
         :raise DownloadError: If the download fails
