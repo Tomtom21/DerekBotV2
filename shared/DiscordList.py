@@ -9,7 +9,8 @@ class DiscordList:
                  title="List",
                  have_pages=True,
                  items_per_page=10,
-                 max_size_buffer=224):
+                 max_size_buffer=224,
+                 add_refresh_button=False):
         """
         Initializes a DiscordList for paginated or non-paginated list.
 
@@ -18,12 +19,14 @@ class DiscordList:
         :param have_pages: Whether to paginate the list
         :param items_per_page: Number of items per page
         :param max_size_buffer: Buffer for Discord message size limit
+        :param add_refresh_button: Whether to add a refresh button to the view
         """
         self.get_items = get_items  # the function to get items
         self.title = title
         self.have_pages = have_pages
         self.items_per_page = items_per_page
         self.max_size_buffer = max_size_buffer  # For item_fits_discord_limit, the buffer to apply before checking size
+        self.add_refresh_button = add_refresh_button
 
         # Pagination state
         self.current_page = 0
@@ -181,6 +184,18 @@ class DiscordList:
         # Adding the custom buttons
         for button in self.custom_buttons:
             view.add_item(button)
+
+        # Add refresh button if requested
+        if self.add_refresh_button:
+            refresh_button = Button(label="Refresh", style=ButtonStyle.gray)
+
+            async def refresh_callback(interaction):
+                # Re-fetch items and metadata, then update the message
+                text = self.get_page()
+                await interaction.response.edit_message(content=text, view=self.create_view())
+
+            refresh_button.callback = refresh_callback
+            view.add_item(refresh_button)
 
         # Adding the next and last buttons if needed
         if self.have_pages:

@@ -153,7 +153,8 @@ class MusicCommandCog(commands.Cog):
         discord_list = DiscordList(
             get_items=get_queue_data,
             title="Song Queue",
-            have_pages=False
+            have_pages=False,
+            add_refresh_button=True
         )
 
         # Adding current metadata
