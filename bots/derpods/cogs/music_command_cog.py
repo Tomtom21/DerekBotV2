@@ -11,6 +11,7 @@ from shared.track_downloader.errors import (
     MediaTypeMismatchError,
 )
 from shared.music_service import MusicService, NotInVoiceChannelError
+from shared.DiscordList import DiscordList
 
 class MusicCommandCog(commands.Cog):
     def __init__(
@@ -105,4 +106,62 @@ class MusicCommandCog(commands.Cog):
         )
         await interaction.followup.send(
             f"Added {amount} tracks from playlist: {playlist_url} (starting at {start_at})"
+        )
+
+    @group.command(name="queue", description="Show the current music queue")
+    async def queue(self, interaction: Interaction):
+        """
+        Displays the current music queue.
+
+        :param interaction: The Discord interaction object
+        """
+        def get_queue_data():
+            """
+            Returns the current music queue.
+            """
+            return [
+                f"*{audio_item.audio_name}* - {audio_item.added_by}"
+                for audio_item in self.music_service.audio_manager.queue
+            ]
+
+        def get_current_audio():
+            """
+            Returns the currently playing audio item.
+            """
+            current_audio_item = self.music_service.audio_manager.current_audio_item
+            return f"{current_audio_item.audio_name}" if current_audio_item else "N/A"
+
+        def get_current_audio_requested_by():
+            """
+            Returns who requested the currently playing audio item.
+            """
+            current_audio_item = self.music_service.audio_manager.current_audio_item
+            return f"{current_audio_item.added_by}" if current_audio_item else "N/A"
+
+        def get_current_audio_state():
+            """
+            Returns the current state of the audio player.
+            """
+            return self.music_service.audio_manager.current_state.value
+
+        await interaction.response.defer()
+
+        # Defining our list
+        discord_list = DiscordList(
+            get_items=get_queue_data,
+            title="Song Queue",
+            have_pages=False
+        )
+
+        # Adding current metadata
+        discord_list.add_metadata("🎶 **Cᴜʀʀᴇɴᴛ Sᴏɴɢ**", get_current_audio)
+        discord_list.add_metadata("🔎 **Rᴇᴏ̨ᴜᴇsᴛᴇᴅ ʙʏ**", get_current_audio_requested_by)
+        discord_list.add_metadata("⏯️ **Sᴛᴀᴛᴜs**", get_current_audio_state)
+
+        # Adding hints at the bottom of the queue
+        discord_list.add_hint("❕ Usᴇ /ᴀᴅᴅsᴏɴɢ ᴏʀ /ᴀᴅᴅᴘʟᴀʏʟɪsᴛ ᴛᴏ ᴏ̨ᴜᴇᴜᴇ ᴀɴᴏᴛʜᴇʀ sᴏɴɢ!")
+
+        await interaction.followup.send(
+            discord_list.get_page(),
+            view=discord_list.create_view()
         )

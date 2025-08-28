@@ -12,9 +12,9 @@ class AudioState(Enum):
     """
     Enum representing the state of audio playback.
     """
-    PAUSED = "paused"
-    PLAYING = "playing"
-    STOPPED = "stopped"
+    PAUSED = "Paused"
+    PLAYING = "Playing"
+    STOPPED = "Stopped"
 
 
 class AudioQueueItem:
