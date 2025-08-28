@@ -144,6 +144,9 @@ class MusicCommandCog(commands.Cog):
             """
             return self.music_service.audio_manager.current_state.value
 
+        def skip_button(interaction: Interaction):
+            self.music_service.audio_manager.skip_current()
+
         await interaction.response.defer()
 
         # Defining our list
@@ -160,6 +163,12 @@ class MusicCommandCog(commands.Cog):
 
         # Adding hints at the bottom of the queue
         discord_list.add_hint("❕ Usᴇ /ᴀᴅᴅsᴏɴɢ ᴏʀ /ᴀᴅᴅᴘʟᴀʏʟɪsᴛ ᴛᴏ ᴏ̨ᴜᴇᴜᴇ ᴀɴᴏᴛʜᴇʀ sᴏɴɢ!")
+
+        # Adding custom buttons for controlling playback
+        discord_list.add_custom_button(
+            "Skip", 
+            skip_button
+        )
 
         await interaction.followup.send(
             discord_list.get_page(),
