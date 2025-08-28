@@ -141,7 +141,7 @@ class SongDownloader:
         Route a song url to one of the song downloading methods
 
         :param song_request: The song request to route
-        :return: The file path to the downloaded song
+        :return: The song request of the downloaded song
         """
         if song_request.source == "youtube":
             # We aren't going to be running the query download, so we need to get the video info here
