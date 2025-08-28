@@ -1,5 +1,6 @@
 from shared.track_downloader.errors import URLValidationError, URLClassificationError, MediaTypeMismatchError
 from shared.track_downloader.utils import parse_url_info
+from urllib.parse import urlunparse, urlencode
 
 class LinkValidator:
     """
@@ -178,7 +179,17 @@ class SongRequest:
         # Getting the media type
         media_type_list = LinkValidator.classify_link_type(self.source, song_url)
         if "song" in media_type_list:
-            self.media_type = next(iter(media_type_list))
+            self.media_type = "song"  # Always set to "song" if present
+
+            # Clean &list= from YouTube URLs if both song and playlist detected
+            if "playlist" in media_type_list and self.source == "youtube":
+                parsed = parse_url_info(song_url)
+                
+                if "list" in parsed["query"]:
+                    parsed["query"].pop("list")
+                    new_query = urlencode(parsed["query"], doseq=True)
+                    cleaned_url = urlunparse(parsed["parsed"]._replace(query=new_query))
+                    self.url = cleaned_url
         else:
             raise MediaTypeMismatchError(
                 "The provided media type does not match what is required for a song"
