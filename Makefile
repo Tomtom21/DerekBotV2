@@ -1,4 +1,4 @@
-BOTS := derek-bot placeholder-bot
+BOTS := derek-bot placeholder-bot derpods
 
 build-base:
 	docker build -f base.Dockerfile -t base:latest .

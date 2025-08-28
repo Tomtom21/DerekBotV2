@@ -100,3 +100,21 @@ GOOGLE_TTS_VOICE_INFO = {
         "voice_name": "en-US-Chirp3-HD-Zubenelgenubi"
     },
 }
+
+TITLE_SCORE_TWEAKS = {
+    "live": -0.15,
+    "concert": -0.1,
+    "official": 0.1,
+    "karaoke": -0.1,
+    "react": -0.15,
+    "lyric": 0.35,
+    "Behind the scenes": -0.1,
+    "Clean": -0.1,
+    "vocals only": -0.5,
+    "cover": -0.2,
+    "#shorts": -0.2
+}
+
+# The length a video must be under (in seconds) before it is no longer normalized
+# This saves on processing for very long tracks
+NORMALIZE_DURATION_THRESHOLD = 900

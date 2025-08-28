@@ -2,10 +2,7 @@ import time
 import requests
 import os
 import logging
-
-
-class SpotifyAPIError(Exception):
-    pass
+import urllib.parse
 
 
 class SpotifyAPI:
@@ -14,6 +11,7 @@ class SpotifyAPI:
         self.token_expiration = 0
         self.retry_count = retry_count
         self.AUTH_URL = 'https://accounts.spotify.com/api/token'
+        self.BASE_URL= "https://api.spotify.com/v1/"
 
     def refresh_access_token(self):
         """
@@ -70,26 +68,37 @@ class SpotifyAPI:
 
         raise SpotifyAPIError("Spotify API failed after retrying.")
 
-    def get_song_info(self, spotify_song_url: str):
+    @staticmethod
+    def get_spotify_item_id(spotify_url: str):
         """
-        Gets Spotify song details
+        Gets the id of a Spotify item from the provided Spotify URL
 
-        :param spotify_song_url: A Spotify song url
-        :return: The Spotify song details, in JSON format
+        :param spotify_url: A Spotify item URL
+        :return: The Spotify item id
         """
-        # Getting the spotify song id
-        song_id = spotify_song_url.split("/")[-1].split("?")[0]
+        item_id = spotify_url.split("/")[-1].split("?")[0]
+        return item_id
 
-        return self.make_request(f"https://api.spotify.com/v1/tracks/{song_id}")
-
-    def get_playlist_info(self, spotify_playlist_url: str):
+    def api_call(self, endpoint_template: str, placeholder_values=None, **query_params):
         """
-        Gets Spotify playlist details
+        Makes a Spotify API request using the provided endpoint template and values
 
-        :param spotify_playlist_url: A Spotify playlist url
-        :return: The Spotify song details, in JSON format
+        :param endpoint_template: The endpoint template with the placeholders to be filled in later
+        :param placeholder_values: A dictionary of values to replace the placeholders with
+        :param query_params: The query parameters to be used for the request
+        :return: The Spotify API response, in JSON format
         """
-        # Getting the spotify playlist id
-        playlist_id = spotify_playlist_url.split("/")[-1].split("?")[0]
+        # Since keeping a dict in the function def would bring up mutable argument issues, we define it here
+        placeholder_values = placeholder_values or {}
 
-        return self.make_request(f"https://api.spotify.com/v1/playlists/{playlist_id}")
+        # Populate the endpoint template
+        populated_template = endpoint_template.format(**placeholder_values)
+        full_url = f"{self.BASE_URL}{populated_template}"
+
+        # Handling our query parameters
+        if query_params:
+            query_param_string = urllib.parse.urlencode(query_params)
+            full_url += f"?{query_param_string}"
+        
+        # Finally making our request and handing it back
+        return self.make_request(full_url)

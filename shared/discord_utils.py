@@ -1,6 +1,6 @@
-from discord import Message
 import logging
 
+from discord import Message, Guild
 
 async def get_message_history(message: Message):
     """
@@ -23,3 +23,17 @@ async def get_message_history(message: Message):
     except Exception as e:
         logging.error(e)
         return []  # Returning the base case if we have an issue
+
+def find_member_by_display_name(guild: Guild, display_name: str):
+    """
+    Finds a member in the guild by their display name.
+
+    :param guild: The Discord guild (server) to search in
+    :param display_name: The display name of the member to find
+    :return: The member object if found, None otherwise
+    """
+    matches = [member for member in guild.members if member.display_name == display_name]
+    if len(matches) == 1:
+        return matches[0]
+
+    return None  # Either no match or multiple matches found
