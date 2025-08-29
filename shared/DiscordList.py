@@ -9,7 +9,8 @@ class DiscordList:
                  title="List",
                  have_pages=True,
                  items_per_page=10,
-                 max_size_buffer=224):
+                 max_size_buffer=224,
+                 add_refresh_button=False):
         """
         Initializes a DiscordList for paginated or non-paginated list.
 
@@ -18,12 +19,14 @@ class DiscordList:
         :param have_pages: Whether to paginate the list
         :param items_per_page: Number of items per page
         :param max_size_buffer: Buffer for Discord message size limit
+        :param add_refresh_button: Whether to add a refresh button to the view
         """
         self.get_items = get_items  # the function to get items
         self.title = title
         self.have_pages = have_pages
         self.items_per_page = items_per_page
         self.max_size_buffer = max_size_buffer  # For item_fits_discord_limit, the buffer to apply before checking size
+        self.add_refresh_button = add_refresh_button
 
         # Pagination state
         self.current_page = 0
@@ -126,16 +129,25 @@ class DiscordList:
         """
         self.hints.append(text)
 
-    def add_custom_button(self, label, callback, style=ButtonStyle.secondary):
+    def add_custom_button(self, label, callback, style=ButtonStyle.secondary, refresh_on_click=True):
         """
         Adds a custom button with a callback to the list of items to show in the list.
 
         :param label: The text for the button
         :param callback: The function to call when the button is pressed
         :param style: The style of the button
+        :param refresh_on_click: Whether to refresh the message after the callback
         """
         button = Button(label=label, style=style)
-        button.callback = callback
+
+        # Wrapping the callback if a refresh is needed
+        if refresh_on_click:
+            async def wrapped_callback(interaction):
+                await callback(interaction)
+                await self.refresh_message(interaction)
+            button.callback = wrapped_callback
+        else:
+            button.callback = callback
         self.custom_buttons.append(button)
 
     def get_max_page(self):
@@ -147,6 +159,13 @@ class DiscordList:
         item = self.get_items()
         max_page = math.ceil(len(item) / self.items_per_page)
         return max_page - 1
+
+    async def refresh_message(self, interaction):
+        """
+        Universal function to refresh the message with the current page and view.
+        """
+        text = self.get_page()
+        await interaction.response.edit_message(content=text, view=self.create_view())
 
     def create_view(self):
         """
@@ -164,13 +183,11 @@ class DiscordList:
             # Defining the first and back callbacks
             async def first_callback(interaction):
                 self.current_page = 0
-                text = self.get_page()
-                await interaction.response.edit_message(content=text)
+                await self.refresh_message(interaction)
 
             async def back_callback(interaction):
                 self.current_page = max(0, self.current_page - 1)
-                text = self.get_page()
-                await interaction.response.edit_message(content=text)
+                await self.refresh_message(interaction)
 
             first_button.callback = first_callback
             back_button.callback = back_callback
@@ -182,6 +199,13 @@ class DiscordList:
         for button in self.custom_buttons:
             view.add_item(button)
 
+        # Add refresh button if requested
+        if self.add_refresh_button:
+            refresh_button = Button(label="Refresh", style=ButtonStyle.gray)
+
+            refresh_button.callback = self.refresh_message
+            view.add_item(refresh_button)
+
         # Adding the next and last buttons if needed
         if self.have_pages:
             next_button = Button(label=">", style=ButtonStyle.primary)
@@ -191,14 +215,12 @@ class DiscordList:
             async def next_callback(interaction):
                 max_page = self.get_max_page()
                 self.current_page = min(max_page, self.current_page + 1)
-                text = self.get_page()
-                await interaction.response.edit_message(content=text)
+                await self.refresh_message(interaction)
 
             async def last_callback(interaction):
                 max_page = self.get_max_page()
                 self.current_page = max_page
-                text = self.get_page()
-                await interaction.response.edit_message(content=text)
+                await self.refresh_message(interaction)
 
             next_button.callback = next_callback
             last_button.callback = last_callback
