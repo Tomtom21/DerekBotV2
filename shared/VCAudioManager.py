@@ -162,7 +162,7 @@ class VCAudioManager:
                 logging.info(f"Playing audio: {self.current_audio_item.audio_name}")
 
                 # Wait for the audio to finish playing
-                while self._current_voice_channel.is_playing():
+                while self._current_voice_channel.is_playing() or self._current_voice_channel.is_paused():
                     await asyncio.sleep(0.5)
 
                 # After audio finishes, update state
