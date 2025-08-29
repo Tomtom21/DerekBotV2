@@ -172,7 +172,7 @@ class MusicCommandCog(commands.Cog):
         # Defining our list
         discord_list = DiscordList(
             get_items=get_queue_data,
-            title="Song Queue",
+            title="🎧 Song Queue",
             have_pages=False,
             add_refresh_button=True
         )
