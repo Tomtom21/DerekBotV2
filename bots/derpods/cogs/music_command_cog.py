@@ -115,17 +115,17 @@ class MusicCommandCog(commands.Cog):
 
         :param interaction: The Discord interaction object
         """
+        def format_duration(seconds):
+            if seconds is None:
+                return "??:??"
+            minutes = int(seconds // 60)
+            secs = int(seconds % 60)
+            return f"{minutes:02d}:{secs:02d}"
+        
         def get_queue_data():
             """
             Returns the current music queue.
             """
-            def format_duration(seconds):
-                if seconds is None:
-                    return "??:??"
-                minutes = int(seconds // 60)
-                secs = int(seconds % 60)
-                return f"{minutes:02d}:{secs:02d}"
-
             return [
                 f"*{audio_item.audio_name}*, [{format_duration(audio_item.duration)}] • {audio_item.added_by}"
                 for audio_item in self.music_service.audio_manager.queue
@@ -144,6 +144,13 @@ class MusicCommandCog(commands.Cog):
             """
             current_audio_item = self.music_service.audio_manager.current_audio_item
             return f"{current_audio_item.added_by}" if current_audio_item else "N/A"
+
+        def get_current_audio_duration():
+            """
+            Returns the duration of the currently playing audio item.
+            """
+            current_audio_item = self.music_service.audio_manager.current_audio_item
+            return format_duration(current_audio_item.duration) if current_audio_item else "??:??"
 
         def get_current_audio_state():
             """
@@ -173,6 +180,7 @@ class MusicCommandCog(commands.Cog):
         # Adding current metadata
         discord_list.add_metadata("🎶 **Cᴜʀʀᴇɴᴛ Sᴏɴɢ**", get_current_audio_name)
         discord_list.add_metadata("🔎 **Rᴇᴏ̨ᴜᴇsᴛᴇᴅ ʙʏ**", get_current_audio_added_by)
+        discord_list.add_metadata("⏱️ **Dᴜʀᴀᴛɪᴏɴ**", get_current_audio_duration)
         discord_list.add_metadata("⏯️ **Sᴛᴀᴛᴜs**", get_current_audio_state)
 
         # Adding hints at the bottom of the queue
