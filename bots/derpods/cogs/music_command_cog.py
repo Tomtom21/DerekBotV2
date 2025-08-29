@@ -119,8 +119,15 @@ class MusicCommandCog(commands.Cog):
             """
             Returns the current music queue.
             """
+            def format_duration(seconds):
+                if seconds is None:
+                    return "??:??"
+                minutes = int(seconds // 60)
+                secs = int(seconds % 60)
+                return f"{minutes:02d}:{secs:02d}"
+
             return [
-                f"*{audio_item.audio_name}* - {audio_item.added_by}"
+                f"*{audio_item.audio_name}*, [{format_duration(audio_item.duration)}] • {audio_item.added_by}"
                 for audio_item in self.music_service.audio_manager.queue
             ]
 

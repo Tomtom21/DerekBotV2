@@ -18,17 +18,19 @@ class AudioState(Enum):
 
 
 class AudioQueueItem:
-    def __init__(self, audio_file_path, voice_channel, high_priority, audio_name, added_by):
+    def __init__(self, audio_file_path, duration, voice_channel, high_priority, audio_name, added_by):
         """
         Initializes an AudioQueueItem.
 
         :param audio_file_path: Path to the audio file
+        :param duration: Duration of the audio in seconds
         :param voice_channel: The Discord voice channel object
         :param high_priority: Whether the audio is high priority
         :param audio_name: Name of the audio (optional)
         :param added_by: Who added the audio (optional)
         """
         self.audio_file_path = audio_file_path
+        self.duration = duration
         self.voice_channel = voice_channel
         self.high_priority = high_priority
         self.audio_name = audio_name
@@ -42,6 +44,7 @@ class AudioQueueItem:
         """
         return (
             f"AudioQueueItem(audio_file_path={self.audio_file_path}, "
+            f"duration={self.duration}, "
             f"high_priority={self.high_priority}, "
             f"voice_channel={self.voice_channel}, "
             f"audio_name={self.audio_name}, "
@@ -77,15 +80,16 @@ class VCAudioManager:
         self.idle_task: Optional[asyncio.Task] = None
         self.lock = asyncio.Lock()
 
-    async def add_to_queue(self, audio_file_path, voice_channel, high_priority=True, audio_name="System audio", added_by="System"):
+    async def add_to_queue(self, audio_file_path, duration, voice_channel, high_priority=True, audio_name="System audio", added_by="System"):
         """
         Adds an audio to the queue, positions it in the list based on priority.
 
         :param audio_file_path: The path to the audio
+        :param duration: The duration of the audio in seconds
         :param voice_channel: The voice channel to play the audio in
         :param high_priority: Whether the audio is high priority
         """
-        new_item = AudioQueueItem(audio_file_path, voice_channel, high_priority, audio_name, added_by)
+        new_item = AudioQueueItem(audio_file_path, duration, voice_channel, high_priority, audio_name, added_by)
 
         async with self.lock:
             # Finding the first low-priority item, otherwise defaulting to appending

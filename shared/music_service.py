@@ -49,6 +49,7 @@ class MusicService:
         if high_priority is not None:
             await self.audio_manager.add_to_queue(
                 song_request.file_path,
+                song_request.content_duration,
                 user.voice.channel,
                 high_priority=high_priority,
                 audio_name=song_request.title,
@@ -57,6 +58,7 @@ class MusicService:
         else:
             await self.audio_manager.add_to_queue(
                 song_request.file_path,
+                song_request.content_duration,
                 user.voice.channel,
                 audio_name=song_request.title,
                 added_by=user.display_name
