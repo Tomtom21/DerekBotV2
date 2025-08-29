@@ -1,7 +1,7 @@
 import logging
 
 from discord.ext import commands
-from discord import app_commands, Interaction, ButtonStyle
+from discord import app_commands, Interaction, ButtonStyle, Member
 
 from shared.track_downloader.playlist_downloader import PlaylistDownloader
 from shared.track_downloader.song_downloader import SongDownloader
@@ -58,7 +58,7 @@ class MusicCommandCog(commands.Cog):
         try:
             song_request = await self.music_service.download_and_queue_song(
                 song_url,
-                interaction.user.voice.channel,
+                interaction.user,
                 high_priority=True
             )
             logging.info(f"User {interaction.user.name} requested to add song: {song_url}")

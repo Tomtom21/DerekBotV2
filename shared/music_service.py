@@ -1,6 +1,6 @@
 import logging
 
-from discord import Interaction
+from discord import Interaction, Member
 
 from shared.track_downloader.song_downloader import SongDownloader, SongRequest
 from shared.VCAudioManager import VCAudioManager
@@ -30,7 +30,7 @@ class MusicService:
     async def download_and_queue_song(
             self,
             song_url: str,
-            voice_channel,
+            user: Member,
             high_priority: bool = None
     ) -> SongRequest:
         """
@@ -48,10 +48,19 @@ class MusicService:
         # Add the downloaded song to the audio manager's queue
         if high_priority is not None:
             await self.audio_manager.add_to_queue(
-                song_request.file_path, voice_channel, high_priority=high_priority
+                song_request.file_path,
+                user.voice.channel,
+                high_priority=high_priority,
+                audio_name=song_request.title,
+                added_by=user.display_name
             )
         else:
-            await self.audio_manager.add_to_queue(song_request, voice_channel)
+            await self.audio_manager.add_to_queue(
+                song_request.file_path,
+                user.voice.channel,
+                audio_name=song_request.title,
+                added_by=user.display_name
+            )
         logging.info(f"Added song to queue: {song_request.title}")
 
         return song_request

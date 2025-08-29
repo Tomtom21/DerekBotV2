@@ -18,7 +18,7 @@ class AudioState(Enum):
 
 
 class AudioQueueItem:
-    def __init__(self, audio_file_path, voice_channel, high_priority, audio_name="System audio", added_by="System"):
+    def __init__(self, audio_file_path, voice_channel, high_priority, audio_name, added_by):
         """
         Initializes an AudioQueueItem.
 
@@ -77,7 +77,7 @@ class VCAudioManager:
         self.idle_task: Optional[asyncio.Task] = None
         self.lock = asyncio.Lock()
 
-    async def add_to_queue(self, audio_file_path, voice_channel, high_priority=True):
+    async def add_to_queue(self, audio_file_path, voice_channel, high_priority=True, audio_name="System audio", added_by="System"):
         """
         Adds an audio to the queue, positions it in the list based on priority.
 
@@ -85,7 +85,7 @@ class VCAudioManager:
         :param voice_channel: The voice channel to play the audio in
         :param high_priority: Whether the audio is high priority
         """
-        new_item = AudioQueueItem(audio_file_path, voice_channel, high_priority)
+        new_item = AudioQueueItem(audio_file_path, voice_channel, high_priority, audio_name, added_by)
 
         async with self.lock:
             # Finding the first low-priority item, otherwise defaulting to appending
