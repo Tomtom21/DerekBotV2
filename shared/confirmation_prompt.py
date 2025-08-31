@@ -61,7 +61,7 @@ class ConfirmationView(View):
     """
     View for the confirmation prompt.
     """
-    def __init__(self, prompt: ConfirmationPrompt, timeout=60):
+    def __init__(self, prompt: ConfirmationPrompt, timeout):
         super().__init__(timeout=timeout)
         self.prompt: ConfirmationPrompt = prompt
 
