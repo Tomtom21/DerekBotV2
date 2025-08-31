@@ -88,8 +88,10 @@ class ConfirmationView(View):
         """
         Handles the confirm button click.
         """
+        # Skipping if a second button press happens
         if self.prompt.buttons_disabled:
             return
+
         self.disable_buttons()
         self.prompt.status = self.prompt.status_confirmed_msg
         await self.refresh(interaction)
@@ -99,8 +101,10 @@ class ConfirmationView(View):
         """
         Handles the cancel button click.
         """
+        # Skipping if a second button press happens
         if self.prompt.buttons_disabled:
             return
+
         self.disable_buttons()
         self.prompt.status = self.prompt.status_cancelled_msg
         await self.refresh(interaction)
