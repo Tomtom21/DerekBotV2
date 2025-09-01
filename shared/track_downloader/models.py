@@ -1,7 +1,7 @@
 import logging
 from urllib.parse import urlunparse, urlencode
 
-from shared.track_downloader.errors import URLValidationError, URLClassificationError, MediaTypeMismatchError, SpotifyPlaylistFetchError
+from shared.track_downloader.errors import URLValidationError, URLClassificationError, MediaTypeMismatchError, SpotifyListFetchError
 from shared.track_downloader.utils import parse_url_info, extract_yt_playlist_id
 from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
@@ -189,8 +189,8 @@ class PlaylistRequest:
                 return
 
             if self.media_type == "playlist":
-                # Fetch playlist tracks
                 try:
+                    # Fetch playlist tracks
                     results = spotify_api.api_call(
                         endpoint_template="playlists/{playlist_id}/tracks",
                         placeholder_values={"playlist_id": resource_id},
@@ -198,7 +198,7 @@ class PlaylistRequest:
                     )
                 except Exception as e:
                     logging.error(f"Error fetching Spotify playlist: {e}")
-                    raise SpotifyPlaylistFetchError("Failed to fetch Spotify playlist") from e
+                    raise SpotifyListFetchError("Failed to fetch Spotify playlist") from e
                 
                 # Looping through and getting the data we need
                 for item in results.get("items", []):
@@ -213,12 +213,17 @@ class PlaylistRequest:
                     url = f"{SPOTIFY_TRACK_URL_PREFIX}{track.get('id')}"
                     self.items.append(PlaylistItem(url=url, title=title, artist=artists))
             elif self.media_type == "album":
-                # Fetch album tracks
-                results = spotify_api.api_call(
-                    endpoint_template="albums/{album_id}/tracks",
-                    placeholder_values={"album_id": resource_id},
-                    limit=50
-                )
+                try:
+                    # Fetch album tracks
+                    results = spotify_api.api_call(
+                        endpoint_template="albums/{album_id}/tracks",
+                        placeholder_values={"album_id": resource_id},
+                        limit=50
+                    )
+                except Exception as e:
+                    logging.error(f"Error fetching Spotify album: {e}")
+                    raise SpotifyListFetchError("Failed to fetch Spotify album") from e
+                
                 
                 # Looping through and getting the data we need
                 for track in results.get("items", []):

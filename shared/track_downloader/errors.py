@@ -40,5 +40,5 @@ class MediaSourceMismatchError(Exception):
 class SpotifyAPIError(Exception):
     pass
 
-class SpotifyPlaylistFetchError(Exception):
+class SpotifyListFetchError(Exception):
     pass
