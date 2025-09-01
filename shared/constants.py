@@ -121,3 +121,6 @@ NORMALIZE_DURATION_THRESHOLD = 900
 
 # Spotify based track url
 SPOTIFY_TRACK_URL_PREFIX = "https://open.spotify.com/track/"
+
+# Youtube based video url
+YOUTUBE_VIDEO_URL_PREFIX = "https://www.youtube.com/watch?v="

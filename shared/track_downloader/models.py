@@ -5,7 +5,7 @@ from shared.track_downloader.errors import URLValidationError, URLClassification
 from shared.track_downloader.utils import parse_url_info, extract_yt_playlist_id
 from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
-from shared.constants import SPOTIFY_TRACK_URL_PREFIX
+from shared.constants import SPOTIFY_TRACK_URL_PREFIX, YOUTUBE_VIDEO_URL_PREFIX
 
 class LinkValidator:
     """
@@ -177,7 +177,7 @@ class PlaylistRequest:
             for item in results.get("items", []):
                 video_id = item["snippet"]["resourceId"]["videoId"]
                 title = item["snippet"]["title"]
-                url = f"https://www.youtube.com/watch?v={video_id}"
+                url = f"{YOUTUBE_VIDEO_URL_PREFIX}{video_id}"
                 self.items.append(PlaylistItem(url=url, title=title))
         elif self.source == "spotify":
             # Get playlist or album ID from URL
