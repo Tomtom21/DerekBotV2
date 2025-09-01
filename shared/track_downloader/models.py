@@ -161,7 +161,7 @@ class PlaylistRequest:
         else:
             raise MediaTypeMismatchError("The provided media type does not match what is required for a playlist")
 
-    async def fetch_items(self, spotify_api: SpotifyAPI, youtube_api: YoutubeAPI):
+    async def fetch_items(self, spotify_api: SpotifyAPI, youtube_api: YoutubeAPI, amount, start_at):
         if self.source == "youtube":
             # Get playlist ID from URL
             playlist_id = extract_yt_playlist_id(self.url)
@@ -172,7 +172,7 @@ class PlaylistRequest:
             results = youtube_api.youtube_api.playlistItems().list(
                 part="snippet",
                 playlistId=playlist_id,
-                maxResults=50
+                maxResults=amount
             ).execute()
             for item in results.get("items", []):
                 video_id = item["snippet"]["resourceId"]["videoId"]
@@ -194,7 +194,7 @@ class PlaylistRequest:
                     results = spotify_api.api_call(
                         endpoint_template="playlists/{playlist_id}/tracks",
                         placeholder_values={"playlist_id": resource_id},
-                        limit=50
+                        limit=amount
                     )
                 except Exception as e:
                     logging.error(f"Error fetching Spotify playlist: {e}")
@@ -218,7 +218,7 @@ class PlaylistRequest:
                     results = spotify_api.api_call(
                         endpoint_template="albums/{album_id}/tracks",
                         placeholder_values={"album_id": resource_id},
-                        limit=50
+                        limit=amount
                     )
                 except Exception as e:
                     logging.error(f"Error fetching Spotify album: {e}")
