@@ -2,7 +2,9 @@ import logging
 
 from discord import Interaction, Member
 
-from shared.track_downloader.song_downloader import SongDownloader, SongRequest
+from shared.track_downloader.song_downloader import SongDownloader
+from shared.track_downloader.playlist_downloader import PlaylistDownloader
+from shared.track_downloader.models import PlaylistRequest, SongRequest
 from shared.VCAudioManager import VCAudioManager
 
 class NotInVoiceChannelError(Exception):
@@ -23,8 +25,9 @@ class NotInVoiceChannelError(Exception):
 
 
 class MusicService:
-    def __init__(self, song_downloader: SongDownloader, audio_manager: VCAudioManager):
+    def __init__(self, song_downloader: SongDownloader, playlist_downloader: PlaylistDownloader, audio_manager: VCAudioManager):
         self.song_downloader = song_downloader
+        self.playlist_downloader = playlist_downloader
         self.audio_manager = audio_manager
 
     async def download_and_queue_song(
@@ -66,3 +69,36 @@ class MusicService:
         logging.info(f"Added song to queue: {song_request.title}")
 
         return song_request
+
+    async def download_and_queue_playlist(
+            self,
+            playlist_request: PlaylistRequest,
+            callback_func,
+            user: Member
+    ):
+        """
+        Downloads a playlist using the PlaylistRequest and adds it to the VCAudioManager's queue.
+
+        :param playlist_request: The PlaylistRequest object containing playlist details. This isn't a url because we want to use the approval process.
+        :param user: The Discord Member who requested the playlist
+        """
+        # Defining the callback to be executed once the song is downloaded
+        async def add_to_queue_callback_wrapper(download_result: SongRequest):
+            self.audio_manager.add_to_queue(
+                download_result.file_path,
+                download_result.content_duration,
+                user.voice.channel,
+                audio_name=download_result.title,
+                added_by=user.display_name,
+                high_priority=False
+            )
+            await callback_func(download_result)
+
+        # Starting the playlist download with our callback
+        self.playlist_downloader.download_playlist_by_request(
+            playlist_request,
+            add_to_queue_callback_wrapper
+        )
+
+        # This runs when we finish downloading. We can set the number of items successfully downloaded in the playlistrequest.
+        

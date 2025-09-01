@@ -10,7 +10,7 @@ class PlaylistDownloader:
     def __init__(self, spotify_api: SpotifyAPI, youtube_api: YoutubeAPI, song_downloader: SongDownloader):
         self.song_downloader = song_downloader
 
-    async def download_playlist_by_url(self, playlist_request: PlaylistRequest, callback_func, **kwargs):
+    async def download_playlist_by_request(self, playlist_request: PlaylistRequest, callback_func, **kwargs):
         """
         User-callable function that downloads a playlist using a URL
         
@@ -21,7 +21,7 @@ class PlaylistDownloader:
         # Calling the callback to update the user-facing message and add it to the queue
         async def download_and_callback(song):
             result = await self.song_downloader.download_song_by_url(song.url)
-            await callback_func(song, result)
+            await callback_func(result)
 
         # Queueing up the downloads
         download_tasks = [

@@ -83,6 +83,7 @@ class Derpods(BaseBot, commands.Bot):
         )
         self.music_service = MusicService(
             song_downloader=self.song_downloader,
+            playlist_downloader=self.playlist_downloader,
             audio_manager=self.audio_manager
         )
 
