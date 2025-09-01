@@ -190,11 +190,12 @@ class PlaylistRequest:
 
             if self.media_type == "playlist":
                 try:
-                    # Fetch playlist tracks
+                    # Fetch playlist tracks with offset
                     results = spotify_api.api_call(
                         endpoint_template="playlists/{playlist_id}/tracks",
                         placeholder_values={"playlist_id": resource_id},
-                        limit=amount
+                        limit=amount,
+                        offset=start_at
                     )
                 except Exception as e:
                     logging.error(f"Error fetching Spotify playlist: {e}")
@@ -214,16 +215,16 @@ class PlaylistRequest:
                     self.items.append(PlaylistItem(url=url, title=title, artist=artists))
             elif self.media_type == "album":
                 try:
-                    # Fetch album tracks
+                    # Fetch album tracks with offset
                     results = spotify_api.api_call(
                         endpoint_template="albums/{album_id}/tracks",
                         placeholder_values={"album_id": resource_id},
-                        limit=amount
+                        limit=amount,
+                        offset=start_at
                     )
                 except Exception as e:
                     logging.error(f"Error fetching Spotify album: {e}")
                     raise SpotifyListFetchError("Failed to fetch Spotify album") from e
-                
                 
                 # Looping through and getting the data we need
                 for track in results.get("items", []):
