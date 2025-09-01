@@ -1,7 +1,7 @@
 import logging
 from urllib.parse import urlunparse, urlencode
 
-from shared.track_downloader.errors import URLValidationError, URLClassificationError, MediaTypeMismatchError, SpotifyListFetchError
+from shared.track_downloader.errors import URLValidationError, URLClassificationError, MediaTypeMismatchError, SpotifyListFetchError, YoutubePlaylistFetchError
 from shared.track_downloader.utils import parse_url_info, extract_yt_playlist_id
 from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
@@ -168,17 +168,49 @@ class PlaylistRequest:
             if not playlist_id:
                 return
 
-            # Fetch playlist items using YouTube API
-            results = youtube_api.youtube_api.playlistItems().list(
-                part="snippet",
-                playlistId=playlist_id,
-                maxResults=amount
-            ).execute()
-            for item in results.get("items", []):
-                video_id = item["snippet"]["resourceId"]["videoId"]
-                title = item["snippet"]["title"]
-                url = f"{YOUTUBE_VIDEO_URL_PREFIX}{video_id}"
-                self.items.append(PlaylistItem(url=url, title=title))
+            # YouTube API pagination logic (Because the YouTube API is annoying)
+            items_collected = 0
+            items_needed = amount
+            items_skipped = 0
+            page_token = None
+
+            # Putting everything in a try to block to catch API errors
+            try:
+                while items_collected < items_needed:
+                    # Calculate how many items to request in this page
+                    max_results = min(50, items_needed + start_at - items_skipped)
+                    results = youtube_api.youtube_api.playlistItems().list(
+                        part="snippet",
+                        playlistId=playlist_id,
+                        maxResults=max_results,
+                        pageToken=page_token
+                    ).execute()
+                    page_items = results.get("items", [])
+                    total_items_in_page = len(page_items)
+
+                    # Skip items until we reach start_at
+                    if items_skipped < start_at:
+                        skip_count = min(start_at - items_skipped, total_items_in_page)
+                        page_items = page_items[skip_count:]
+                        items_skipped += skip_count
+
+                    # Add items up to the requested amount
+                    for item in page_items:
+                        if items_collected >= items_needed:
+                            break
+                        video_id = item["snippet"]["resourceId"]["videoId"]
+                        title = item["snippet"]["title"]
+                        url = f"{YOUTUBE_VIDEO_URL_PREFIX}{video_id}"
+                        self.items.append(PlaylistItem(url=url, title=title))
+                        items_collected += 1
+
+                    # If there are no more pages, break
+                    page_token = results.get("nextPageToken")
+                    if not page_token or items_collected >= items_needed:
+                        break
+            except Exception as e:
+                logging.error(f"Error fetching YouTube playlist: {e}")
+                raise YoutubePlaylistFetchError("Failed to fetch YouTube playlist videos") from e
         elif self.source == "spotify":
             # Get playlist or album ID from URL
             parsed = parse_url_info(self.url)

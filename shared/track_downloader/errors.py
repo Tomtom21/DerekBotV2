@@ -42,3 +42,6 @@ class SpotifyAPIError(Exception):
 
 class SpotifyListFetchError(Exception):
     pass
+
+class YoutubePlaylistFetchError(Exception):
+    pass
