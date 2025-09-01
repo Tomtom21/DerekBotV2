@@ -1,6 +1,11 @@
-from shared.track_downloader.errors import URLValidationError, URLClassificationError, MediaTypeMismatchError
-from shared.track_downloader.utils import parse_url_info
+import logging
 from urllib.parse import urlunparse, urlencode
+
+from shared.track_downloader.errors import URLValidationError, URLClassificationError, MediaTypeMismatchError, SpotifyPlaylistFetchError
+from shared.track_downloader.utils import parse_url_info, extract_yt_playlist_id
+from shared.spotify_api import SpotifyAPI
+from shared.youtube_api import YoutubeAPI
+from shared.constants import SPOTIFY_TRACK_URL_PREFIX
 
 class LinkValidator:
     """
@@ -113,6 +118,16 @@ class PlaylistItem:
         self.title = title
         self.artist = artist
 
+    def __str__(self):
+        """
+        Called when the object is printed to the console
+
+        :return: The new format of the printed message
+        """
+        return (f"('url': {self.url}, "
+                f"'title': {self.title}, "
+                f"'artist': {self.artist})")
+
 
 class PlaylistRequest:
     """
@@ -145,6 +160,72 @@ class PlaylistRequest:
             self.media_type = next(iter(intersecting_types))
         else:
             raise MediaTypeMismatchError("The provided media type does not match what is required for a playlist")
+
+    async def fetch_items(self, spotify_api: SpotifyAPI, youtube_api: YoutubeAPI):
+        if self.source == "youtube":
+            # Get playlist ID from URL
+            playlist_id = extract_yt_playlist_id(self.url)
+            if not playlist_id:
+                return
+
+            # Fetch playlist items using YouTube API
+            results = youtube_api.youtube_api.playlistItems().list(
+                part="snippet",
+                playlistId=playlist_id,
+                maxResults=50
+            ).execute()
+            for item in results.get("items", []):
+                video_id = item["snippet"]["resourceId"]["videoId"]
+                title = item["snippet"]["title"]
+                url = f"https://www.youtube.com/watch?v={video_id}"
+                self.items.append(PlaylistItem(url=url, title=title))
+        elif self.source == "spotify":
+            # Get playlist or album ID from URL
+            parsed = parse_url_info(self.url)
+            url_path = parsed["path"].strip("/").split("/")
+            resource_id = url_path[1] if len(url_path) > 1 else None
+            logging.info(f"Resource ID: {resource_id}")
+            if not resource_id:
+                return
+
+            if self.media_type == "playlist":
+                # Fetch playlist tracks
+                try:
+                    results = spotify_api.api_call(
+                        endpoint_template="playlists/{playlist_id}/tracks",
+                        placeholder_values={"playlist_id": resource_id},
+                        limit=50
+                    )
+                except Exception as e:
+                    logging.error(f"Error fetching Spotify playlist: {e}")
+                    raise SpotifyPlaylistFetchError("Failed to fetch Spotify playlist") from e
+                
+                # Looping through and getting the data we need
+                for item in results.get("items", []):
+                    track = item.get("track")
+
+                    # Skipping items if no track info
+                    if not track:
+                        continue
+
+                    title = track.get("name")
+                    artists = ", ".join(a["name"] for a in track.get("artists", []))
+                    url = f"{SPOTIFY_TRACK_URL_PREFIX}{track.get('id')}"
+                    self.items.append(PlaylistItem(url=url, title=title, artist=artists))
+            elif self.media_type == "album":
+                # Fetch album tracks
+                results = spotify_api.api_call(
+                    endpoint_template="albums/{album_id}/tracks",
+                    placeholder_values={"album_id": resource_id},
+                    limit=50
+                )
+                
+                # Looping through and getting the data we need
+                for track in results.get("items", []):
+                    title = track.get("name")
+                    artists = ", ".join(a["name"] for a in track.get("artists", []))
+                    url = f"{SPOTIFY_TRACK_URL_PREFIX}{track.get('id')}"
+                    self.items.append(PlaylistItem(url=url, title=title, artist=artists))
 
 
 class SongRequest:
