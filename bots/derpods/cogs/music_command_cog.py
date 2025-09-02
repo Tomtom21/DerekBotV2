@@ -136,10 +136,11 @@ class MusicCommandCog(commands.Cog):
             on_confirm_callback=on_confirm_callback,
             status_confirmed_msg="✅ Confirmed. The playlist will start being loaded into the queue."
         )
-        await interaction.followup.send(
+        sent_message = await interaction.followup.send(
             confirmation_prompt.get_message(),
             view=confirmation_prompt.create_view()
         )
+        confirmation_prompt.message = sent_message
 
     @group.command(name="queue", description="Show the current music queue")
     async def queue(self, interaction: Interaction):
