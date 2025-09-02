@@ -134,7 +134,7 @@ class MusicCommandCog(commands.Cog):
             title="Confirm Playlist Load",
             description=f"Do you want to load the playlist {playlist_request.title}?",
             on_confirm_callback=on_confirm_callback,
-            status_confirmed_msg="✅ Confirmed. Playlist items will start being loaded into queue."
+            status_confirmed_msg="✅ Confirmed. The playlist will start being loaded into the queue."
         )
         await interaction.followup.send(
             confirmation_prompt.get_message(),
