@@ -88,7 +88,7 @@ class MusicService:
             #TODO: Ensure we can continue with other requests if this error is raised
             if user.voice is None:
                 raise NotInVoiceChannelError()
-            
+
             await self.audio_manager.add_to_queue(
                 download_result.file_path,
                 download_result.content_duration,
@@ -103,7 +103,4 @@ class MusicService:
         await self.playlist_downloader.download_playlist_by_request(
             playlist_request,
             add_to_queue_callback_wrapper
-        )
-
-        # This runs when we finish downloading. We can set the number of items successfully downloaded in the playlistrequest.
-        
+        )        
