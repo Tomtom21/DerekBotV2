@@ -7,7 +7,7 @@ from shared.track_downloader.song_downloader import SongDownloader
 from shared.track_downloader.models import PlaylistRequest
 
 class PlaylistDownloader:
-    def __init__(self, spotify_api: SpotifyAPI, youtube_api: YoutubeAPI, song_downloader: SongDownloader):
+    def __init__(self, song_downloader: SongDownloader):
         self.song_downloader = song_downloader
 
     async def download_playlist_by_request(self, playlist_request: PlaylistRequest, callback_func, **kwargs):

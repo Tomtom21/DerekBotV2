@@ -96,6 +96,8 @@ class Derpods(BaseBot, commands.Bot):
         logging.info("Adding cogs...")
         await self.add_cog(MusicCommandCog(
             self,
+            spotify_api=self.spotify_api,
+            youtube_api=self.youtube_api,
             music_service=self.music_service
         ))
         await self.tree.sync()

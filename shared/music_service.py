@@ -84,7 +84,12 @@ class MusicService:
         """
         # Defining the callback to be executed once the song is downloaded
         async def add_to_queue_callback_wrapper(download_result: SongRequest):
-            self.audio_manager.add_to_queue(
+            # Ensuring the user is still in a voice channel while downloading
+            #TODO: Ensure we can continue with other requests if this error is raised
+            if user.voice is None:
+                raise NotInVoiceChannelError()
+            
+            await self.audio_manager.add_to_queue(
                 download_result.file_path,
                 download_result.content_duration,
                 user.voice.channel,
@@ -95,7 +100,7 @@ class MusicService:
             await callback_func(download_result)
 
         # Starting the playlist download with our callback
-        self.playlist_downloader.download_playlist_by_request(
+        await self.playlist_downloader.download_playlist_by_request(
             playlist_request,
             add_to_queue_callback_wrapper
         )
