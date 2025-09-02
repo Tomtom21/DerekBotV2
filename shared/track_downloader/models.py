@@ -168,6 +168,19 @@ class PlaylistRequest:
             if not playlist_id:
                 return
 
+            # Fetch playlist metadata to get the title
+            try:
+                playlist_info = youtube_api.youtube_api.playlists().list(
+                    part="snippet",
+                    id=playlist_id
+                ).execute()
+                items = playlist_info.get("items", [])
+                if items:
+                    self.title = items[0]["snippet"]["title"]
+            except Exception as e:
+                logging.error(f"Error fetching YouTube playlist metadata: {e}")
+                # Title remains None if error
+
             # YouTube API pagination logic (Because the YouTube API is annoying)
             items_collected = 0
             items_needed = amount
@@ -222,6 +235,17 @@ class PlaylistRequest:
 
             if self.media_type == "playlist":
                 try:
+                    # Fetch playlist metadata to get the title
+                    playlist_info = spotify_api.api_call(
+                        endpoint_template="playlists/{playlist_id}",
+                        placeholder_values={"playlist_id": resource_id}
+                    )
+                    self.title = playlist_info.get("name")
+                except Exception as e:
+                    logging.error(f"Error fetching Spotify playlist metadata: {e}")
+                    # Title remains None if error
+
+                try:
                     # Fetch playlist tracks with offset
                     results = spotify_api.api_call(
                         endpoint_template="playlists/{playlist_id}/tracks",
@@ -246,6 +270,17 @@ class PlaylistRequest:
                     url = f"{SPOTIFY_TRACK_URL_PREFIX}{track.get('id')}"
                     self.items.append(PlaylistItem(url=url, title=title, artist=artists))
             elif self.media_type == "album":
+                try:
+                    # Fetch album metadata to get the title
+                    album_info = spotify_api.api_call(
+                        endpoint_template="albums/{album_id}",
+                        placeholder_values={"album_id": resource_id}
+                    )
+                    self.title = album_info.get("name")
+                except Exception as e:
+                    logging.error(f"Error fetching Spotify album metadata: {e}")
+                    # Title remains None if error
+
                 try:
                     # Fetch album tracks with offset
                     results = spotify_api.api_call(
