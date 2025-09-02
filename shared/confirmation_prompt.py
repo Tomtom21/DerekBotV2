@@ -9,7 +9,8 @@ class ConfirmationPrompt:
     """
     def __init__(
             self,
-            prompt_text: str,
+            title: str,
+            description: str,
             on_confirm_callback,
             on_cancel_callback=None,
             status_default_msg="Please either confirm or cancel.",
@@ -27,7 +28,8 @@ class ConfirmationPrompt:
         :param status_confirmed_msg: Status message after confirmation.
         :param status_cancelled_msg: Status message after cancellation.
         """
-        self.prompt_text = prompt_text
+        self.title = title
+        self.description = description
 
         # Button callbacks
         self.on_confirm_callback = on_confirm_callback
@@ -49,7 +51,7 @@ class ConfirmationPrompt:
         """
         Returns the full message to display, including status.
         """
-        return f"{self.prompt_text}\n\n---\n{self.status}"
+        return f"## {self.title}\n{self.description}\n\n---\n*{self.status}*"
 
     def create_view(self):
         """

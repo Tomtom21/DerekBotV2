@@ -20,7 +20,7 @@ from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
 from shared.track_downloader.title_scoring import TitleScore
 from shared.track_downloader.utils import get_text_similarity
-from shared.constants import NORMALIZE_DURATION_THRESHOLD
+from shared.constants import NORMALIZE_DURATION_THRESHOLD, YOUTUBE_VIDEO_URL_PREFIX
 
 
 class SongDownloader:
@@ -78,7 +78,7 @@ class SongDownloader:
 
         # Generating a series of requests to filter
         potential_song_requests = [
-            SongRequest(f"https://www.youtube.com/watch?v={video_id}")
+            SongRequest(f"{YOUTUBE_VIDEO_URL_PREFIX}{video_id}")
             for video_id in youtube_video_ids
         ]
 

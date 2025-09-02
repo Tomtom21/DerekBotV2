@@ -1,6 +1,11 @@
-from shared.track_downloader.errors import URLValidationError, URLClassificationError, MediaTypeMismatchError
-from shared.track_downloader.utils import parse_url_info
+import logging
 from urllib.parse import urlunparse, urlencode
+
+from shared.track_downloader.errors import URLValidationError, URLClassificationError, MediaTypeMismatchError, SpotifyListFetchError, YoutubePlaylistFetchError
+from shared.track_downloader.utils import parse_url_info, extract_yt_playlist_id
+from shared.spotify_api import SpotifyAPI
+from shared.youtube_api import YoutubeAPI
+from shared.constants import SPOTIFY_TRACK_URL_PREFIX, YOUTUBE_VIDEO_URL_PREFIX
 
 class LinkValidator:
     """
@@ -113,6 +118,16 @@ class PlaylistItem:
         self.title = title
         self.artist = artist
 
+    def __str__(self):
+        """
+        Called when the object is printed to the console
+
+        :return: The new format of the printed message
+        """
+        return (f"('url': {self.url}, "
+                f"'title': {self.title}, "
+                f"'artist': {self.artist})")
+
 
 class PlaylistRequest:
     """
@@ -145,6 +160,145 @@ class PlaylistRequest:
             self.media_type = next(iter(intersecting_types))
         else:
             raise MediaTypeMismatchError("The provided media type does not match what is required for a playlist")
+
+    async def fetch_items(self, spotify_api: SpotifyAPI, youtube_api: YoutubeAPI, amount, start_at):
+        if self.source == "youtube":
+            # Get playlist ID from URL
+            playlist_id = extract_yt_playlist_id(self.url)
+            if not playlist_id:
+                return
+
+            # Fetch playlist metadata to get the title
+            try:
+                playlist_info = youtube_api.youtube_api.playlists().list(
+                    part="snippet",
+                    id=playlist_id
+                ).execute()
+                items = playlist_info.get("items", [])
+                if items:
+                    self.title = items[0]["snippet"]["title"]
+            except Exception as e:
+                logging.error(f"Error fetching YouTube playlist metadata: {e}")
+                # Title remains None if error
+
+            # YouTube API pagination logic (Because the YouTube API is annoying)
+            items_collected = 0
+            items_needed = amount
+            items_skipped = 0
+            page_token = None
+
+            # Putting everything in a try to block to catch API errors
+            try:
+                while items_collected < items_needed:
+                    # Calculate how many items to request in this page
+                    max_results = min(50, items_needed + start_at - items_skipped)
+                    results = youtube_api.youtube_api.playlistItems().list(
+                        part="snippet",
+                        playlistId=playlist_id,
+                        maxResults=max_results,
+                        pageToken=page_token
+                    ).execute()
+                    page_items = results.get("items", [])
+                    total_items_in_page = len(page_items)
+
+                    # Skip items until we reach start_at
+                    if items_skipped < start_at:
+                        skip_count = min(start_at - items_skipped, total_items_in_page)
+                        page_items = page_items[skip_count:]
+                        items_skipped += skip_count
+
+                    # Add items up to the requested amount
+                    for item in page_items:
+                        if items_collected >= items_needed:
+                            break
+                        video_id = item["snippet"]["resourceId"]["videoId"]
+                        title = item["snippet"]["title"]
+                        url = f"{YOUTUBE_VIDEO_URL_PREFIX}{video_id}"
+                        self.items.append(PlaylistItem(url=url, title=title))
+                        items_collected += 1
+
+                    # If there are no more pages, break
+                    page_token = results.get("nextPageToken")
+                    if not page_token or items_collected >= items_needed:
+                        break
+            except Exception as e:
+                logging.error(f"Error fetching YouTube playlist: {e}")
+                raise YoutubePlaylistFetchError("Failed to fetch YouTube playlist videos") from e
+        elif self.source == "spotify":
+            # Get playlist or album ID from URL
+            parsed = parse_url_info(self.url)
+            url_path = parsed["path"].strip("/").split("/")
+            resource_id = url_path[1] if len(url_path) > 1 else None
+            logging.info(f"Resource ID: {resource_id}")
+            if not resource_id:
+                return
+
+            if self.media_type == "playlist":
+                try:
+                    # Fetch playlist metadata to get the title
+                    playlist_info = spotify_api.api_call(
+                        endpoint_template="playlists/{playlist_id}",
+                        placeholder_values={"playlist_id": resource_id}
+                    )
+                    self.title = playlist_info.get("name")
+                except Exception as e:
+                    logging.error(f"Error fetching Spotify playlist metadata: {e}")
+                    # Title remains None if error
+
+                try:
+                    # Fetch playlist tracks with offset
+                    results = spotify_api.api_call(
+                        endpoint_template="playlists/{playlist_id}/tracks",
+                        placeholder_values={"playlist_id": resource_id},
+                        limit=amount,
+                        offset=start_at
+                    )
+                except Exception as e:
+                    logging.error(f"Error fetching Spotify playlist: {e}")
+                    raise SpotifyListFetchError("Failed to fetch Spotify playlist") from e
+                
+                # Looping through and getting the data we need
+                for item in results.get("items", []):
+                    track = item.get("track")
+
+                    # Skipping items if no track info
+                    if not track:
+                        continue
+
+                    title = track.get("name")
+                    artists = ", ".join(a["name"] for a in track.get("artists", []))
+                    url = f"{SPOTIFY_TRACK_URL_PREFIX}{track.get('id')}"
+                    self.items.append(PlaylistItem(url=url, title=title, artist=artists))
+            elif self.media_type == "album":
+                try:
+                    # Fetch album metadata to get the title
+                    album_info = spotify_api.api_call(
+                        endpoint_template="albums/{album_id}",
+                        placeholder_values={"album_id": resource_id}
+                    )
+                    self.title = album_info.get("name")
+                except Exception as e:
+                    logging.error(f"Error fetching Spotify album metadata: {e}")
+                    # Title remains None if error
+
+                try:
+                    # Fetch album tracks with offset
+                    results = spotify_api.api_call(
+                        endpoint_template="albums/{album_id}/tracks",
+                        placeholder_values={"album_id": resource_id},
+                        limit=amount,
+                        offset=start_at
+                    )
+                except Exception as e:
+                    logging.error(f"Error fetching Spotify album: {e}")
+                    raise SpotifyListFetchError("Failed to fetch Spotify album") from e
+                
+                # Looping through and getting the data we need
+                for track in results.get("items", []):
+                    title = track.get("name")
+                    artists = ", ".join(a["name"] for a in track.get("artists", []))
+                    url = f"{SPOTIFY_TRACK_URL_PREFIX}{track.get('id')}"
+                    self.items.append(PlaylistItem(url=url, title=title, artist=artists))
 
 
 class SongRequest:

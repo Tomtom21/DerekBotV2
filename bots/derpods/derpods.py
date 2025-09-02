@@ -77,12 +77,11 @@ class Derpods(BaseBot, commands.Bot):
             output_path=audio_file_directory
         )
         self.playlist_downloader = PlaylistDownloader(
-            spotify_api=self.spotify_api,
-            youtube_api=self.youtube_api,
             song_downloader=self.song_downloader
         )
         self.music_service = MusicService(
             song_downloader=self.song_downloader,
+            playlist_downloader=self.playlist_downloader,
             audio_manager=self.audio_manager
         )
 
@@ -95,6 +94,8 @@ class Derpods(BaseBot, commands.Bot):
         logging.info("Adding cogs...")
         await self.add_cog(MusicCommandCog(
             self,
+            spotify_api=self.spotify_api,
+            youtube_api=self.youtube_api,
             music_service=self.music_service
         ))
         await self.tree.sync()

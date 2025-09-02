@@ -5,6 +5,9 @@ from discord import app_commands, Interaction, ButtonStyle, Member
 
 from shared.track_downloader.playlist_downloader import PlaylistDownloader
 from shared.track_downloader.song_downloader import SongDownloader
+from shared.spotify_api import SpotifyAPI
+from shared.youtube_api import YoutubeAPI
+from shared.track_downloader.models import PlaylistRequest, SongRequest
 from shared.track_downloader.errors import (
     SpotifyAPIError,
     URLClassificationError,
@@ -12,14 +15,19 @@ from shared.track_downloader.errors import (
 )
 from shared.music_service import MusicService, NotInVoiceChannelError
 from shared.DiscordList import DiscordList
+from shared.confirmation_prompt import ConfirmationPrompt
 
 class MusicCommandCog(commands.Cog):
     def __init__(
             self,
             bot: commands.Bot,
+            spotify_api: SpotifyAPI,
+            youtube_api: YoutubeAPI,
             music_service: MusicService
     ):
         self.bot = bot
+        self.spotify_api = spotify_api
+        self.youtube_api = youtube_api
         self.music_service = music_service
 
     group = app_commands.Group(
@@ -99,14 +107,40 @@ class MusicCommandCog(commands.Cog):
         :param amount: Number of tracks to add (max 50)
         """
         await interaction.response.defer()
-        # TODO: Implement logic to add tracks from the playlist
-        logging.info(
-            f"User {interaction.user.name} requested to add playlist: {playlist_url} "
-            f"starting at {start_at} with {amount} tracks"
+
+        # Ensure the user is in a voice channel
+        try:
+            await self.ensure_in_voice_channel(interaction)
+        except NotInVoiceChannelError as error:
+            await error.handle_error(interaction, requires_followup=True)
+            return
+
+        # Getting information about our playlist
+        playlist_request = PlaylistRequest(playlist_url)
+        await playlist_request.fetch_items(self.spotify_api, self.youtube_api, amount, start_at)
+
+        # Defining a callback that runs to start the downloading process
+        async def on_confirm_callback(interaction: Interaction):
+            async def noop_callback(download_result: SongRequest):
+                pass
+            await self.music_service.download_and_queue_playlist(
+                playlist_request=playlist_request,
+                callback_func=noop_callback,
+                user=interaction.user
+            )
+
+        # Showing a confirmation prompt on whether to load the playlist or not.
+        confirmation_prompt = ConfirmationPrompt(
+            title="Confirm Playlist Load",
+            description=f"Do you want to load the playlist **{playlist_request.title}**?",
+            on_confirm_callback=on_confirm_callback,
+            status_confirmed_msg="✅ Confirmed. The playlist will start being loaded into the queue."
         )
-        await interaction.followup.send(
-            f"Added {amount} tracks from playlist: {playlist_url} (starting at {start_at})"
+        sent_message = await interaction.followup.send(
+            confirmation_prompt.get_message(),
+            view=confirmation_prompt.create_view()
         )
+        confirmation_prompt.message = sent_message
 
     @group.command(name="queue", description="Show the current music queue")
     async def queue(self, interaction: Interaction):
