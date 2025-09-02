@@ -77,8 +77,6 @@ class Derpods(BaseBot, commands.Bot):
             output_path=audio_file_directory
         )
         self.playlist_downloader = PlaylistDownloader(
-            spotify_api=self.spotify_api,
-            youtube_api=self.youtube_api,
             song_downloader=self.song_downloader
         )
         self.music_service = MusicService(
