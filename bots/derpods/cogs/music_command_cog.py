@@ -160,10 +160,11 @@ class MusicCommandCog(commands.Cog):
             """
             Returns the current music queue.
             """
-            return [
-                f"*{audio_item.audio_name}*, [{format_duration(audio_item.duration)}] • {audio_item.added_by}"
-                for audio_item in self.music_service.audio_manager.queue
-            ]
+            items = []
+            for audio_item in self.music_service.audio_manager.queue:
+                priority_icon = "🔴" if audio_item.high_priority else "⚫"
+                items.append(f"{priority_icon} **{audio_item.audio_name}**, [{format_duration(audio_item.duration)}] • *{audio_item.added_by}*")
+            return items
 
         def get_current_audio_name():
             """
