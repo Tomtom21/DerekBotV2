@@ -132,7 +132,11 @@ class MusicCommandCog(commands.Cog):
         # Showing a confirmation prompt on whether to load the playlist or not.
         confirmation_prompt = ConfirmationPrompt(
             title="Confirm Playlist Load",
-            description=f"Do you want to load the playlist **{playlist_request.title}**?",
+            description=(
+                f"Do you want to load the playlist **{playlist_request.title}**? "
+                f"**{amount}** songs will be added to the queue, starting from "
+                f"position **{start_at}**."
+            ),
             on_confirm_callback=on_confirm_callback,
             status_confirmed_msg="✅ Confirmed. The playlist will start being loaded into the queue."
         )
