@@ -161,7 +161,7 @@ class MusicCommandCog(commands.Cog):
             Returns the current music queue.
             """
             return [
-                f"*{audio_item.audio_name}*, [{format_duration(audio_item.duration)}] • {audio_item.added_by}"
+                f"**{audio_item.audio_name}**, [{format_duration(audio_item.duration)}] • *{audio_item.added_by}*"
                 for audio_item in self.music_service.audio_manager.queue
             ]
 
