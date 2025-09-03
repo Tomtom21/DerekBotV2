@@ -166,7 +166,8 @@ class PlaylistRequest:
             # Get playlist ID from URL
             playlist_id = extract_yt_playlist_id(self.url)
             if not playlist_id:
-                return
+                logging.error("Failed to extract YouTube playlist ID from URL")
+                raise YoutubePlaylistFetchError("Failed to extract YouTube playlist ID from URL")
 
             # Fetch playlist metadata to get the title
             try:
@@ -229,9 +230,9 @@ class PlaylistRequest:
             parsed = parse_url_info(self.url)
             url_path = parsed["path"].strip("/").split("/")
             resource_id = url_path[1] if len(url_path) > 1 else None
-            logging.info(f"Resource ID: {resource_id}")
             if not resource_id:
-                return
+                logging.error("Failed to extract Spotify resource ID from URL")
+                raise SpotifyListFetchError("Failed to extract Spotify resource ID from URL")
 
             if self.media_type == "playlist":
                 try:
