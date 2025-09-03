@@ -30,7 +30,7 @@ class MusicService:
         self.playlist_downloader = playlist_downloader
         self.audio_manager = audio_manager
 
-    async def download_and_queue_song(
+    async def download_and_queue_song_from_url(
             self,
             song_url: str,
             user: Member,

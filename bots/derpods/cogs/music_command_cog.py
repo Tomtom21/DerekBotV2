@@ -64,7 +64,7 @@ class MusicCommandCog(commands.Cog):
 
         # Attempt to download the song using the song downloader
         try:
-            song_request = await self.music_service.download_and_queue_song(
+            song_request = await self.music_service.download_and_queue_song_from_url(
                 song_url,
                 interaction.user,
                 high_priority=True
