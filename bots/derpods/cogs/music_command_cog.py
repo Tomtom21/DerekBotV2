@@ -84,6 +84,41 @@ class MusicCommandCog(commands.Cog):
             await interaction.followup.send("`Failed to download song.`")
             return
 
+    @group.command(name="searchsong", description="Search for a song and add to the queue")
+    @app_commands.describe(search_query="The search query to find the song")
+    async def search_song(self, interaction: Interaction, search_query: str):
+        """
+        Searches for a song using the provided search query.
+
+        :param interaction: The Discord interaction object
+        :param search_query: The search query to find the song
+        """
+        await interaction.response.defer()
+
+        # Ensure the user is in a voice channel
+        try:
+            await self.ensure_in_voice_channel(interaction)
+        except NotInVoiceChannelError as error:
+            await error.handle_error(interaction, requires_followup=True)
+            return
+
+        # Attempt to download the song using the search query
+        try:
+            song_request = await self.music_service.download_and_queue_song_from_query(
+                search_query,
+                interaction.user,
+                high_priority=True
+            )
+            logging.info(f"User {interaction.user.name} requested to search song: {search_query}")
+            await interaction.followup.send(f"Added **{song_request.title}** to the queue.")
+        except (URLClassificationError, MediaTypeMismatchError) as e:
+            logging.error(f"URL classification error while searching song: {e}")
+            await interaction.followup.send("`Invalid or unsupported song URL.`")
+            return
+        except Exception as e:
+            logging.error(f"Error while searching song: {e}")
+            await interaction.followup.send("`Failed to search song.`")
+            return
 
     @group.command(name="addplaylist", description="Youtube or Spotify playlist URL")
     @app_commands.describe(
