@@ -30,7 +30,7 @@ class MusicService:
         self.playlist_downloader = playlist_downloader
         self.audio_manager = audio_manager
 
-    async def download_and_queue_song(
+    async def download_and_queue_song_from_url(
             self,
             song_url: str,
             user: Member,
@@ -47,6 +47,46 @@ class MusicService:
         # Download the song
         song_request: SongRequest = await self.song_downloader.download_song_by_url(song_url)
         logging.info(f"Downloaded song: {song_request.title}")
+
+        # Add the downloaded song to the audio manager's queue
+        if high_priority is not None:
+            await self.audio_manager.add_to_queue(
+                song_request.file_path,
+                song_request.content_duration,
+                user.voice.channel,
+                high_priority=high_priority,
+                audio_name=song_request.title,
+                added_by=user.display_name
+            )
+        else:
+            await self.audio_manager.add_to_queue(
+                song_request.file_path,
+                song_request.content_duration,
+                user.voice.channel,
+                audio_name=song_request.title,
+                added_by=user.display_name
+            )
+        logging.info(f"Added song to queue: {song_request.title}")
+
+        return song_request
+
+    async def download_and_queue_song_from_query(
+            self,
+            search_query: str,
+            user: Member,
+            high_priority: bool = None
+    ) -> SongRequest:
+        """
+        Downloads a song using a search query and adds it to the VCAudioManager's queue.
+
+        :param search_query: The search query to find the song
+        :param voice_channel: The voice channel to join for playback
+        :param high_priority: Whether to add the song to the front of the queue
+        :return: The SongRequest object if successful
+        """
+        # Download the song using the search query
+        song_request: SongRequest = await self.song_downloader.download_song_by_search(search_query)
+        logging.info(f"Downloaded song from query '{search_query}': {song_request.title}")
 
         # Add the downloaded song to the audio manager's queue
         if high_priority is not None:
