@@ -19,7 +19,7 @@ from shared.track_downloader.audio_processing import normalize_audio_track
 from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
 from shared.track_downloader.title_scoring import TitleScore
-from shared.track_downloader.utils import get_text_similarity
+from shared.track_downloader.utils import get_text_similarity, extract_spotify_resource_info
 from shared.constants import NORMALIZE_DURATION_THRESHOLD, YOUTUBE_VIDEO_URL_PREFIX
 
 
@@ -233,7 +233,7 @@ class SongDownloader:
         """
         # Getting info about the song
         logging.info(f"Retrieving Spotify track information for URL: {song_request.url}")
-        song_id = self.spotify_api.get_spotify_item_id(song_request.url)
+        _, song_id = extract_spotify_resource_info(song_request.url)
         song_info = self.spotify_api.api_call(
             endpoint_template="tracks/{track_id}",
             placeholder_values={"track_id": song_id}

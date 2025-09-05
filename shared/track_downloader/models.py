@@ -2,7 +2,7 @@ import logging
 from urllib.parse import urlunparse, urlencode
 
 from shared.track_downloader.errors import URLValidationError, URLClassificationError, MediaTypeMismatchError, SpotifyListFetchError, YoutubePlaylistFetchError
-from shared.track_downloader.utils import parse_url_info, extract_yt_playlist_id
+from shared.track_downloader.utils import parse_url_info, extract_yt_playlist_id, extract_spotify_resource_info
 from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
 from shared.constants import SPOTIFY_TRACK_URL_PREFIX, YOUTUBE_VIDEO_URL_PREFIX
@@ -86,9 +86,8 @@ class LinkValidator:
             if "v" in parsed_url["query"]:
                 detected_types.add("song")
         elif source == "spotify":
-            url_path = parsed_url["path"].strip("/").split("/")
-            if len(url_path) >= 2:
-                resource_type = url_path[0]
+            resource_type, _ = extract_spotify_resource_info(url)
+            if resource_type:
                 # Accept "track" as "song" for Spotify
                 if resource_type == "track":
                     detected_types.add("song")
@@ -227,9 +226,7 @@ class PlaylistRequest:
                 raise YoutubePlaylistFetchError("Failed to fetch YouTube playlist videos") from e
         elif self.source == "spotify":
             # Get playlist or album ID from URL
-            parsed = parse_url_info(self.url)
-            url_path = parsed["path"].strip("/").split("/")
-            resource_id = url_path[1] if len(url_path) > 1 else None
+            _, resource_id = extract_spotify_resource_info(self.url)
             if not resource_id:
                 logging.error("Failed to extract Spotify resource ID from URL")
                 raise SpotifyListFetchError("Failed to extract Spotify resource ID from URL")

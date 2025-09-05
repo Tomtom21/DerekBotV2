@@ -66,18 +66,8 @@ class SpotifyAPI:
 
             return api_response.json()
 
+        #TODO: import this
         raise SpotifyAPIError("Spotify API failed after retrying.")
-
-    @staticmethod
-    def get_spotify_item_id(spotify_url: str):
-        """
-        Gets the id of a Spotify item from the provided Spotify URL
-
-        :param spotify_url: A Spotify item URL
-        :return: The Spotify item id
-        """
-        item_id = spotify_url.split("/")[-1].split("?")[0]
-        return item_id
 
     def api_call(self, endpoint_template: str, placeholder_values=None, **query_params):
         """
