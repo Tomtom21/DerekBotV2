@@ -66,8 +66,7 @@ class MusicCommandCog(commands.Cog):
         try:
             song_request = await self.music_service.download_and_queue_song_from_url(
                 song_url,
-                interaction.user,
-                high_priority=True
+                interaction.user
             )
             logging.info(f"User {interaction.user.name} requested to add song: {song_url}")
             await interaction.followup.send(f"Added **{song_request.title}** to the queue.")
@@ -106,8 +105,7 @@ class MusicCommandCog(commands.Cog):
         try:
             song_request = await self.music_service.download_and_queue_song_from_query(
                 search_query,
-                interaction.user,
-                high_priority=True
+                interaction.user
             )
             logging.info(f"User {interaction.user.name} requested to search song: {search_query}")
             await interaction.followup.send(f"Added **{song_request.title}** to the queue.")
