@@ -33,13 +33,14 @@ def extract_yt_resource_info(url):
     path = parsed["path"]
     netloc = parsed["netloc"]
 
+    # Handle video via query param.
+    # Handle these first since a video link can also have a playlist param.
+    if "v" in query:
+        return "v", query["v"][0]
+
     # Handle playlist
     if "list" in query:
         return "list", query["list"][0]
-
-    # Handle video via query param
-    if "v" in query:
-        return "v", query["v"][0]
 
     # Handle short youtu.be URLs (video id in path)
     if netloc == "youtu.be":
