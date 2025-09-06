@@ -79,11 +79,11 @@ class LinkValidator:
 
         # Adding detected types based on what we find in the url
         if source == "youtube":
-            resource_type, _ = extract_yt_resource_info(url)
-            if resource_type == "list":
+            yt_info = extract_yt_resource_info(url)
+            if "list" in yt_info:
                 detected_types.add("playlist")
 
-            if resource_type == "v":
+            if "v" in yt_info:
                 detected_types.add("song")
         elif source == "spotify":
             resource_type, _ = extract_spotify_resource_info(url)
@@ -163,7 +163,8 @@ class PlaylistRequest:
     async def fetch_items(self, spotify_api: SpotifyAPI, youtube_api: YoutubeAPI, amount, start_at):
         if self.source == "youtube":
             # Get playlist ID from URL
-            _, playlist_id = extract_yt_resource_info(self.url)
+            yt_info = extract_yt_resource_info(self.url)
+            playlist_id = yt_info.get("list")
             if not playlist_id:
                 logging.error("Failed to extract YouTube playlist ID from URL")
                 raise YoutubePlaylistFetchError("Failed to extract YouTube playlist ID from URL")
