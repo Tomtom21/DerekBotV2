@@ -22,33 +22,34 @@ def parse_url_info(url):
 
 def extract_yt_resource_info(url):
     """
-    Extracts YouTube resource type and ID from a URL.
+    Extracts YouTube resource types and IDs from a URL.
     Handles both video and playlist links, including short youtu.be URLs.
 
     :param url: The YouTube URL.
-    :returns: A tuple ('v' or 'list', id) or (None, None) if not found.
+    :returns: A dict with keys 'v' and/or 'list' and their IDs, or empty dict if not found.
     """
     parsed = parse_url_info(url)
     query = parsed["query"]
     path = parsed["path"]
     netloc = parsed["netloc"]
 
-    # Handle video via query param.
-    # Handle these first since a video link can also have a playlist param.
+    result = {}
+
+    # Handle video via query param
     if "v" in query:
-        return "v", query["v"][0]
+        result["v"] = query["v"][0]
 
     # Handle playlist
     if "list" in query:
-        return "list", query["list"][0]
+        result["list"] = query["list"][0]
 
     # Handle short youtu.be URLs (video id in path)
     if netloc == "youtu.be":
         video_id = path.lstrip("/")
         if video_id:
-            return "v", video_id
+            result["v"] = video_id
 
-    return None, None
+    return result
 
 
 def extract_spotify_resource_info(url):
