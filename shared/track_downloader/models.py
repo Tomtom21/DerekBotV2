@@ -2,7 +2,7 @@ import logging
 from urllib.parse import urlunparse, urlencode
 
 from shared.track_downloader.errors import URLValidationError, URLClassificationError, MediaTypeMismatchError, SpotifyListFetchError, YoutubePlaylistFetchError
-from shared.track_downloader.utils import parse_url_info, extract_yt_playlist_id, extract_spotify_resource_info
+from shared.track_downloader.utils import parse_url_info, extract_yt_resource_info, extract_spotify_resource_info
 from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
 from shared.constants import SPOTIFY_TRACK_URL_PREFIX, YOUTUBE_VIDEO_URL_PREFIX
@@ -75,15 +75,15 @@ class LinkValidator:
         :raise URLClassificationError: If no valid link types are detected
         """
         # Parsing the URL
-        parsed_url = parse_url_info(url)
         detected_types = set()
 
         # Adding detected types based on what we find in the url
         if source == "youtube":
-            if "list" in parsed_url["query"]:
+            resource_type, _ = extract_yt_resource_info(url)
+            if resource_type == "list":
                 detected_types.add("playlist")
 
-            if "v" in parsed_url["query"]:
+            if resource_type == "v":
                 detected_types.add("song")
         elif source == "spotify":
             resource_type, _ = extract_spotify_resource_info(url)
@@ -163,7 +163,7 @@ class PlaylistRequest:
     async def fetch_items(self, spotify_api: SpotifyAPI, youtube_api: YoutubeAPI, amount, start_at):
         if self.source == "youtube":
             # Get playlist ID from URL
-            playlist_id = extract_yt_playlist_id(self.url)
+            _, playlist_id = extract_yt_resource_info(self.url)
             if not playlist_id:
                 logging.error("Failed to extract YouTube playlist ID from URL")
                 raise YoutubePlaylistFetchError("Failed to extract YouTube playlist ID from URL")
