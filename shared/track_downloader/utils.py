@@ -20,25 +20,37 @@ def parse_url_info(url):
         "parsed": parsed
     }
 
-
-def extract_yt_playlist_id(url):
+def extract_yt_resource_info(url):
     """
-    Extracts the YouTube playlist ID from a URL.
+    Extracts YouTube resource types and IDs from a URL.
+    Handles both video and playlist links, including short youtu.be URLs.
 
     :param url: The YouTube URL.
-    :returns: The playlist ID if present, otherwise None.
+    :returns: A dict with keys 'v' and/or 'list' and their IDs, or empty dict if not found.
     """
-    return parse_url_info(url)["query"].get("list", [None])[0]
+    parsed = parse_url_info(url)
+    query = parsed["query"]
+    path = parsed["path"]
+    netloc = parsed["netloc"]
 
+    result = {}
 
-def extract_yt_video_id(url):
-    """
-    Extracts the YouTube video ID from a URL.
+    # Handle video via query param
+    if "v" in query:
+        result["v"] = query["v"][0]
 
-    :param url: The YouTube URL.
-    :returns: The video ID if present, otherwise None.
-    """
-    return parse_url_info(url)["query"].get("v", [None])[0]
+    # Handle playlist
+    if "list" in query:
+        result["list"] = query["list"][0]
+
+    # Handle short youtu.be URLs (video id in path)
+    if netloc == "youtu.be":
+        video_id = path.lstrip("/")
+        if video_id:
+            result["v"] = video_id
+
+    return result
+
 
 def extract_spotify_resource_info(url):
     """

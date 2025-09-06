@@ -146,6 +146,7 @@ class SongDownloader:
         if song_request.source == "youtube":
             # We aren't going to be running the query download, so we need to get the video info here
             try:
+                #TODO: Maybe change this over to use YouTube API instead of yt-dlp
                 with yt_dlp.YoutubeDL({"quiet": True}) as ydl:
                     video_info = ydl.extract_info(song_request.url, download = False)
 
