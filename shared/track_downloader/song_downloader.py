@@ -13,6 +13,7 @@ from shared.file_utils import get_random_file_id
 from shared.track_downloader.errors import (
     YouTubeSearchError,
     DownloadError,
+    SpotifyAPIError
 )
 from shared.track_downloader.models import SongRequest
 from shared.track_downloader.audio_processing import normalize_audio_track
@@ -134,7 +135,7 @@ class SongDownloader:
             return video_ids
         except Exception as e:
             logging.error(f"Failed to search YouTube: {e}")
-            return [] #TODO: Raise error?
+            raise YouTubeSearchError("Failed to search YouTube") from e
 
     async def _route_song_download(self, song_request: SongRequest):
         """
@@ -234,15 +235,20 @@ class SongDownloader:
         """
         # Getting info about the song
         logging.info(f"Retrieving Spotify track information for URL: {song_request.url}")
-        _, song_id = extract_spotify_resource_info(song_request.url)
-        song_info = self.spotify_api.api_call(
-            endpoint_template="tracks/{track_id}",
-            placeholder_values={"track_id": song_id}
-        )
-        song_name = song_info['name']
-        song_artists = ", ".join(artist['name'] for artist in song_info['artists'])
+        try:
+            _, song_id = extract_spotify_resource_info(song_request.url)
+            song_info = self.spotify_api.api_call(
+                endpoint_template="tracks/{track_id}",
+                placeholder_values={"track_id": song_id}
+            )
+            song_name = song_info['name']
+            song_artists = ", ".join(artist['name'] for artist in song_info['artists'])
 
-        search_string = f"{song_name} - {song_artists}"
+            search_string = f"{song_name} - {song_artists}"
 
-        # Searching for the song
-        return await self._download_song_from_query(search_string)
+            # Searching for the song
+            return await self._download_song_from_query(search_string)
+        except Exception as e:
+            logging.error(f"Failed to retrieve Spotify track information: {e}")
+            raise SpotifyAPIError("Failed to retrieve Spotify track information") from e
+        
