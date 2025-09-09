@@ -122,6 +122,24 @@ class VCAudioManager:
                 self.current_audio_item = self.queue.pop(0)
 
             try:
+                # Ensure the bot is in the guild
+                bot_member = self.current_audio_item.voice_channel.guild.me
+                if bot_member is None:
+                    logging.error(
+                        f"Bot is not a member of guild: {self.current_audio_item.voice_channel.guild.name}"
+                    )
+                    continue  # Skip to next item
+                
+                # Check permissions for bot to connect and speak in the voice channel
+                perms = self.current_audio_item.voice_channel.permissions_for(bot_member)
+                if not perms.connect or not perms.speak:
+                    logging.error(
+                        f"Missing permissions to join or speak in voice channel "
+                        f"({self.current_audio_item.voice_channel.name}) "
+                        f"in guild ({self.current_audio_item.voice_channel.guild.name})"
+                    )
+                    continue  # Skip to next item
+                
                 # Connect or move to the correct voice channel
                 if self._current_voice_channel is None or not self._current_voice_channel.is_connected():
                     try:
