@@ -14,7 +14,9 @@ from shared.track_downloader.errors import (
     MediaTypeMismatchError,
     URLValidationError,
     DownloadError,
-    YouTubeSearchError
+    YouTubeSearchError,
+    YoutubePlaylistFetchError,
+    SpotifyListFetchError
 )
 from shared.music_service import MusicService, NotInVoiceChannelError
 from shared.DiscordList import DiscordList
@@ -47,22 +49,32 @@ class MusicCommandCog(commands.Cog):
         if not interaction.user.voice or not interaction.user.voice.channel:
             raise NotInVoiceChannelError
 
-    async def _handle_song_errors(self, interaction, error):
+    async def _handle_common_errors(self, interaction, error):
         """
-        Handles common errors for song-related commands.
+        Handles errors common to both song and playlist commands.
         """
         if isinstance(error, MediaTypeMismatchError):
             logging.error(f"Media type mismatch: {error}")
             await interaction.followup.send(
-                f"`The command cannot process the provided URL. Did you provide a playlist URL"
-                f" instead of a song URL (or vice versa)?`"
+                "`The command cannot process the provided URL. Did you provide a playlist URL instead of a song URL (or vice versa)?`"
             )
+            return True
         elif isinstance(error, URLValidationError):
             logging.error(f"URL validation error: {error}")
             await interaction.followup.send("`The provided URL is invalid. Ensure it is a supported URL.`")
+            return True
         elif isinstance(error, URLClassificationError):
-            logging.error(f"URL classification error while downloading song: {error}")
+            logging.error(f"URL classification error: {error}")
             await interaction.followup.send("`Unable to identify url type.`")
+            return True
+        return False
+
+    async def _handle_song_errors(self, interaction, error):
+        """
+        Handles common errors for song-related commands.
+        """
+        if await self._handle_common_errors(interaction, error):
+            return
         elif isinstance(error, DownloadError):
             logging.error(f"Download error: {error}")
             await interaction.followup.send("`Failed to download song.`")
@@ -75,6 +87,22 @@ class MusicCommandCog(commands.Cog):
         else:
             logging.error(f"Unhandled error: {error}")
             await interaction.followup.send("`An unexpected error occurred.`")
+
+    async def _handle_playlist_errors(self, interaction, error):
+        """
+        Handles common errors for playlist-related commands.
+        """
+        if await self._handle_common_errors(interaction, error):
+            return
+        elif isinstance(error, YoutubePlaylistFetchError):
+            logging.error(f"YouTube playlist fetch error: {error}")
+            await interaction.followup.send("`Failed to fetch playlist from YouTube.`")
+        elif isinstance(error, SpotifyListFetchError):
+            logging.error(f"Spotify list fetch error: {error}")
+            await interaction.followup.send("`Failed to fetch list from Spotify.`")
+        else:
+            logging.error(f"Unhandled playlist error: {error}")
+            await interaction.followup.send("`An unexpected error occurred while processing the playlist.`")
 
     @group.command(name="addsong", description="Add a song to the queue by URL (HIGH PRIORITY)")
     @app_commands.describe(song_url="Youtube or Spotify track URL")
@@ -167,8 +195,12 @@ class MusicCommandCog(commands.Cog):
             return
 
         # Getting information about our playlist
-        playlist_request = PlaylistRequest(playlist_url)
-        await playlist_request.fetch_items(self.spotify_api, self.youtube_api, amount, start_at)
+        try:
+            playlist_request = PlaylistRequest(playlist_url)
+            await playlist_request.fetch_items(self.spotify_api, self.youtube_api, amount, start_at)
+        except Exception as e:
+            await self._handle_playlist_errors(interaction, e)
+            return
 
         # Defining a callback that runs to start the downloading process
         async def on_confirm_callback(interaction: Interaction):

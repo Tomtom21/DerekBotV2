@@ -107,6 +107,7 @@ class MusicService:
             # Ensuring the user is still in a voice channel while downloading
             #TODO: Ensure we can continue with other requests if this error is raised
             if user.voice is None:
+                # TODO: May want to continue rather than raise here, not sure
                 raise NotInVoiceChannelError()
 
             await self.audio_manager.add_to_queue(
