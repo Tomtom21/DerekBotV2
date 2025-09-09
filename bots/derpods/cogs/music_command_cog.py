@@ -52,6 +52,10 @@ class MusicCommandCog(commands.Cog):
     async def _handle_common_errors(self, interaction, error):
         """
         Handles errors common to both song and playlist commands.
+
+        :param interaction: The Discord interaction object
+        :param error: The exception that was raised
+        :return: True if the error was handled, False otherwise
         """
         if isinstance(error, MediaTypeMismatchError):
             logging.error(f"Media type mismatch: {error}")
@@ -75,6 +79,9 @@ class MusicCommandCog(commands.Cog):
     async def _handle_song_errors(self, interaction, error):
         """
         Handles common errors for song-related commands.
+        
+        :param interaction: The Discord interaction object
+        :param error: The exception that was raised
         """
         if await self._handle_common_errors(interaction, error):
             return
@@ -94,6 +101,9 @@ class MusicCommandCog(commands.Cog):
     async def _handle_playlist_errors(self, interaction, error):
         """
         Handles common errors for playlist-related commands.
+
+        :param interaction: The Discord interaction object
+        :param error: The exception that was raised
         """
         if await self._handle_common_errors(interaction, error):
             return
