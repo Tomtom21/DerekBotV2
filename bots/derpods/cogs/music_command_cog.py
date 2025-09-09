@@ -12,6 +12,11 @@ from shared.track_downloader.errors import (
     SpotifyAPIError,
     URLClassificationError,
     MediaTypeMismatchError,
+    URLValidationError,
+    DownloadError,
+    YouTubeSearchError,
+    YoutubePlaylistFetchError,
+    SpotifyListFetchError
 )
 from shared.music_service import MusicService, NotInVoiceChannelError
 from shared.DiscordList import DiscordList
@@ -44,6 +49,76 @@ class MusicCommandCog(commands.Cog):
         if not interaction.user.voice or not interaction.user.voice.channel:
             raise NotInVoiceChannelError
 
+    async def _handle_common_errors(self, interaction, error):
+        """
+        Handles errors common to both song and playlist commands.
+
+        :param interaction: The Discord interaction object
+        :param error: The exception that was raised
+        :return: True if the error was handled, False otherwise
+        """
+        if isinstance(error, MediaTypeMismatchError):
+            logging.error(f"Media type mismatch: {error}")
+            await interaction.followup.send(
+                "`The command cannot process the provided URL. "
+                "Did you provide a playlist URL instead of a song URL (or vice versa)?`"
+            )
+            return True
+        elif isinstance(error, URLValidationError):
+            logging.error(f"URL validation error: {error}")
+            await interaction.followup.send(
+                "`The provided URL is invalid. Ensure it is a supported URL.`"
+            )
+            return True
+        elif isinstance(error, URLClassificationError):
+            logging.error(f"URL classification error: {error}")
+            await interaction.followup.send("`Unable to identify url type.`")
+            return True
+        return False
+
+    async def _handle_song_errors(self, interaction, error):
+        """
+        Handles common errors for song-related commands.
+        
+        :param interaction: The Discord interaction object
+        :param error: The exception that was raised
+        """
+        if await self._handle_common_errors(interaction, error):
+            return
+        elif isinstance(error, DownloadError):
+            logging.error(f"Download error: {error}")
+            await interaction.followup.send("`Failed to download song.`")
+        elif isinstance(error, YouTubeSearchError):
+            logging.error(f"YouTube search error: {error}")
+            await interaction.followup.send("`Failed to search for song on YouTube.`")
+        elif isinstance(error, SpotifyAPIError):
+            logging.error(f"Spotify API error: {error}")
+            await interaction.followup.send("`Failed to make Spotify API request.`")
+        else:
+            logging.error(f"Unhandled error: {error}")
+            await interaction.followup.send("`An unexpected error occurred.`")
+
+    async def _handle_playlist_errors(self, interaction, error):
+        """
+        Handles common errors for playlist-related commands.
+
+        :param interaction: The Discord interaction object
+        :param error: The exception that was raised
+        """
+        if await self._handle_common_errors(interaction, error):
+            return
+        elif isinstance(error, YoutubePlaylistFetchError):
+            logging.error(f"YouTube playlist fetch error: {error}")
+            await interaction.followup.send("`Failed to fetch playlist from YouTube.`")
+        elif isinstance(error, SpotifyListFetchError):
+            logging.error(f"Spotify list fetch error: {error}")
+            await interaction.followup.send("`Failed to fetch list from Spotify.`")
+        else:
+            logging.error(f"Unhandled playlist error: {error}")
+            await interaction.followup.send(
+                "`An unexpected error occurred while processing the playlist.`"
+            )
+
     @group.command(name="addsong", description="Add a song to the queue by URL (HIGH PRIORITY)")
     @app_commands.describe(song_url="Youtube or Spotify track URL")
     async def add_song(self, interaction: Interaction, song_url: str):
@@ -70,17 +145,8 @@ class MusicCommandCog(commands.Cog):
             )
             logging.info(f"User {interaction.user.name} requested to add song: {song_url}")
             await interaction.followup.send(f"Added **{song_request.title}** to the queue.")
-        except SpotifyAPIError as e:
-            logging.error(f"Spotify API error while downloading song: {e}")
-            await interaction.followup.send("`Failed to download song from Spotify.`")
-            return
-        except (URLClassificationError, MediaTypeMismatchError) as e:
-            logging.error(f"URL classification error while downloading song: {e}")
-            await interaction.followup.send("`Invalid or unsupported song URL.`")
-            return
         except Exception as e:
-            logging.error(f"Error while downloading song: {e}")
-            await interaction.followup.send("`Failed to download song.`")
+            await self._handle_song_errors(interaction, e)
             return
 
     @group.command(name="searchsong", description="Search for a song and add to the queue")
@@ -109,13 +175,8 @@ class MusicCommandCog(commands.Cog):
             )
             logging.info(f"User {interaction.user.name} requested to search song: {search_query}")
             await interaction.followup.send(f"Added **{song_request.title}** to the queue.")
-        except (URLClassificationError, MediaTypeMismatchError) as e:
-            logging.error(f"URL classification error while searching song: {e}")
-            await interaction.followup.send("`Invalid or unsupported song URL.`")
-            return
         except Exception as e:
-            logging.error(f"Error while searching song: {e}")
-            await interaction.followup.send("`Failed to search song.`")
+            await self._handle_song_errors(interaction, e)
             return
 
     @group.command(name="addplaylist", description="Youtube or Spotify playlist URL")
@@ -149,8 +210,12 @@ class MusicCommandCog(commands.Cog):
             return
 
         # Getting information about our playlist
-        playlist_request = PlaylistRequest(playlist_url)
-        await playlist_request.fetch_items(self.spotify_api, self.youtube_api, amount, start_at)
+        try:
+            playlist_request = PlaylistRequest(playlist_url)
+            await playlist_request.fetch_items(self.spotify_api, self.youtube_api, amount, start_at)
+        except Exception as e:
+            await self._handle_playlist_errors(interaction, e)
+            return
 
         # Defining a callback that runs to start the downloading process
         async def on_confirm_callback(interaction: Interaction):
