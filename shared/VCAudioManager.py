@@ -110,6 +110,16 @@ class VCAudioManager:
         if not self.processing_task or self.processing_task.done():
             self.processing_task = asyncio.create_task(self._playback_loop())
 
+    def _safe_delete_audio_file(self, audio_file_path):
+        """
+        Safely deletes the audio file and logs the result.
+        """
+        try:
+            os.remove(audio_file_path)
+            logging.info(f"Deleted audio file: {audio_file_path}")
+        except Exception as e:
+            logging.error(f"Failed to delete audio file: {e}")
+
     async def _playback_loop(self):
         """
         The loop used to join the voice channel and play audio from the queue.
@@ -128,6 +138,7 @@ class VCAudioManager:
                     logging.error(
                         f"Bot is not a member of guild: {self.current_audio_item.voice_channel.guild.name}"
                     )
+                    self._safe_delete_audio_file(self.current_audio_item.audio_file_path)
                     continue  # Skip to next item
                 
                 # Check permissions for bot to connect and speak in the voice channel
@@ -138,6 +149,7 @@ class VCAudioManager:
                         f"({self.current_audio_item.voice_channel.name}) "
                         f"in guild ({self.current_audio_item.voice_channel.guild.name})"
                     )
+                    self._safe_delete_audio_file(self.current_audio_item.audio_file_path)
                     continue  # Skip to next item
                 
                 # Connect or move to the correct voice channel
@@ -151,6 +163,7 @@ class VCAudioManager:
                     except Exception as e:
                         logging.error(f"Failed to connect to voice channel: {e}")
                         self._current_voice_channel = None
+                        self._safe_delete_audio_file(self.current_audio_item.audio_file_path)
                         continue  # Skip to next item
                 elif self._current_voice_channel.channel != self.current_audio_item.voice_channel:
                     try:
@@ -161,6 +174,7 @@ class VCAudioManager:
                         logging.info(f"Moved to voice channel {self._current_voice_channel.channel.name}")
                     except Exception as e:
                         logging.error(f"Failed to move to voice channel: {e}")
+                        self._safe_delete_audio_file(self.current_audio_item.audio_file_path)
                         continue  # Skip to next item
 
                 # Play the audio. Make sure nothing else is playing first
@@ -178,6 +192,7 @@ class VCAudioManager:
                     )
                 except Exception as e:
                     logging.error(f"Error while trying to play audio: {e}")
+                    self._safe_delete_audio_file(self.current_audio_item.audio_file_path)
                     continue  # Skip to next item
 
                 self.current_state = AudioState.PLAYING
@@ -192,11 +207,7 @@ class VCAudioManager:
                 self.current_state = AudioState.STOPPED
                 
                 # Delete audio file after playback
-                try:
-                    os.remove(self.current_audio_item.audio_file_path)
-                    logging.info(f"Deleted audio file: {self.current_audio_item.audio_file_path}")
-                except Exception as e:
-                    logging.error(f"Failed to delete audio file: {e}")                    
+                self._safe_delete_audio_file(self.current_audio_item.audio_file_path)
 
                 self.current_audio_item = None
 
@@ -205,8 +216,12 @@ class VCAudioManager:
                 
             except discord.DiscordException as e:
                 logging.error(f"Discord Exception: {e}")
+                if self.current_audio_item:
+                    self._safe_delete_audio_file(self.current_audio_item.audio_file_path)
             except Exception as e:
                 logging.error(f"Error: {e}")
+                if self.current_audio_item:
+                    self._safe_delete_audio_file(self.current_audio_item.audio_file_path)
 
         # After all queue items are played, start idle timer
         self.idle_task = asyncio.create_task(self._idle_timer())
