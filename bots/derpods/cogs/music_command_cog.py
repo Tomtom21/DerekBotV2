@@ -56,12 +56,15 @@ class MusicCommandCog(commands.Cog):
         if isinstance(error, MediaTypeMismatchError):
             logging.error(f"Media type mismatch: {error}")
             await interaction.followup.send(
-                "`The command cannot process the provided URL. Did you provide a playlist URL instead of a song URL (or vice versa)?`"
+                "`The command cannot process the provided URL. "
+                "Did you provide a playlist URL instead of a song URL (or vice versa)?`"
             )
             return True
         elif isinstance(error, URLValidationError):
             logging.error(f"URL validation error: {error}")
-            await interaction.followup.send("`The provided URL is invalid. Ensure it is a supported URL.`")
+            await interaction.followup.send(
+                "`The provided URL is invalid. Ensure it is a supported URL.`"
+            )
             return True
         elif isinstance(error, URLClassificationError):
             logging.error(f"URL classification error: {error}")
@@ -102,7 +105,9 @@ class MusicCommandCog(commands.Cog):
             await interaction.followup.send("`Failed to fetch list from Spotify.`")
         else:
             logging.error(f"Unhandled playlist error: {error}")
-            await interaction.followup.send("`An unexpected error occurred while processing the playlist.`")
+            await interaction.followup.send(
+                "`An unexpected error occurred while processing the playlist.`"
+            )
 
     @group.command(name="addsong", description="Add a song to the queue by URL (HIGH PRIORITY)")
     @app_commands.describe(song_url="Youtube or Spotify track URL")
