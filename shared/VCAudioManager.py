@@ -332,3 +332,21 @@ class VCAudioManager:
         if self.current_audio_item:
             return self.current_audio_item.audio_name
         return None
+
+    def skip_all(self):
+        """
+        Skips all songs in the queue and stops the currently playing audio.
+        Removes all items from the queue and deletes their audio files, then skips the current audio.
+        """
+        # Remove all items from the queue and delete their audio files
+        logging.info("Skipping all audio in the queue and stopping current playback.")
+        while self.queue:
+            item = self.queue.pop(0)
+            self._safe_delete_audio_file(item.audio_file_path)
+
+        # Tracking if the queue is empty after clearing
+        is_queue_empty = len(self.queue) == 0
+
+        # Skip the currently playing audio
+        skipped = self.skip_current()
+        return is_queue_empty and skipped
