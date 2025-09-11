@@ -84,6 +84,16 @@ class Derpods(BaseBot):
             "play_song_url": self.song_tools.play_song_url
         }
 
+        # Setting up command cogs
+        cogs = [
+            MusicCommandCog(
+                self,
+                spotify_api=self.spotify_api,
+                youtube_api=self.youtube_api,
+                music_service=self.music_service
+            )
+        ]
+
         # Use super().__init__ for proper multiple inheritance
         super().__init__(
             db_manager_config=db_config,
@@ -92,6 +102,7 @@ class Derpods(BaseBot):
             gpt_prompt_config_column_name=gpt_prompt_config_column_name,
             gpt_function_references=tool_references,
             gpt_tool_definitions=tool_definitions,
+            command_cogs=cogs,
             command_prefix=None,
             intents=intents,
             case_insensitive=True
@@ -101,20 +112,6 @@ class Derpods(BaseBot):
 
     def extract_config_values(self, config_data):
         self.guild_id = self._get_config_value(config_data, "guild_id", "int")
-
-    async def setup_hook(self):
-        """
-        Called by discord.py to set up cogs and sync commands.
-        """
-        logging.info("Adding cogs...")
-        await self.add_cog(MusicCommandCog(
-            self,
-            spotify_api=self.spotify_api,
-            youtube_api=self.youtube_api,
-            music_service=self.music_service
-        ))
-        await self.tree.sync()
-        logging.info("Synced commands and added all cogs")
 
     async def on_ready(self):
         """

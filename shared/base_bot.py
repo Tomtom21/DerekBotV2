@@ -34,6 +34,7 @@ class BaseBot(commands.Bot, ABC):
                  gpt_function_references=None,
                  gpt_tool_definitions=None,
                  gpt_get_memories=None,
+                 command_cogs=None,
                  **kwargs):
         super().__init__(**kwargs)
 
@@ -81,6 +82,9 @@ class BaseBot(commands.Bot, ABC):
         # Keeping track of the guild and the guild ID of the bot
         self.guild_id = None
         self.guild = None
+
+        # Cogs to add
+        self.command_cogs = command_cogs or []
 
     def _get_config_value(self, config_data, config_name, config_type):
         """
@@ -132,6 +136,17 @@ class BaseBot(commands.Bot, ABC):
             logging.warning(f"Guild with ID {self.guild_id} not found")
         self.start_background_tasks()
         logging.info("BaseBot ready event triggered. Logged in as %s", self.user)
+
+    async def setup_hook(self):
+        """
+        Adds cogs from self.command_cogs and logs the process.
+        """
+        logging.info("Adding cogs...")
+        for cog in self.command_cogs:
+            await self.add_cog(cog)
+            logging.info(f"Added cog: {cog.__class__.__name__}")
+        await self.tree.sync()
+        logging.info("Synced commands and added all cogs")
 
     # Pulls cached info from the database, and updates the local variables for up-to-date values
     @tasks.loop(hours=1)
