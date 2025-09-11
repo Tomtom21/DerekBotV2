@@ -4,9 +4,11 @@ This is the Derpods Discord bot, which provides music playback for Discord serve
 
 import os
 import logging
+from distutils.util import strtobool
+
 
 import discord
-from discord.ext import commands, tasks
+from discord.ext import tasks
 from discord import app_commands
 
 from cogs.music_command_cog import MusicCommandCog
@@ -17,6 +19,8 @@ from shared.youtube_api import YoutubeAPI
 from shared.track_downloader.song_downloader import SongDownloader
 from shared.track_downloader.playlist_downloader import PlaylistDownloader
 from shared.music_service import MusicService
+from ai_tools.song_tools import SongTools
+from ai_tools.tool_configs import tool_definitions
 
 # DB manager config
 db_manager_config = {
@@ -29,7 +33,7 @@ db_manager_config = {
 DISCORD_TOKEN = os.environ.get('MUSIC_DISCORD_TOKEN')
 OPEN_AI_KEY = os.environ.get('OPEN_AI_KEY')
 
-class Derpods(BaseBot, commands.Bot):
+class Derpods(BaseBot):
     """
     Discord bot for music playback and management in Discord servers.
 
@@ -57,17 +61,6 @@ class Derpods(BaseBot, commands.Bot):
         intents.voice_states = True
         intents.message_content = True
 
-        # Use super().__init__ for proper multiple inheritance
-        super().__init__(
-            db_manager_config=db_config,
-            open_ai_key=open_ai_key,
-            audio_file_directory=audio_file_directory,
-            gpt_prompt_config_column_name=gpt_prompt_config_column_name,
-            command_prefix=None,
-            intents=intents,
-            case_insensitive=True
-        )
-
         # Initializing track and playlist downloading
         self.spotify_api = SpotifyAPI()
         self.youtube_api = YoutubeAPI()
@@ -85,7 +78,29 @@ class Derpods(BaseBot, commands.Bot):
             audio_manager=self.audio_manager
         )
 
+        # Setting up song tools
+        self.song_tools = SongTools(self.music_service)
+        tool_references = {
+            "play_song_url": self.song_tools.play_song_url
+        }
+
+        # Use super().__init__ for proper multiple inheritance
+        super().__init__(
+            db_manager_config=db_config,
+            open_ai_key=open_ai_key,
+            audio_file_directory=audio_file_directory,
+            gpt_prompt_config_column_name=gpt_prompt_config_column_name,
+            gpt_function_references=tool_references,
+            gpt_tool_definitions=tool_definitions,
+            command_prefix=None,
+            intents=intents,
+            case_insensitive=True
+        )
+
         logging.info("Derpods instance initialized")
+
+    def extract_config_values(self, config_data):
+        self.guild_id = self._get_config_value(config_data, "guild_id", "int")
 
     async def setup_hook(self):
         """
@@ -100,12 +115,6 @@ class Derpods(BaseBot, commands.Bot):
         ))
         await self.tree.sync()
         logging.info("Synced commands and added all cogs")
-
-    async def on_ready(self):
-        """
-        Called when the bot is ready and connected to Discord.
-        """
-        logging.info("Bot ready event triggered. Logged in as %s", self.user)
 
 # Starting the bot
 if __name__ == "__main__":

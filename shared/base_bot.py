@@ -7,6 +7,7 @@ import os
 import logging
 from abc import ABC, abstractmethod
 from distutils.util import strtobool
+from discord.ext import commands, tasks
 
 from shared.ChatLLMManager import ConversationCache, ChatLLMManager
 from shared.data_manager import DataManager
@@ -14,7 +15,7 @@ from shared.cred_utils import save_google_service_file
 from shared.TTSManager import TTSManager
 from shared.VCAudioManager import VCAudioManager
 
-class BaseBot(ABC):
+class BaseBot(commands.Bot, ABC):
     """
     Base class for Discord bots. Sets up support for:
     - Database management via DataManager
@@ -77,6 +78,10 @@ class BaseBot(ABC):
             get_memories=gpt_get_memories
         )
 
+        # Keeping track of the guild and the guild ID of the bot
+        self.guild_id = None
+        self.guild = None
+
     def _get_config_value(self, config_data, config_name, config_type):
         """
         Universal helper for fetching config values from DB or environment.
@@ -114,3 +119,37 @@ class BaseBot(ABC):
         Abstract method for extracting config values. Must be overridden in subclasses.
         """
         pass
+
+    async def on_ready(self):
+        """
+        Called when the bot is ready and connected to Discord.
+        """
+        self.set_config_data_from_db_manager()
+        self.guild = self.get_guild(self.guild_id)
+        if self.guild:
+            logging.info(f"Guild set: {self.guild.name} ({self.guild_id})")
+        else:
+            logging.warning(f"Guild with ID {self.guild_id} not found")
+        self.start_background_tasks()
+        logging.info("BaseBot ready event triggered. Logged in as %s", self.user)
+
+    # Pulls cached info from the database, and updates the local variables for up-to-date values
+    @tasks.loop(hours=1)
+    async def refresh_cached_info(self):
+        """
+        Refreshes cached info from the database and updates config data.
+        """
+        logging.info("Refreshing cached info from DB")
+        self.db_manager.fetch_all_table_data()
+        logging.info("Refreshed/updated all table information")
+
+        # Updating our config data periodically incase anything changes
+        self.set_config_data_from_db_manager()
+
+    def start_background_tasks(self):
+        """
+        Starts background processes if they aren't already started
+        """
+        if not self.refresh_cached_info.is_running():
+            self.refresh_cached_info.start()
+            logging.info("Started background task: refresh_cached_info")
