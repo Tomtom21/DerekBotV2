@@ -5,9 +5,11 @@ database management, TTS, audio management, and GPT integration already set up.
 
 import os
 import logging
+import io
 from abc import ABC, abstractmethod
 from distutils.util import strtobool
 from discord.ext import commands, tasks
+from discord import File
 
 from shared.ChatLLMManager import ConversationCache, ChatLLMManager
 from shared.data_manager import DataManager
@@ -34,7 +36,6 @@ class BaseBot(commands.Bot, ABC):
                  gpt_function_references=None,
                  gpt_tool_definitions=None,
                  gpt_get_memories=None,
-                 command_cogs=None,
                  **kwargs):
         super().__init__(**kwargs)
 
@@ -68,15 +69,12 @@ class BaseBot(commands.Bot, ABC):
         if not gpt_system_prompt:
             raise ValueError("gpt_system_prompt cannot be None. There was an issue pulling info from the DB.")
 
-        # NOTE: Tools and memory functions are provided to this class
+        # NOTE: Tools and memory functions must be updated in ChatLLMManager
 
         # Setting up the GPT model
         self.llm_manager = ChatLLMManager(
             api_key=open_ai_key,
-            system_prompt=gpt_system_prompt,
-            tool_function_references=gpt_function_references,
-            tool_definitions=gpt_tool_definitions,
-            get_memories=gpt_get_memories
+            system_prompt=gpt_system_prompt
         )
 
         # Keeping track of the guild and the guild ID of the bot
@@ -84,7 +82,7 @@ class BaseBot(commands.Bot, ABC):
         self.guild = None
 
         # Cogs to add
-        self.command_cogs = command_cogs or []
+        self.command_cogs = []
 
     def _get_config_value(self, config_data, config_name, config_type):
         """
@@ -148,6 +146,13 @@ class BaseBot(commands.Bot, ABC):
         await self.tree.sync()
         logging.info("Synced commands and added all cogs")
 
+    def add_command_cogs(self, cogs):
+        """
+        Adds command cogs to the bot after initialization.
+        """
+        self.command_cogs.extend(cogs)
+        logging.info(f"Added {len(cogs)} cogs to command_cogs list.")
+
     # Pulls cached info from the database, and updates the local variables for up-to-date values
     @tasks.loop(hours=1)
     async def refresh_cached_info(self):
@@ -168,3 +173,47 @@ class BaseBot(commands.Bot, ABC):
         if not self.refresh_cached_info.is_running():
             self.refresh_cached_info.start()
             logging.info("Started background task: refresh_cached_info")
+
+    async def on_message(self, message):
+        """
+        Handles message events for AI chat functionality.
+        
+        :param message: The Discord message object
+        """
+        # Returning if we are responding/speaking the bot's message
+        if message.author == self.user:
+            return
+
+        # Chat processing. First ignoring DMs, then continuing processing
+        if not hasattr(message.channel, "name"):
+            logging.warning(f"Received a dm from user {message.author.name}. Ignoring.")
+            return
+
+        if self.user.mentioned_in(message):
+            logging.info(f"AI chat triggered by {message.author.name} in channel {message.channel.name}")
+            # Letting the user know we're processing things
+            async with message.channel.typing():
+                # Keeping track of things in the cache
+                await self.conversation_cache.add_message(message)
+                message_chain = self.conversation_cache.get_message_chain(message)
+
+                # Executing the model
+                gpt_message, images = await self.llm_manager.process_with_history(message_chain)
+
+                # Converting images to discord files
+                discord_file_images = []
+                for idx, image in enumerate(images):
+                    buffer = io.BytesIO()
+                    image.save(buffer, format="PNG")
+                    buffer.seek(0)
+                    discord_file_images.append(
+                        File(buffer, filename=f"image_{idx}.png")
+                    )
+
+                # Sending the message
+                reply_message = await message.reply(
+                    content=gpt_message.content[:2000],
+                    files=discord_file_images[:10]
+                )
+                logging.info(f"AI response sent to {message.author.name} in channel {message.channel.name}")
+                await self.conversation_cache.add_message(reply_message)

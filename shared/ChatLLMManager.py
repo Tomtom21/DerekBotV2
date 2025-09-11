@@ -401,4 +401,24 @@ class ChatLLMManager:
             self.system_prompt = system_prompt
         else:
             logging.warning("Failed to set system prompt: A new system prompt was not provided.")
-        
+
+    def set_tool_function_references(self, tool_function_references: dict):
+        """
+        Updates the tool function references used by the manager.
+        """
+        self.tool_function_references = tool_function_references
+        logging.info("Updated tool function references in ChatLLMManager.")
+
+    def set_tool_definitions(self, tool_definitions: list):
+        """
+        Updates the tool definitions used by the manager.
+        """
+        self.tool_definitions = tool_definitions
+        logging.info("Updated tool definitions in ChatLLMManager.")
+
+    def set_get_memories(self, get_memories):
+        """
+        Updates the get_memories function used by the manager.
+        """
+        self.get_memories = get_memories
+        logging.info("Updated get_memories function in ChatLLMManager.")

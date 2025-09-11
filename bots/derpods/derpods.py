@@ -61,7 +61,18 @@ class Derpods(BaseBot):
         intents.voice_states = True
         intents.message_content = True
 
-        # Initializing track and playlist downloading
+        # Initialize BaseBot first (no cogs, no LLM/tools)
+        super().__init__(
+            db_manager_config=db_config,
+            open_ai_key=open_ai_key,
+            audio_file_directory=audio_file_directory,
+            gpt_prompt_config_column_name=gpt_prompt_config_column_name,
+            command_prefix=None,
+            intents=intents,
+            case_insensitive=True
+        )
+
+        # Now set up the APIs, downloaders, and music service
         self.spotify_api = SpotifyAPI()
         self.youtube_api = YoutubeAPI()
         self.song_downloader = SongDownloader(
@@ -84,7 +95,11 @@ class Derpods(BaseBot):
             "play_song_url": self.song_tools.play_song_url
         }
 
-        # Setting up command cogs
+        # Updating the LLM manager with tools
+        self.llm_manager.set_tool_function_references(tool_references)
+        self.llm_manager.set_tool_definitions(tool_definitions)
+
+        # Set up command cogs
         cogs = [
             MusicCommandCog(
                 self,
@@ -93,20 +108,7 @@ class Derpods(BaseBot):
                 music_service=self.music_service
             )
         ]
-
-        # Use super().__init__ for proper multiple inheritance
-        super().__init__(
-            db_manager_config=db_config,
-            open_ai_key=open_ai_key,
-            audio_file_directory=audio_file_directory,
-            gpt_prompt_config_column_name=gpt_prompt_config_column_name,
-            gpt_function_references=tool_references,
-            gpt_tool_definitions=tool_definitions,
-            command_cogs=cogs,
-            command_prefix=None,
-            intents=intents,
-            case_insensitive=True
-        )
+        self.add_command_cogs(cogs)
 
         logging.info("Derpods instance initialized")
 
