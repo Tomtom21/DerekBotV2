@@ -6,23 +6,7 @@ from shared.track_downloader.song_downloader import SongDownloader
 from shared.track_downloader.playlist_downloader import PlaylistDownloader
 from shared.track_downloader.models import PlaylistRequest, SongRequest
 from shared.VCAudioManager import VCAudioManager
-
-class NotInVoiceChannelError(Exception):
-    """Raised when a user is not in a voice channel but tries to issue a music command."""
-
-    async def handle_error(self, interaction: Interaction, requires_followup: bool = False):
-        """
-        Handles the error by sending a message to the user.
-        :param interaction: The Discord interaction object
-        :param requires_followup: Whether the response requires a follow-up message
-        """
-        logging.warning(f"User {interaction.user.name} tried to use a music command without being in a voice channel.")
-        error_string = "`You must be in a voice channel to use this command.`"
-        if requires_followup:
-            await interaction.followup.send(error_string)
-        else:
-            await interaction.response.send_message(error_string)
-
+from shared.discord_utils import is_in_voice_channel
 
 class MusicService:
     def __init__(self, song_downloader: SongDownloader, playlist_downloader: PlaylistDownloader, audio_manager: VCAudioManager):
@@ -105,7 +89,7 @@ class MusicService:
         # Defining the callback to be executed once the song is downloaded
         async def add_to_queue_callback_wrapper(download_result: SongRequest):
             # Ensuring the user is still in a voice channel while downloading
-            if user.voice is None:
+            if not is_in_voice_channel(user):
                 logging.error(
                     f"User {user.display_name} is no longer in a voice channel during"
                     f" playlist download. Skipping download."

@@ -210,10 +210,14 @@ class BaseBot(commands.Bot, ABC):
                         File(buffer, filename=f"image_{idx}.png")
                     )
 
-                # Sending the message
-                reply_message = await message.reply(
-                    content=gpt_message.content[:2000],
-                    files=discord_file_images[:10]
-                )
-                logging.info(f"AI response sent to {message.author.name} in channel {message.channel.name}")
-                await self.conversation_cache.add_message(reply_message)
+                # Sending the message if things are valid
+                if gpt_message and gpt_message.content:
+                    reply_message = await message.reply(
+                        content=gpt_message.content[:2000],
+                        files=discord_file_images[:10]
+                    )
+                    logging.info(f"AI response sent to {message.author.name} in channel {message.channel.name}")
+                    await self.conversation_cache.add_message(reply_message)
+                else:
+                    logging.error("GPT message was None or missing content. Sending fallback error message.")
+                    await message.reply("`Sorry, something went wrong with your request. Please try again later.`")

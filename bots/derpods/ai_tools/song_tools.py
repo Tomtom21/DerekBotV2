@@ -2,7 +2,7 @@ from discord import Guild
 import logging
 
 from shared.music_service import MusicService
-from shared.discord_utils import find_member_by_display_name
+from shared.discord_utils import find_member_by_display_name, is_in_voice_channel
 
 class SongTools:
     def __init__(self, music_service: MusicService):
@@ -27,6 +27,10 @@ class SongTools:
         if not member:
             return f"Could not find member with display name '{user_display_name}'. It may also match another display name.", None
 
+        if not is_in_voice_channel(member):
+            logging.warning(f"Member '{user_display_name}' is not in a voice channel.")
+            return f"Member '{user_display_name}' is not in a voice channel.", None
+
         try:
             await self.music_service.download_and_queue_song_from_url(url, member)
             return f"Queued song from URL for {user_display_name}.", None
@@ -44,6 +48,10 @@ class SongTools:
         member = await find_member_by_display_name(self.guild, user_display_name)
         if not member:
             return f"Could not find member with display name '{user_display_name}'. It may also match another display name.", None
+
+        if not is_in_voice_channel(member):
+            logging.warning(f"Member '{user_display_name}' is not in a voice channel.")
+            return f"Member '{user_display_name}' is not in a voice channel.", None
 
         try:
             await self.music_service.search_and_queue_song_from_query(search_query, member)

@@ -1,6 +1,8 @@
 import logging
 
-from discord import Message, Guild
+from discord import Message, Guild, Member, Interaction
+
+from shared.errors import NotInVoiceChannelError
 
 async def get_message_history(message: Message):
     """
@@ -37,3 +39,22 @@ def find_member_by_display_name(guild: Guild, display_name: str):
         return matches[0]
 
     return None  # Either no match or multiple matches found
+
+def is_in_voice_channel(member: Member):
+    """
+    Checks if a member is in a voice channel.
+
+    :param member: The Discord member to check
+    :return: True if the member is in a voice channel, False otherwise
+    """
+    return hasattr(member, 'voice') and member.voice and member.voice.channel
+
+def ensure_in_voice_channel(interaction: Interaction):
+    """
+    Ensures that a member is in a voice channel.
+
+    :param interaction: The Discord interaction object
+    :raises NotInVoiceChannelError: If the user is not in a voice channel
+    """
+    if not is_in_voice_channel(interaction.user):
+        raise NotInVoiceChannelError("Member is not in a voice channel")
