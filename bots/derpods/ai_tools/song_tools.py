@@ -22,7 +22,7 @@ class SongTools:
         :param user_display_name: The display name of the user requesting the song
         """
         # Finding the member who request the song
-        member = await find_member_by_display_name(self.guild, user_display_name)
+        member = find_member_by_display_name(self.guild, user_display_name)
 
         # Queuing the song
         await self.music_service.download_and_queue_song_from_url(url, member)

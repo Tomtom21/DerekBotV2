@@ -93,7 +93,7 @@ class ConversationCache:
         :param message: The message to check the author for
         :return: Returns None if the author is the bot, otherwise returns the name
         """
-        return None if message.author.id == self.bot_user_id else message.author.name
+        return None if message.author.id == self.bot_user_id else message.author.display_name
 
     def get_image_from_message(self, message: Message):
         """
