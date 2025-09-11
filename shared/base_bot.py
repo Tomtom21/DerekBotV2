@@ -5,6 +5,8 @@ database management, TTS, audio management, and GPT integration already set up.
 
 import os
 import logging
+from abc import ABC, abstractmethod
+from distutils.util import strtobool
 
 from shared.ChatLLMManager import ConversationCache, ChatLLMManager
 from shared.data_manager import DataManager
@@ -12,7 +14,7 @@ from shared.cred_utils import save_google_service_file
 from shared.TTSManager import TTSManager
 from shared.VCAudioManager import VCAudioManager
 
-class BaseBot:
+class BaseBot(ABC):
     """
     Base class for Discord bots. Sets up support for:
     - Database management via DataManager
@@ -74,3 +76,41 @@ class BaseBot:
             tool_definitions=gpt_tool_definitions,
             get_memories=gpt_get_memories
         )
+
+    def _get_config_value(self, config_data, config_name, config_type):
+        """
+        Universal helper for fetching config values from DB or environment.
+        """
+        if (value := os.environ.get(config_name)):
+            logging.info("TEST VAR USAGE: Using an environment variable in place of a DB config value")
+            if config_type == "int":
+                return int(value)
+            elif config_type == "bool":
+                return bool(strtobool(value))
+            else:
+                return value
+        full_column_name = f"config_value_{config_type}"
+        return next((item[full_column_name] for item in config_data if item["config_name"] == config_name), None)
+
+    def set_config_data_from_db_manager(self):
+        """
+        Updates variables for Discord IDs and other config data from the database.
+        Calls extract_config_values for bot-specific config extraction.
+        """
+        logging.info("Setting config data from DB manager")
+        config_data = self.db_manager.data.get("system_config")
+
+        # If we don't get the config data
+        if not config_data:
+            logging.warning("No config data found in DB")
+            return
+        
+        # Calling the abstract method to get the specific configs we need
+        self.extract_config_values(config_data)
+
+    @abstractmethod
+    def extract_config_values(self, config_data):
+        """
+        Abstract method for extracting config values. Must be overridden in subclasses.
+        """
+        pass
