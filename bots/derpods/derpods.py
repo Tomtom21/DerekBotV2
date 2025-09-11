@@ -92,7 +92,9 @@ class Derpods(BaseBot):
         # Setting up song tools
         self.song_tools = SongTools(self.music_service)
         tool_references = {
-            "play_song_url": self.song_tools.play_song_url
+            "play_song_url": self.song_tools.play_song_url,
+            "play_song_search": self.song_tools.play_song_search,
+            "skip_song": self.song_tools.skip_song
         }
 
         # Updating the LLM manager with tools

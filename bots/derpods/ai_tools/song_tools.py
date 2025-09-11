@@ -45,7 +45,7 @@ class SongTools:
         :param user_display_name: The display name of the user requesting the song
         :return: Tuple containing a status message and None
         """
-        member = await find_member_by_display_name(self.guild, user_display_name)
+        member = find_member_by_display_name(self.guild, user_display_name)
         if not member:
             return f"Could not find member with display name '{user_display_name}'. It may also match another display name.", None
 
@@ -54,7 +54,7 @@ class SongTools:
             return f"Member '{user_display_name}' is not in a voice channel.", None
 
         try:
-            await self.music_service.search_and_queue_song_from_query(search_query, member)
+            await self.music_service.download_and_queue_song_from_query(search_query, member)
             return f"Queued song from search for {user_display_name}.", None
         except Exception as e:
             logging.error(f"GPT request for play_song_search failed: {e}")
@@ -66,7 +66,7 @@ class SongTools:
         :return: Tuple containing a status message and None
         """
         try:
-            await self.music_service.audio_manager.skip_current()
+            self.music_service.audio_manager.skip_current()
             return "Skipped the current song.", None
         except Exception as e:
             logging.error(f"GPT request for skip_song failed: {e}")
