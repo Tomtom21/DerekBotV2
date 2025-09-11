@@ -116,6 +116,13 @@ class Derpods(BaseBot):
         await self.tree.sync()
         logging.info("Synced commands and added all cogs")
 
+    async def on_ready(self):
+        """
+        Extending the on_ready event to set the song tools guild.
+        """
+        await super().on_ready()
+        self.song_tools.set_guild(self.guild)
+
 # Starting the bot
 if __name__ == "__main__":
     bot = Derpods(db_manager_config, OPEN_AI_KEY)
