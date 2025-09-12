@@ -92,7 +92,7 @@ class MusicService:
             if not is_in_voice_channel(user):
                 logging.error(
                     f"User {user.display_name} is no longer in a voice channel during"
-                    f" playlist download. Skipping download."
+                    f" playlist download. Not adding to queue."
                 )
                 return
 
