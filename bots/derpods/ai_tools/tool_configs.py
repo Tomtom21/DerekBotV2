@@ -3,7 +3,7 @@ tool_definitions = [
         "type": "function",
         "function": {
             "name": "play_song_url",
-            "description": "Queues a song to play based on a provided URL. "
+            "description": "Queues a song to play based on a provided Spotify or YouTube URL. "
                            "The song will be added to the front of the queue. ",
             "parameters": {
                 "type": "object",
