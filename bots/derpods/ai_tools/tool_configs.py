@@ -14,7 +14,7 @@ tool_definitions = [
                     },
                     "user_display_name": {
                         "type": "string",
-                        "description": "The exact display name of the user requesting the song."
+                        "description": "The exact display name of the user who is requesting the song and provides the url."
                     }
                 },
                 "required": ["url", "user_display_name"]
@@ -37,7 +37,7 @@ tool_definitions = [
                     },
                     "user_display_name": {
                         "type": "string",
-                        "description": "The exact display name of the user requesting the song."
+                        "description": "The exact display name of the user who is requesting the song and provides the search query."
                     }
                 },
                 "required": ["search_query", "user_display_name"]

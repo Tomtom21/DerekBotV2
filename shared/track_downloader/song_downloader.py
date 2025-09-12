@@ -86,6 +86,11 @@ class SongDownloader:
         # Setting song request info generating an similarity score, avg if possible
         logging.info(f"Scoring {len(potential_song_requests)} potential song matches")
         for (idx, item) in enumerate(youtube_search_results["items"]):
+            # Making sure we don't download live videos or premieres
+            if item["snippet"]["liveBroadcastContent"] in ["live", "upcoming"]:
+                logging.info(f"Skipping video ID {item['id']} as it is live or a premiere.")
+                continue
+
             potential_song_requests[idx].title = item["snippet"]["title"]
             potential_song_requests[idx].source_publish_date = item["snippet"]["publishedAt"]
             potential_song_requests[idx].content_duration = parse_duration(
@@ -111,7 +116,10 @@ class SongDownloader:
 
         # Getting the relevance scores to better match each video
         for song_request in potential_song_requests:
-            song_request.relevance_score = TitleScore.get_relevance_score(song_request) #TODO: Make this update relevance score
+            if song_request.relevance_score is None:
+                song_request.relevance_score = 0.0
+            else:
+                song_request.relevance_score = TitleScore.get_relevance_score(song_request) #TODO: Make this update relevance score
 
         # Sorting the list
         potential_song_requests.sort(key=lambda obj: obj.relevance_score, reverse=True)
@@ -152,9 +160,9 @@ class SongDownloader:
                     video_info = ydl.extract_info(song_request.url, download = False)
 
                 # Checking if our video is live. We can't play those
-                if video_info.get("is_live", False):
-                    raise DownloadError("Cannot download live videos.")
-                
+                if video_info.get("live_status") in ["is_live", "is_upcoming"]:
+                    raise DownloadError("Cannot download live videos or premieres.")
+
                 # Setting the song request info
                 song_request.title = video_info.get('title', 'Unknown Title')
                 song_request.content_duration = video_info.get('duration')

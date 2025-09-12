@@ -125,7 +125,7 @@ class MusicCommandCog(commands.Cog):
 
         # Ensure the user is in a voice channel
         try:
-            await ensure_in_voice_channel(interaction)
+            ensure_in_voice_channel(interaction)
         except NotInVoiceChannelError as error:
             await error.handle_error(interaction, requires_followup=True)
             return
@@ -155,7 +155,7 @@ class MusicCommandCog(commands.Cog):
 
         # Ensure the user is in a voice channel
         try:
-            await ensure_in_voice_channel(interaction)
+            ensure_in_voice_channel(interaction)
         except NotInVoiceChannelError as error:
             await error.handle_error(interaction, requires_followup=True)
             return
@@ -197,7 +197,7 @@ class MusicCommandCog(commands.Cog):
 
         # Ensure the user is in a voice channel
         try:
-            await ensure_in_voice_channel(interaction)
+            ensure_in_voice_channel(interaction)
         except NotInVoiceChannelError as error:
             await error.handle_error(interaction, requires_followup=True)
             return
