@@ -342,7 +342,7 @@ class VCAudioManager:
         logging.info("Skipping all audio in the queue and stopping current playback.")
         while self.queue:
             item = self.queue.pop(0)
-            self._safe_delete_audio_file(item.audio_file_path)
+            self.safe_delete_audio_file(item.audio_file_path)
 
         # Tracking if the queue is empty after clearing
         is_queue_empty = len(self.queue) == 0
