@@ -94,7 +94,7 @@ class MusicService:
                     f"User {user.display_name} is no longer in a voice channel during"
                     f" playlist download. Not adding to queue and deleting."
                 )
-                self.audio_manager._safe_delete_audio_file(download_result.file_path)
+                self.audio_manager.safe_delete_audio_file(download_result.file_path)
                 return
 
             await self.audio_manager.add_to_queue(
