@@ -18,9 +18,11 @@ from shared.track_downloader.errors import (
     YoutubePlaylistFetchError,
     SpotifyListFetchError
 )
-from shared.music_service import MusicService, NotInVoiceChannelError
+from shared.music_service import MusicService
+from shared.errors import NotInVoiceChannelError
 from shared.DiscordList import DiscordList
 from shared.confirmation_prompt import ConfirmationPrompt
+from shared.discord_utils import ensure_in_voice_channel
 
 class MusicCommandCog(commands.Cog):
     def __init__(
@@ -39,15 +41,6 @@ class MusicCommandCog(commands.Cog):
         name="music",
         description="Commands for managing tracks, playlists, and the queue"
     )
-
-    async def ensure_in_voice_channel(self, interaction: Interaction):
-        """
-        Ensures that the user is in a voice channel before proceeding with a music command.
-        :param interaction: The Discord interaction object
-        :raises NotInVoiceChannelError: If the user is not in a voice channel
-        """
-        if not interaction.user.voice or not interaction.user.voice.channel:
-            raise NotInVoiceChannelError
 
     async def _handle_common_errors(self, interaction, error):
         """
@@ -132,7 +125,7 @@ class MusicCommandCog(commands.Cog):
 
         # Ensure the user is in a voice channel
         try:
-            await self.ensure_in_voice_channel(interaction)
+            ensure_in_voice_channel(interaction)
         except NotInVoiceChannelError as error:
             await error.handle_error(interaction, requires_followup=True)
             return
@@ -162,7 +155,7 @@ class MusicCommandCog(commands.Cog):
 
         # Ensure the user is in a voice channel
         try:
-            await self.ensure_in_voice_channel(interaction)
+            ensure_in_voice_channel(interaction)
         except NotInVoiceChannelError as error:
             await error.handle_error(interaction, requires_followup=True)
             return
@@ -204,7 +197,7 @@ class MusicCommandCog(commands.Cog):
 
         # Ensure the user is in a voice channel
         try:
-            await self.ensure_in_voice_channel(interaction)
+            ensure_in_voice_channel(interaction)
         except NotInVoiceChannelError as error:
             await error.handle_error(interaction, requires_followup=True)
             return
