@@ -344,3 +344,32 @@ class MusicCommandCog(commands.Cog):
             discord_list.get_page(),
             view=discord_list.create_view()
         )
+
+    @group.command(name="skipall", description="Skip all songs in the queue and stop playback")
+    async def skip_all(self, interaction: Interaction):
+        """
+        Skips all songs in the queue and stops the currently playing audio.
+        """
+        await interaction.response.defer()
+
+        # Defining a callback that runs when we confirm to skip all
+        async def on_confirm_callback(interaction: Interaction):
+            # We don't need to capture the return value.
+            # The confirmation prompt will just inform the user of the attempt.
+            _ = self.music_service.audio_manager.skip_all()
+
+        # Showing a confirmation prompt on whether to skip all songs or not.
+        confirmation_prompt = ConfirmationPrompt(
+            title="Skip All Songs?",
+            description=(
+                f"Are you sure you want to skip all songs in the queue? This also stops any "
+                f"currently playing song."
+            ),
+            on_confirm_callback=on_confirm_callback,
+            status_confirmed_msg="✅ Confirmed. Skipping all songs."
+        )
+        sent_message = await interaction.followup.send(
+            confirmation_prompt.get_message(),
+            view=confirmation_prompt.create_view()
+        )
+        confirmation_prompt.message = sent_message
