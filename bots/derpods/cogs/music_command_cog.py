@@ -358,7 +358,7 @@ class MusicCommandCog(commands.Cog):
             # The confirmation prompt will just inform the user of the attempt.
             _ = self.music_service.audio_manager.skip_all()
 
-        # Showing a confirmation prompt on whether to load the playlist or not.
+        # Showing a confirmation prompt on whether to skip all songs or not.
         confirmation_prompt = ConfirmationPrompt(
             title="Skip All Songs?",
             description=(
