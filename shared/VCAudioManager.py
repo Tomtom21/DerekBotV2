@@ -79,6 +79,18 @@ class VCAudioManager:
         self.processing_task: Optional[asyncio.Task] = None
         self.idle_task: Optional[asyncio.Task] = None
         self.lock = asyncio.Lock()
+        self.volume = 1.0  # Default volume (1.0 = 100%)
+
+    def set_volume(self, volume: float):
+        """
+        Sets the playback volume for audio.
+        :param volume: Volume as a float (0.0 to 2.0, where 1.0 is normal)
+        """
+        if 0.0 <= volume <= 2.0:
+            self.volume = volume
+            logging.info(f"Set playback volume to {volume}")
+        else:
+            logging.warning("Volume must be between 0.0 and 2.0")
 
     async def add_to_queue(self, audio_file_path, duration, voice_channel, high_priority=True, audio_name="System audio", added_by="System"):
         """
@@ -184,12 +196,12 @@ class VCAudioManager:
                     await asyncio.sleep(0.2)  # Small delay to ensure stop completes
 
                 try:
-                    self._current_voice_channel.play(
-                        discord.FFmpegPCMAudio(
-                            self.current_audio_item.audio_file_path,
-                            options="-loglevel quiet"
-                        )
+                    source = discord.FFmpegPCMAudio(
+                        self.current_audio_item.audio_file_path,
+                        options="-loglevel quiet"
                     )
+                    volume_source = discord.PCMVolumeTransformer(source, volume=self.volume)
+                    self._current_voice_channel.play(volume_source)
                 except Exception as e:
                     logging.error(f"Error while trying to play audio: {e}")
                     self.safe_delete_audio_file(self.current_audio_item.audio_file_path)
@@ -263,12 +275,12 @@ class VCAudioManager:
 
             # Announce bot is disconnecting
             leave_audio_path = self.tts_manager.process(random.choice(self.bot_leave_messages))
-            self._current_voice_channel.play(
-                discord.FFmpegPCMAudio(
-                    leave_audio_path,
-                    options="-loglevel quiet"
-                )
+            source = discord.FFmpegPCMAudio(
+                leave_audio_path,
+                options="-loglevel quiet"
             )
+            volume_source = discord.PCMVolumeTransformer(source, volume=self.volume)
+            self._current_voice_channel.play(volume_source)
 
             # Wait for the leave message to finish playing. It needs a longer audio sleep time than usual.
             while self._current_voice_channel.is_playing():

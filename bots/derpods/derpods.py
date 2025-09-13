@@ -73,6 +73,7 @@ class Derpods(BaseBot):
         )
 
         # Setting the derpods leave message
+        self.audio_manager.set_volume(0.5)
         self.audio_manager.set_bot_leave_messages(["Derpods is disconnecting."])
 
         # Now set up the APIs, downloaders, and music service
