@@ -50,7 +50,7 @@ class Derpods(BaseBot):
             db_config,
             open_ai_key,
             audio_file_directory="music_files",
-            gpt_prompt_config_column_name="derek_gpt_system_prompt"
+            gpt_prompt_config_column_name="derpods_gpt_system_prompt"
     ):
         # Setup intents
         intents = discord.Intents.default()
