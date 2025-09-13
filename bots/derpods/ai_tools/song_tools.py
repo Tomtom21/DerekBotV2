@@ -23,6 +23,9 @@ class SongTools:
         :param user_display_name: The display name of the user requesting the song
         :return: Tuple containing a status message and None
         """
+        if self.guild is None:
+            return "Guild is not set. Cannot perform this action.", None
+
         member = find_member_by_display_name(self.guild, user_display_name)
         if not member:
             return f"Could not find member with display name '{user_display_name}'. It may also match another display name.", None
@@ -45,6 +48,9 @@ class SongTools:
         :param user_display_name: The display name of the user requesting the song
         :return: Tuple containing a status message and None
         """
+        if self.guild is None:
+            return "Guild is not set. Cannot perform this action.", None
+
         member = find_member_by_display_name(self.guild, user_display_name)
         if not member:
             return f"Could not find member with display name '{user_display_name}'. It may also match another display name.", None
