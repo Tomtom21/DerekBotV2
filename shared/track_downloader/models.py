@@ -14,6 +14,7 @@ class LinkValidator:
     VALID_DOMAINS = {
         "youtube.com": "youtube",
         "youtu.be": "youtube",
+        "music.youtube.com": "youtube",
         "open.spotify.com": "spotify"
     }
     SANITIZATION_MAX_LENGTH = 120
