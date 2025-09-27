@@ -16,7 +16,9 @@ from shared.track_downloader.errors import (
     DownloadError,
     YouTubeSearchError,
     YoutubePlaylistFetchError,
-    SpotifyListFetchError
+    SpotifyListFetchError,
+    AgeRestrictedContentError,
+    LiveContentError
 )
 from shared.music_service import MusicService
 from shared.errors import NotInVoiceChannelError
@@ -87,6 +89,12 @@ class MusicCommandCog(commands.Cog):
         elif isinstance(error, SpotifyAPIError):
             logging.error(f"Spotify API error: {error}")
             await interaction.followup.send("`Failed to make Spotify API request.`")
+        elif isinstance(error, AgeRestrictedContentError):
+            logging.error(f"Age-restricted content error: {error}")
+            await interaction.followup.send("`Song is age-restricted and cannot be downloaded.`")
+        elif isinstance(error, LiveContentError):
+            logging.error(f"Live content error: {error}")
+            await interaction.followup.send("`Song is a live/premiere and cannot be downloaded.`")
         else:
             logging.error(f"Unhandled error: {error}")
             await interaction.followup.send("`An unexpected error occurred.`")

@@ -45,3 +45,11 @@ class SpotifyListFetchError(Exception):
 
 class YoutubePlaylistFetchError(Exception):
     pass
+
+class AgeRestrictedContentError(Exception):
+    """Raised when the requested content is age restricted and cannot be downloaded."""
+    pass
+
+class LiveContentError(Exception):
+    """Raised when the requested content is live and cannot be downloaded."""
+    pass
