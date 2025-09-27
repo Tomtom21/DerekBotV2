@@ -13,14 +13,16 @@ from shared.file_utils import get_random_file_id
 from shared.track_downloader.errors import (
     YouTubeSearchError,
     DownloadError,
-    SpotifyAPIError
+    SpotifyAPIError,
+    AgeRestrictedContentError,
+    LiveContentError
 )
 from shared.track_downloader.models import SongRequest
 from shared.track_downloader.audio_processing import normalize_audio_track
 from shared.spotify_api import SpotifyAPI
 from shared.youtube_api import YoutubeAPI
 from shared.track_downloader.title_scoring import TitleScore
-from shared.track_downloader.utils import get_text_similarity, extract_spotify_resource_info
+from shared.track_downloader.utils import get_text_similarity, extract_spotify_resource_info, extract_yt_resource_info
 from shared.constants import NORMALIZE_DURATION_THRESHOLD, YOUTUBE_VIDEO_URL_PREFIX
 
 
@@ -154,21 +156,40 @@ class SongDownloader:
         """
         if song_request.source == "youtube":
             # We aren't going to be running the query download, so we need to get the video info here
+            yt_info = extract_yt_resource_info(song_request.url)
+            if "v" not in yt_info:
+                raise DownloadError("YouTube URL does not contain a valid video ID.")
+
+            # Getting the video info
             try:
-                #TODO: Maybe change this over to use YouTube API instead of yt-dlp
-                with yt_dlp.YoutubeDL({"quiet": True}) as ydl:
-                    video_info = ydl.extract_info(song_request.url, download = False)
-
-                # Checking if our video is live. We can't play those
-                if video_info.get("live_status") in ["is_live", "is_upcoming"]:
-                    raise DownloadError("Cannot download live videos or premieres.")
-
-                # Setting the song request info
-                song_request.title = video_info.get('title', 'Unknown Title')
-                song_request.content_duration = video_info.get('duration')
+                song_detail_results = self.youtube_api.youtube_api.videos().list(
+                    part="snippet,contentDetails,status",
+                    id=yt_info["v"]
+                ).execute()
             except Exception as e:
-                logging.warning(e)
-                raise DownloadError("Failed to get video information") from e #TODO: Consider removing this try to ensure errors are passed correctly
+                logging.error(e)
+                raise DownloadError("Failed to get video information")
+
+            # If we didn't get any results
+            if not song_detail_results["items"]:
+                raise DownloadError("Failed to retrieve video details from YouTube.")
+
+            video = song_detail_results["items"][0]
+            snippet = video["snippet"]
+            details = video["contentDetails"]
+            status = video["status"]
+
+            # Checking if our video is live or premiere. We can't play those
+            if snippet.get('liveBroadcastContent') != "none":
+                raise LiveContentError("Cannot download live videos or premieres.")
+
+            # Check for age restriction
+            if 'contentRating' in details and details['contentRating'].get('ytRating') == 'ytAgeRestricted':
+                raise AgeRestrictedContentError("Cannot download age-restricted content.")
+
+            # Setting the song request info
+            song_request.title = snippet.get('title')
+            song_request.content_duration = parse_duration(details.get('duration')).total_seconds()
 
             return await self._download_youtube_song(song_request)
         elif song_request.source == "spotify":
@@ -259,4 +280,3 @@ class SongDownloader:
         except Exception as e:
             logging.error(f"Failed to retrieve Spotify track information: {e}")
             raise SpotifyAPIError("Failed to retrieve Spotify track information") from e
-        
