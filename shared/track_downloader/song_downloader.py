@@ -227,7 +227,7 @@ class SongDownloader:
         try:
             # Generating a new filename
             new_file_id = get_random_file_id(output_path)
-            new_file_path = os.path.join(output_path, f"{}{new_file_id}.m4a")
+            new_file_path = os.path.join(output_path, f"{new_file_id}.m4a")
 
             # Downloading the song
             logging.info(f"Starting audio download for url: {song_request.url}")
