@@ -227,20 +227,20 @@ class SongDownloader:
         try:
             # Generating a new filename
             new_file_id = get_random_file_id(output_path)
-            outtmpl = os.path.join(output_path, f"{new_file_id}.%(ext)s")
+            new_file_path = os.path.join(output_path, f"{}{new_file_id}.m4a")
 
             # Downloading the song
             logging.info(f"Starting audio download for url: {song_request.url}")
             ydl_opts = {
                 'quiet': True,
                 'format': 'bestaudio/best',
+                'audio-format': 'm4a',
+                'audio-quality': 192,
                 'noplaylist': True,
-                'outtmpl': outtmpl,
+                'outtmpl': new_file_path,
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info_dict = ydl.extract_info(song_request.url, download=True)
-                ext = info_dict.get('ext', 'm4a')
-                new_file_path = os.path.join(output_path, f"{new_file_id}.{ext}")
+                ydl.download([song_request.url])
 
             # Normalizing the audio
             if song_request.content_duration <= NORMALIZE_DURATION_THRESHOLD:
