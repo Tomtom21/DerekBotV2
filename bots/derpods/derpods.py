@@ -105,6 +105,9 @@ class Derpods(BaseBot):
         self.llm_manager.set_tool_function_references(tool_references)
         self.llm_manager.set_tool_definitions(tool_definitions)
 
+        # Set metadata function for LLM manager
+        self.llm_manager.set_get_metadata(self.get_current_audio_metadata)
+
         # Set up command cogs
         cogs = [
             MusicCommandCog(
@@ -127,6 +130,18 @@ class Derpods(BaseBot):
         """
         await super().on_ready()
         self.song_tools.set_guild(self.guild)
+
+    def get_current_audio_metadata(self):
+        """
+        Returns metadata about the currently playing audio for the LLM.
+        """
+        current_audio = self.audio_manager.current_audio_item
+        if current_audio:
+            audio_name = current_audio.audio_name or "Unknown"
+            added_by = current_audio.added_by or "Unknown"
+            return f"Current Audio: '{audio_name}' (Recommended by: {added_by})"
+        else:
+            return "No audio is currently playing."
 
 # Starting the bot
 if __name__ == "__main__":

@@ -422,3 +422,10 @@ class ChatLLMManager:
         """
         self.get_memories = get_memories
         logging.info("Updated get_memories function in ChatLLMManager.")
+
+    def set_get_metadata(self, get_metadata):
+        """
+        Updates the get_metadata function used by the manager.
+        """
+        self.get_metadata = get_metadata
+        logging.info("Updated get_metadata function in ChatLLMManager.")
