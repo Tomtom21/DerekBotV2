@@ -92,7 +92,7 @@ class VCAudioManager:
         else:
             logging.warning("Volume must be between 0.0 and 2.0")
 
-    async def add_to_queue(self, audio_file_path, duration, voice_channel, high_priority=True, audio_name="System audio", added_by="System"):
+    async def add_to_queue(self, audio_file_path, voice_channel, duration=0, high_priority=True, audio_name="System audio", added_by="System"):
         """
         Adds an audio to the queue, positions it in the list based on priority.
 
