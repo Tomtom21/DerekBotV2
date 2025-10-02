@@ -339,6 +339,7 @@ class DerekBot(commands.Bot):
         """
         statuses = self.data_manager.data.get("statuses")
         random_status_string = random.choice(statuses).get("status", "")
+        status_type = random_status_string[3:]
         logging.info(f"Cycling status to: {random_status_string}")
 
         # Setting the status based on the status type
@@ -346,21 +347,21 @@ class DerekBot(commands.Bot):
             await self.change_presence(
                 activity=discord.Activity(
                     type=discord.ActivityType.playing,
-                    name=random_status_string[3:]
+                    name=status_type
                 )
             )
         elif random_status_string.startswith("$l "):
             await self.change_presence(
                 activity=discord.Activity(
                     type=discord.ActivityType.listening,
-                    name=random_status_string[3:]
+                    name=status_type
                 )
             )
         elif random_status_string.startswith("$w "):
             await self.change_presence(
                 activity=discord.Activity(
                     type=discord.ActivityType.watching,
-                    name=random_status_string[3:]
+                    name=status_type
                 )
             )
 
