@@ -34,8 +34,8 @@ class MusicService:
         # Add the downloaded song to the audio manager's queue
         await self.audio_manager.add_to_queue(
             song_request.file_path,
-            song_request.content_duration,
             user.voice.channel,
+            duration=song_request.content_duration,
             high_priority=True,
             audio_name=song_request.title,
             added_by=user.display_name
@@ -64,8 +64,8 @@ class MusicService:
         # Add the downloaded song to the audio manager's queue
         await self.audio_manager.add_to_queue(
             song_request.file_path,
-            song_request.content_duration,
             user.voice.channel,
+            duration=song_request.content_duration,
             high_priority=True,
             audio_name=song_request.title,
             added_by=user.display_name
@@ -99,8 +99,8 @@ class MusicService:
 
             await self.audio_manager.add_to_queue(
                 download_result.file_path,
-                download_result.content_duration,
                 user.voice.channel,
+                duration=download_result.content_duration,
                 audio_name=download_result.title,
                 added_by=user.display_name,
                 high_priority=False
