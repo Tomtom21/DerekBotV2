@@ -27,6 +27,9 @@ from ai_tools.tool_configs import tool_definitions
 db_manager_config = {
     "system_config": {
         "select": "*"
+    },
+    "users": {
+        "select": "*"
     }
 }
 
