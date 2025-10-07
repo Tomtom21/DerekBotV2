@@ -122,9 +122,6 @@ class Derpods(BaseBot):
         logging.info("Derpods instance initialized")
 
     def extract_config_values(self, config_data):
-        # Setting the guild ID for song tools
-        self.guild_id = self._get_config_value(config_data, "guild_id", "int")
-
         # Updating the system prompt for the LLM manager
         gpt_system_prompt = self._get_config_value(config_data, "derpods_gpt_system_prompt", "text")
         self.llm_manager.set_system_prompt(gpt_system_prompt)

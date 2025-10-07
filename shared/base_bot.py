@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from distutils.util import strtobool
 from discord.ext import commands, tasks
 from discord import File
+import json
 
 from shared.ChatLLMManager import ConversationCache, ChatLLMManager
 from shared.data_manager import DataManager
@@ -81,6 +82,9 @@ class BaseBot(commands.Bot, ABC):
         self.guild_id = None
         self.guild = None
 
+        # Keeping track of known bot IDs to ignore messages from
+        self.known_bot_ids = []
+
         # Cogs to add
         self.command_cogs = []
 
@@ -112,6 +116,12 @@ class BaseBot(commands.Bot, ABC):
             logging.warning("No config data found in DB")
             return
         
+        # Setting the guild ID for any tools that need them
+        self.guild_id = self._get_config_value(config_data, "guild_id", "int")
+
+        # Known bot IDs to ignore messages from
+        self.known_bot_ids = json.loads(self._get_config_value(config_data, "known_bot_ids", "text"))
+
         # Calling the abstract method to get the specific configs we need
         self.extract_config_values(config_data)
 
@@ -181,7 +191,7 @@ class BaseBot(commands.Bot, ABC):
         :param message: The Discord message object
         """
         # Returning if we are responding/speaking the bot's message
-        if message.author == self.user:
+        if message.author.id in self.known_bot_ids:
             return
 
         # Chat processing. First ignoring DMs, then continuing processing
