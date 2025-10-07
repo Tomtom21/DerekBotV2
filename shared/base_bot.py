@@ -108,6 +108,7 @@ class BaseBot(commands.Bot, ABC):
         Updates variables for Discord IDs and other config data from the database.
         Calls extract_config_values for bot-specific config extraction.
         """
+        # These all assume that the system config table has been included in the DB manager config
         logging.info("Setting config data from DB manager")
         config_data = self.db_manager.data.get("system_config")
 
