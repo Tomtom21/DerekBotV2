@@ -116,7 +116,7 @@ class BaseBot(commands.Bot, ABC):
         if not config_data:
             logging.warning("No config data found in DB")
             return
-        
+
         # Setting the guild ID for any tools that need them
         self.guild_id = self._get_config_value(config_data, "guild_id", "int")
 
