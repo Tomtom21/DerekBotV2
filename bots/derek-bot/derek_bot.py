@@ -5,6 +5,7 @@ import re
 import time
 import io
 from distutils.util import strtobool
+import json
 
 from shared.data_manager import DataManager
 from cogs.movie_cog import MovieGroupCog
@@ -173,6 +174,7 @@ class DerekBot(commands.Bot):
         self.joins_leaves_channel_name = None
         self.vc_text_channel_id = None
         self.reactions_list = []
+        self.known_bot_ids = []
 
         # Limiting the number of times Derek warns a user that they aren't in a voice channel
         self.last_vc_text_warning_time = 0
@@ -234,7 +236,8 @@ class DerekBot(commands.Bot):
         self.joins_leaves_channel_name = get_config_value("joins_leaves_channel_name", "text")
         self.vc_text_channel_id = get_config_value("vc_text_channel_id", "int")
         self.guild_id = get_config_value("guild_id", "int")
-        logging.info("Config data from DB set")
+        self.known_bot_ids = json.loads(get_config_value("known_bot_ids", "text"))
+        logging.info("Config ID data from DB set")
 
         # Updating our list of reactions
         self.reactions_list = self.data_manager.data.get("reactions")
@@ -514,8 +517,8 @@ class DerekBot(commands.Bot):
                 except Exception as e:
                     logging.error(f"Failed to add reaction to message '{message.content[:25]}' by {message.author.name}: {e}")
 
-        # Returning if we are responding/speaking the bot's message
-        if message.author == self.user:
+        # Returning if we are responding/speaking any Derek/Derpods messages
+        if message.author.id in self.known_bot_ids:
             return
         
         # Chat processing. First ignoring DMs, then continuing processing
