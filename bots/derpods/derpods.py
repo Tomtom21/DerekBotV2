@@ -19,6 +19,7 @@ from shared.youtube_api import YoutubeAPI
 from shared.track_downloader.song_downloader import SongDownloader
 from shared.track_downloader.playlist_downloader import PlaylistDownloader
 from shared.music_service import MusicService
+from shared.cogs.management_cog import ManagementGroupCog
 from ai_tools.song_tools import SongTools
 from ai_tools.tool_configs import tool_definitions
 
@@ -115,6 +116,10 @@ class Derpods(BaseBot):
                 spotify_api=self.spotify_api,
                 youtube_api=self.youtube_api,
                 music_service=self.music_service
+            ),
+            ManagementGroupCog(
+                self,
+                self.db_manager
             )
         ]
         self.add_command_cogs(cogs)
@@ -122,9 +127,6 @@ class Derpods(BaseBot):
         logging.info("Derpods instance initialized")
 
     def extract_config_values(self, config_data):
-        # Setting the guild ID for song tools
-        self.guild_id = self._get_config_value(config_data, "guild_id", "int")
-
         # Updating the system prompt for the LLM manager
         gpt_system_prompt = self._get_config_value(config_data, "derpods_gpt_system_prompt", "text")
         self.llm_manager.set_system_prompt(gpt_system_prompt)

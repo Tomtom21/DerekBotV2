@@ -13,7 +13,7 @@ class ManagementGroupCog(commands.Cog):
     @group.command(name="shutdown", description="Shuts down the bot")
     async def shutdown(self, interaction: Interaction):
         """
-        Checks if the user has permission (is_creator) to shut down the bot.
+        Checks if the user has permission (is_administrator) to shut down the bot.
         If permitted, logs the shutdown and shuts down the bot.
         If not permitted, logs the denial and informs the user.
         """
@@ -22,7 +22,7 @@ class ManagementGroupCog(commands.Cog):
             key="user_id",
             value=interaction.user.id
         )
-        if db_user and db_user.get("is_creator"):
+        if db_user and db_user.get("is_administrator"):
             logging.warning(f"Shutdown initiated by user {interaction.user.id} ({interaction.user.name})")
             await interaction.response.send_message("Shutting down..", ephemeral=True)
             await self.bot.close()
