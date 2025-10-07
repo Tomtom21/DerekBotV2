@@ -19,6 +19,7 @@ from shared.youtube_api import YoutubeAPI
 from shared.track_downloader.song_downloader import SongDownloader
 from shared.track_downloader.playlist_downloader import PlaylistDownloader
 from shared.music_service import MusicService
+from shared.cogs.management_cog import ManagementGroupCog
 from ai_tools.song_tools import SongTools
 from ai_tools.tool_configs import tool_definitions
 
@@ -115,6 +116,10 @@ class Derpods(BaseBot):
                 spotify_api=self.spotify_api,
                 youtube_api=self.youtube_api,
                 music_service=self.music_service
+            ),
+            ManagementGroupCog(
+                self,
+                self.db_manager
             )
         ]
         self.add_command_cogs(cogs)

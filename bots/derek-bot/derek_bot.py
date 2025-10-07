@@ -13,7 +13,7 @@ from cogs.misc_cog import MiscGroupCog
 from cogs.birthday_cog import BirthdayGroupCog
 from cogs.ai_cog import AICog
 from cogs.tts_cog import TTSGroupCog
-from cogs.management_cog import ManagementGroupCog
+from shared.cogs.management_cog import ManagementGroupCog
 import random
 from datetime import datetime, timezone
 import pytz
