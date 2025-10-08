@@ -3,8 +3,9 @@ import logging
 from discord import Member
 
 class MemoryTools:
-    def __init__(self, db_manager):
+    def __init__(self, db_manager, memory_table_name):
         self.db_manager = db_manager
+        self.memory_table_name = memory_table_name
 
     async def save_memory(self, memory_string: str, username: str):
         """
@@ -15,7 +16,7 @@ class MemoryTools:
         :return: Text stating whether the memory was saved or not
         """
         successfully_added = self.db_manager.add_table_data(
-            table_name="chat_memories",
+            table_name=self.memory_table_name,
             json_data={
                 "memory": memory_string,
                 "added_by": None
@@ -35,5 +36,5 @@ class MemoryTools:
         """
         return [
             memory["memory"]
-            for memory in self.db_manager.data.get("chat_memories", [])
+            for memory in self.db_manager.data.get(self.memory_table_name, [])
         ]
