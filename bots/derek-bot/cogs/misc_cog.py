@@ -3,7 +3,7 @@ from discord import app_commands, Interaction
 import logging
 
 from shared.data_manager import DataManager, ListIndexOutOfBounds
-from shared.DiscordList import DiscordList
+from shared.discord_ui.DiscordList import DiscordList
 import random
 
 
