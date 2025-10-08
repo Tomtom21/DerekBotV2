@@ -22,8 +22,8 @@ from shared.track_downloader.errors import (
 )
 from shared.music_service import MusicService
 from shared.errors import NotInVoiceChannelError
-from shared.DiscordList import DiscordList
-from shared.confirmation_prompt import ConfirmationPrompt
+from shared.discord_ui.DiscordList import DiscordList
+from shared.discord_ui.confirmation_prompt import ConfirmationPrompt
 from shared.discord_utils import ensure_in_voice_channel
 
 class MusicCommandCog(commands.Cog):
