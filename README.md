@@ -5,7 +5,7 @@ DerekBotV2 represents a series of Discord bots I developed for my own personal u
 This project is a re-write of a V1 made several years ago. Enough changes were needed that it warranted a full re-write.
 
 **Please Note:** 
-<span style="color: red;">These bots were designed specifically for my own use. They rely on custom database setups and external APIs, so I'm not providing support or assistance in getting them running elsewhere at this time. You're welcome to explore the code, but they aren't intended as ready-to-use public bots.</span>
+*These bots were designed specifically for my own use. They rely on custom database setups and external APIs, so I'm not providing support or assistance in getting them running elsewhere at this time. You're welcome to explore the code, but they aren't intended as ready-to-use public bots.*
 
 
 ---
