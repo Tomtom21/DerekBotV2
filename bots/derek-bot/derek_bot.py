@@ -115,7 +115,9 @@ gpt_system_prompt = db_manager.get_item_by_key(
 if not gpt_system_prompt:
     raise ValueError("gpt_system_prompt cannot be None. There was an issue pulling info from the DB.")
 
-memory_tools = MemoryTools(db_manager=db_manager)
+MEMORY_TABLE_NAME = "chat_memories"
+memory_tools = MemoryTools(db_manager=db_manager, memory_table_name=MEMORY_TABLE_NAME)
+
 tool_references = {
     "save_memory": memory_tools.save_memory,
     "generate_color_swatch": generate_color_swatch,
