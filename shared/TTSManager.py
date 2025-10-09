@@ -13,7 +13,7 @@ class TTSManager:
         Environment variable named "GOOGLE_APPLICATION_CREDENTIALS" must be set for api to work
 
         :param output_path: The path that the output mp3 files will be stored
-        :param voice_info: A dictionary containing the language, and the code and voice name for each desired language
+        :param voice_info: A dictionary containing the languages, and the code and voice name for each desired language
         :param speaking_rate: The speaking rate the voice should have
         """
 
