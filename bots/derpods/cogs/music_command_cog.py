@@ -113,7 +113,7 @@ class MusicCommandCog(commands.Cog):
             await interaction.followup.send("`Failed to fetch playlist from YouTube.`")
         elif isinstance(error, SpotifyListFetchError):
             logging.error(f"Spotify list fetch error: {error}")
-            await interaction.followup.send("`Failed to fetch list from Spotify.`")
+            await interaction.followup.send("`Failed to fetch list from Spotify. Is the playlist public?`")
         else:
             logging.error(f"Unhandled playlist error: {error}")
             await interaction.followup.send(
@@ -233,7 +233,7 @@ class MusicCommandCog(commands.Cog):
             title="Confirm Playlist Load",
             description=(
                 f"Do you want to load the playlist **{playlist_request.title}**? "
-                f"**{amount}** songs will be added to the queue, starting from "
+                f"**{amount}** song(s) will be added to the queue, starting from "
                 f"position **{start_at}**."
             ),
             on_confirm_callback=on_confirm_callback,
