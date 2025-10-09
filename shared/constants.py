@@ -1,101 +1,101 @@
 GOOGLE_TTS_VOICE_INFO = {
-    "english-US-Achernar": {
+    "english-US-Achernar [F]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Achernar"
     },
-    "english-US-Achird": {
+    "english-US-Achird [M]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Achird"
     },
-    "english-US-Algenib": {
+    "english-US-Algenib [M]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Algenib"
     },
-    "english-US-Algieba": {
+    "english-US-Algieba [M]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Algieba"
     },
-    "english-US-Alnilam": {
+    "english-US-Alnilam [M]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Alnilam"
     },
-    "english-US-Aoede": {
+    "english-US-Aoede [F]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Aoede"
     },
-    "english-US-Autonoe": {
+    "english-US-Autonoe [F]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Autonoe"
     },
-    "english-US-Callirrhoe": {
+    "english-US-Callirrhoe [F]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Callirrhoe"
     },
-    "english-US-Charon": {
+    "english-US-Charon [M]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Charon"
     },
-    "english-US-Despina": {
+    "english-US-Despina [F]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Despina"
     },
-    "english-US-Enceladus": {
+    "english-US-Enceladus [M]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Enceladus"
     },
-    "english-US-Erinome": {
+    "english-US-Erinome [F]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Erinome"
     },
-    "english-US-Gacrux": {
+    "english-US-Gacrux [F]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Gacrux"
     },
-    "english-US-Kore": {
+    "english-US-Kore [F]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Kore"
     },
-    "english-US-Leda": {
+    "english-US-Leda [F]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Leda"
     },
-    "english-US-Pulcherrima": {
+    "english-US-Pulcherrima [F]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Pulcherrima"
     },
-    "english-US-Puck": {
+    "english-US-Puck [M]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Puck"
     },
-    "english-US-Rasalgethi": {
+    "english-US-Rasalgethi [M]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Rasalgethi"
     },
-    "english-US-Sadachbia": {
+    "english-US-Sadachbia [M]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Sadachbia"
     },
-    "english-US-Sadaltager": {
+    "english-US-Sadaltager [M]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Sadaltager"
     },
-    "english-US-Schedar": {
+    "english-US-Schedar [M]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Schedar"
     },
-    "english-US-Sulafat": {
+    "english-US-Sulafat [F]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Sulafat"
     },
-    "english-US-Vindemiatrix": {
+    "english-US-Vindemiatrix [F]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Vindemiatrix"
     },
-    "english-US-Zephyr": {
+    "english-US-Zephyr [F]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Zephyr"
     },
-    "english-US-Zubenelgenubi": {
+    "english-US-Zubenelgenubi [M]": {
         "language_code": "en-US",
         "voice_name": "en-US-Chirp3-HD-Zubenelgenubi"
     },
