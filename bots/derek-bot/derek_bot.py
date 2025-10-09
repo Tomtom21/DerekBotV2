@@ -293,13 +293,12 @@ class DerekBot(commands.Bot):
             logging.info("Nickname cycling background process started")
 
     # Checks whether it is someone's birthday, sends a birthday message to the appropriate user
-    @tasks.loop(minutes=30)
+    @tasks.loop(minutes=5)
     async def birthday_check(self):
         """
         Checks if it is any user's birthday and sends a birthday message if so.
         """
         date = datetime.now()
-        logging.info("Running birthday check loop")
 
         # Making sure that we have a channel id to send to
         if self.main_channel_id:
