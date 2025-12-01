@@ -135,3 +135,23 @@ class TTSGroupCog(commands.Cog):
         else:
             logging.error(f"Failed to update announce_name for user {interaction.user.name}")
             await interaction.followup.send("`Failed to update name announcement setting.`")
+
+    @group.command(name="getvoice", description="Get your current TTS voice/language")
+    async def get_voice(self, interaction: Interaction):
+        """
+        Gets the current TTS voice for the user.
+
+        :param interaction: The Discord interaction object
+        """
+        await interaction.response.defer(ephemeral=True)
+        db_user = self.data_manager.get_item_by_key(
+            table_name="users",
+            key="user_id",
+            value=interaction.user.id
+        )
+        if db_user:
+            user_voice = db_user.get("tts_language", None)
+            if user_voice:
+                await interaction.followup.send(f"Your current TTS voice is set to **{user_voice}**")
+            else:
+                await interaction.followup.send("`You have not set a TTS voice yet.`")
