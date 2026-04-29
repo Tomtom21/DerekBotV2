@@ -41,11 +41,6 @@ A complex music playback bot for Discord, supporting playback of music from seve
 
 ---
 
-### 3. **Luna**
-A personal assistant bot to provide me with help on everyday activities, such as tracking workouts, storing recipes, and handling any other tasks I need done. This bot is yet to be built.
-
----
-
 ### 4. **Placeholder Bot**
 A short term utility bot that clears out old slash commands from bots that are no longer in use. This prevents there from being several bots with identical, conflicting commands being present in the server. 
 
