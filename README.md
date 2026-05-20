@@ -41,7 +41,7 @@ A complex music playback bot for Discord, supporting playback of music from seve
 
 ---
 
-### 4. **Placeholder Bot**
+### 3. **Placeholder Bot**
 A short term utility bot that clears out old slash commands from bots that are no longer in use. This prevents there from being several bots with identical, conflicting commands being present in the server. 
 
 While another solution is to simply remove old bots from servers, any bots kept around for nostalgia or data purposes will need to use this bot to purge commands.
