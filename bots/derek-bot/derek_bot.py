@@ -510,7 +510,7 @@ class DerekBot(commands.Bot):
         """
         # Reacting to messages using the regex strings found in the DB
         for reaction in self.reactions_list:
-            match = re.search(reaction["regex"], message.content)
+            match = re.search(reaction["regex"], message.content, re.IGNORECASE)
             if match:
                 try:
                     await message.add_reaction(reaction["emoji"])
