@@ -2,6 +2,7 @@
 import os
 import logging
 import re
+import string
 import time
 import io
 from distutils.util import strtobool
@@ -590,6 +591,10 @@ class DerekBot(commands.Bot):
                 # Replacing mentions with user display name 
                 for user in message.mentions:
                     final_tts_message = re.sub(f"<@!?{user.id}>", f"@ {user.display_name}", final_tts_message)
+
+                # Checking if the last character in the message is a punctuation mark, if not, add a period
+                if final_tts_message and final_tts_message[-1] not in string.punctuation:
+                    final_tts_message += "."
 
                 # Get tts_language from db_user if available
                 tts_language = db_user.get("tts_language") if db_user else None
