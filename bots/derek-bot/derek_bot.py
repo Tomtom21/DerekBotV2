@@ -133,7 +133,8 @@ llm_manager = ChatLLMManager(
     system_prompt=gpt_system_prompt,
     tool_function_references=tool_references,
     tool_definitions=tool_definitions,
-    get_memories=memory_tools.get_memories
+    get_memories=memory_tools.get_memories,
+    model_name="dolphin-phi:2.7b"
 )
 
 

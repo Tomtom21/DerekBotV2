@@ -1,6 +1,7 @@
 import json
 import random
 from typing import List
+import os
 
 from discord import Message
 import openai
@@ -220,7 +221,7 @@ class ChatLLMManager:
         :param image_persistence_length: The number of messages before images are no longer sent to the model
         """
         # Updating the api_key, Defining the client
-        self.client = openai.OpenAI(api_key=api_key)
+        self.client = openai.OpenAI(base_url=os.getenv("OLLAMA_BASE_URL"), api_key=api_key)
 
         # Model settings
         self.system_prompt = system_prompt

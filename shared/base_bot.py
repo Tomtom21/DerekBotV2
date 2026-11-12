@@ -75,7 +75,8 @@ class BaseBot(commands.Bot, ABC):
         # Setting up the GPT model
         self.llm_manager = ChatLLMManager(
             api_key=open_ai_key,
-            system_prompt=gpt_system_prompt
+            system_prompt=gpt_system_prompt,
+            model_name="dolphin-phi:2.7b"
         )
 
         # Keeping track of the guild and the guild ID of the bot
