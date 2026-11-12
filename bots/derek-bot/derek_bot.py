@@ -134,7 +134,7 @@ llm_manager = ChatLLMManager(
     tool_function_references=tool_references,
     tool_definitions=tool_definitions,
     get_memories=memory_tools.get_memories,
-    model_name="dolphin-phi:2.7b"
+    model_name="ministral-3:3b"
 )
 
 
